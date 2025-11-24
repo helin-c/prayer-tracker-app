@@ -11,6 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSettings } from "../context/SettingsContext";
 import { getStrings } from "../i18n/translations";
+import { getPalette, Palette } from "../theme/theme";
 
 // --------- TYPES / DATA MODEL ---------
 
@@ -78,6 +79,7 @@ const fetchPrayerTimes = async (city: string, country: string) => {
 
 export function HomeScreen({ navigation }: { navigation: any }) {
   const { settings } = useSettings();
+  const palette = getPalette(settings.theme);
   const t = getStrings(settings.language);
 
   const [prayers, setPrayers] = useState<Prayer[] | null>(null);
@@ -86,6 +88,8 @@ export function HomeScreen({ navigation }: { navigation: any }) {
 
   const todayKey = getTodayKey();
   const storageKey = `${STORAGE_KEY_PREFIX}${todayKey}`;
+
+  const styles = React.useMemo(() => createStyles(palette), [palette]);
 
   useEffect(() => {
     const loadPrayers = async () => {
@@ -179,10 +183,11 @@ export function HomeScreen({ navigation }: { navigation: any }) {
   const nextPrayer = getNextPrayer();
 
   if (loading || !prayers) {
+    const loadingStyles = createStyles(palette);
     return (
-      <SafeAreaView style={styles.centered}>
+      <SafeAreaView style={loadingStyles.centered}>
         <ActivityIndicator size="large" />
-        <Text style={styles.loadingText}>{t.home.loading}</Text>
+        <Text style={loadingStyles.loadingText}>{t.home.loading}</Text>
       </SafeAreaView>
     );
   }
@@ -297,118 +302,123 @@ export function HomeScreen({ navigation }: { navigation: any }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 32,
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#050816",
-  },
-  loadingText: {
-    marginTop: 8,
-    color: "#ffffff",
-  },
-  header: {
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  appTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  dateText: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  progressText: {
-    marginTop: 8,
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#a5b4fc",
-  },
-  nextPrayerText: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#6ee7b7",
-  },
-  featureSection: {
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#e5e7eb",
-  },
-  featureRow: {
-    flexDirection: "row",
-    marginTop: 8,
-  },
-  featureCard: {
-    flex: 1,
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    padding: 12,
-    marginRight: 8,
-  },
-  featureTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  featureDesc: {
-    marginTop: 4,
-    fontSize: 12,
-    color: "#9ca3af",
-  },
-  list: {
-    marginTop: 8,
-  },
-  prayerCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: "#111827",
-    marginBottom: 10,
-  },
-  prayerCardCompleted: {
-    backgroundColor: "#064e3b",
-  },
-  prayerName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  prayerTime: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  prayerStatus: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#f9fafb",
-  },
-  footer: {
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-  footerText: {
-    color: "#9ca3af",
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.background,
+    },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingBottom: 32,
+    },
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: palette.background,
+    },
+    loadingText: {
+      marginTop: 8,
+      color: palette.textPrimary,
+    },
+    header: {
+      marginBottom: 16,
+      marginTop: 8,
+    },
+    appTitle: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.textPrimary,
+    },
+    dateText: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    progressText: {
+      marginTop: 8,
+      fontSize: 16,
+      fontWeight: "500",
+      color: palette.progress,
+    },
+    nextPrayerText: {
+      marginTop: 6,
+      fontSize: 14,
+      color: palette.nextPrayer,
+    },
+    featureSection: {
+      marginTop: 12,
+      marginBottom: 16,
+    },
+    sectionHeader: {
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.textPrimary,
+    },
+    featureRow: {
+      flexDirection: "row",
+      marginTop: 8,
+    },
+    featureCard: {
+      flex: 1,
+      backgroundColor: palette.card,
+      borderRadius: 12,
+      padding: 12,
+      marginRight: 8,
+      borderWidth: 1,
+      borderColor: palette.border,
+    },
+    featureTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: palette.textPrimary,
+    },
+    featureDesc: {
+      marginTop: 4,
+      fontSize: 12,
+      color: palette.textSecondary,
+    },
+    list: {
+      marginTop: 8,
+    },
+    prayerCard: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 14,
+      borderRadius: 12,
+      backgroundColor: palette.card,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+    },
+    prayerCardCompleted: {
+      backgroundColor: palette.completedCardBackground,
+    },
+    prayerName: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.textPrimary,
+    },
+    prayerTime: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    prayerStatus: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: palette.textPrimary,
+    },
+    footer: {
+      paddingVertical: 8,
+      alignItems: "center",
+    },
+    footerText: {
+      color: palette.textMuted,
+    },
+  });

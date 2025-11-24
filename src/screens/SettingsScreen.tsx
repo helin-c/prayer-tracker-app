@@ -8,10 +8,13 @@ import {
 } from "react-native";
 import { useSettings } from "../context/SettingsContext";
 import { getStrings } from "../i18n/translations";
+import { getPalette, Palette } from "../theme/theme";
 
 export function SettingsScreen() {
   const { settings, loading, saving, setLanguage, toggleTheme } = useSettings();
   const t = getStrings(settings.language);
+  const palette = getPalette(settings.theme);
+  const styles = React.useMemo(() => createStyles(palette), [palette]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -77,9 +80,7 @@ export function SettingsScreen() {
       {/* Status */}
       <View style={styles.footer}>
         {loading ? (
-          <Text style={styles.footerText}>
-            {t.common.loadingSettings}
-          </Text>
+          <Text style={styles.footerText}>{t.common.loadingSettings}</Text>
         ) : saving ? (
           <Text style={styles.footerText}>{t.common.saving}</Text>
         ) : (
@@ -90,71 +91,75 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  subtitle: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  section: {
-    marginTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#e5e7eb",
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: "row",
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    marginRight: 8,
-  },
-  chipActive: {
-    backgroundColor: "#22c55e33",
-    borderColor: "#22c55e",
-  },
-  chipText: {
-    color: "#e5e7eb",
-  },
-  chipTextActive: {
-    color: "#bbf7d0",
-    fontWeight: "600",
-  },
-  helperText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: "#9ca3af",
-  },
-  themeButton: {
-    backgroundColor: "#111827",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  themeButtonText: {
-    color: "#e5e7eb",
-  },
-  footer: {
-    marginTop: 32,
-  },
-  footerText: {
-    color: "#9ca3af",
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.background,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.textPrimary,
+    },
+    subtitle: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    section: {
+      marginTop: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.textPrimary,
+      marginBottom: 8,
+    },
+    row: {
+      flexDirection: "row",
+    },
+    chip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: palette.chipBorder,
+      marginRight: 8,
+    },
+    chipActive: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+    },
+    chipText: {
+      color: palette.textPrimary,
+    },
+    chipTextActive: {
+      color: palette.accent,
+      fontWeight: "600",
+    },
+    helperText: {
+      marginTop: 6,
+      fontSize: 12,
+      color: palette.textMuted,
+    },
+    themeButton: {
+      backgroundColor: palette.card,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      marginTop: 4,
+    },
+    themeButtonText: {
+      color: palette.textPrimary,
+    },
+    footer: {
+      marginTop: 32,
+    },
+    footerText: {
+      color: palette.textMuted,
+    },
+  });

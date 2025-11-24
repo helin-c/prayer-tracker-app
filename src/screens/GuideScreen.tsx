@@ -8,10 +8,13 @@ import {
 } from "react-native";
 import { useSettings } from "../context/SettingsContext";
 import { getStrings } from "../i18n/translations";
+import { getPalette, Palette } from "../theme/theme";
 
 export function GuideScreen() {
   const { settings } = useSettings();
   const t = getStrings(settings.language);
+  const palette = getPalette(settings.theme);
+  const styles = React.useMemo(() => createStyles(palette), [palette]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,46 +52,49 @@ export function GuideScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  subtitle: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  section: {
-    marginTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#e5e7eb",
-    marginBottom: 8,
-  },
-  card: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-  },
-  cardIndex: {
-    fontSize: 12,
-    color: "#a5b4fc",
-    marginBottom: 4,
-  },
-  cardText: {
-    color: "#e5e7eb",
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.background,
+    },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 24,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.textPrimary,
+    },
+    subtitle: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    section: {
+      marginTop: 20,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.textPrimary,
+      marginBottom: 8,
+    },
+    card: {
+      backgroundColor: palette.card,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: palette.border,
+    },
+    cardIndex: {
+      fontSize: 12,
+      color: palette.progress,
+      marginBottom: 4,
+    },
+    cardText: {
+      color: palette.textPrimary,
+    },
+  });

@@ -9,6 +9,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSettings } from "../context/SettingsContext";
 import { getStrings } from "../i18n/translations";
+import { getPalette, Palette } from "../theme/theme";
 
 const STORAGE_KEY = "tasbih-state";
 
@@ -20,12 +21,13 @@ interface TasbihState {
 export function TasbihScreen() {
   const { settings } = useSettings();
   const t = getStrings(settings.language);
+  const palette = getPalette(settings.theme);
+  const styles = React.useMemo(() => createStyles(palette), [palette]);
 
   const [count, setCount] = useState(0);
   const [target, setTarget] = useState(33);
   const [loading, setLoading] = useState(true);
 
-  // Load saved state
   useEffect(() => {
     const load = async () => {
       try {
@@ -45,7 +47,6 @@ export function TasbihScreen() {
     load();
   }, []);
 
-  // Save state
   useEffect(() => {
     if (loading) return;
     const save = async () => {
@@ -65,7 +66,6 @@ export function TasbihScreen() {
 
   const setTargetValue = (value: number) => {
     setTarget(value);
-    // optional: if count > new target, keep count, just change progress
   };
 
   const progress =
@@ -131,100 +131,103 @@ export function TasbihScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  subtitle: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  counterCard: {
-    marginTop: 20,
-    backgroundColor: "#111827",
-    borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  counterLabel: {
-    fontSize: 14,
-    color: "#9ca3af",
-  },
-  counterValue: {
-    marginTop: 8,
-    fontSize: 48,
-    fontWeight: "700",
-    color: "#22c55e",
-  },
-  progressText: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#a5b4fc",
-  },
-  targetRow: {
-    marginTop: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  targetLabel: {
-    fontSize: 14,
-    color: "#e5e7eb",
-    marginRight: 8,
-  },
-  targetChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    marginRight: 8,
-    marginTop: 4,
-  },
-  targetChipActive: {
-    backgroundColor: "#22c55e33",
-    borderColor: "#22c55e",
-  },
-  targetChipText: {
-    color: "#e5e7eb",
-  },
-  targetChipTextActive: {
-    color: "#bbf7d0",
-    fontWeight: "600",
-  },
-  actionsRow: {
-    marginTop: 28,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: "center",
-  },
-  incrementButton: {
-    backgroundColor: "#22c55e",
-    marginRight: 8,
-  },
-  resetButton: {
-    backgroundColor: "#111827",
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    marginLeft: 8,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#f9fafb",
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.background,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.textPrimary,
+    },
+    subtitle: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    counterCard: {
+      marginTop: 20,
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      paddingVertical: 20,
+      paddingHorizontal: 16,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.border,
+    },
+    counterLabel: {
+      fontSize: 14,
+      color: palette.textSecondary,
+    },
+    counterValue: {
+      marginTop: 8,
+      fontSize: 48,
+      fontWeight: "700",
+      color: palette.accent,
+    },
+    progressText: {
+      marginTop: 6,
+      fontSize: 14,
+      color: palette.progress,
+    },
+    targetRow: {
+      marginTop: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      flexWrap: "wrap",
+    },
+    targetLabel: {
+      fontSize: 14,
+      color: palette.textPrimary,
+      marginRight: 8,
+    },
+    targetChip: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: palette.chipBorder,
+      marginRight: 8,
+      marginTop: 4,
+    },
+    targetChipActive: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+    },
+    targetChipText: {
+      color: palette.textPrimary,
+    },
+    targetChipTextActive: {
+      color: palette.accent,
+      fontWeight: "600",
+    },
+    actionsRow: {
+      marginTop: 28,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    button: {
+      flex: 1,
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+    incrementButton: {
+      backgroundColor: palette.accent,
+      marginRight: 8,
+    },
+    resetButton: {
+      backgroundColor: palette.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      marginLeft: 8,
+    },
+    buttonText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: palette.textPrimary,
+    },
+  });

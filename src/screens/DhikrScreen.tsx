@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useSettings } from "../context/SettingsContext";
 import { getStrings } from "../i18n/translations";
+import { getPalette, Palette } from "../theme/theme";
 
 const DHIKR_ITEMS = [
   { id: 1, key: "Subhanallah", descKey: "Glory be to Allah." },
@@ -23,6 +24,8 @@ const DHIKR_ITEMS = [
 export function DhikrScreen() {
   const { settings } = useSettings();
   const t = getStrings(settings.language);
+  const palette = getPalette(settings.theme);
+  const styles = React.useMemo(() => createStyles(palette), [palette]);
 
   const counts = [33, 33, 34, 100];
 
@@ -46,43 +49,46 @@ export function DhikrScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  subtitle: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  list: {
-    marginTop: 16,
-  },
-  card: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  cardDesc: {
-    marginTop: 4,
-    color: "#9ca3af",
-  },
-  cardCount: {
-    marginTop: 8,
-    fontWeight: "500",
-    color: "#22c55e",
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: palette.background,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.textPrimary,
+    },
+    subtitle: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    list: {
+      marginTop: 16,
+    },
+    card: {
+      backgroundColor: palette.card,
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+    },
+    cardTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: palette.textPrimary,
+    },
+    cardDesc: {
+      marginTop: 4,
+      color: palette.textSecondary,
+    },
+    cardCount: {
+      marginTop: 8,
+      fontWeight: "500",
+      color: palette.accent,
+    },
+  });
