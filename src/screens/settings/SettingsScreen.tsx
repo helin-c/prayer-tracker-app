@@ -6,9 +6,9 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 export function SettingsScreen() {
   const { settings, loading, saving, setLanguage, toggleTheme } = useSettings();
@@ -16,14 +16,16 @@ export function SettingsScreen() {
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
 
+  const isTR = settings.language === "tr";
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{t.settings.title}</Text>
+      <Text style={styles.title}>{isTR ? "Ayarlar" : "Settings"}</Text>
       <Text style={styles.subtitle}>{t.settings.subtitle}</Text>
 
-      {/* Language section */}
+      {/* Language */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.settings.languageTitle}</Text>
+        <Text style={styles.sectionTitle}>{t.settings.languageSection}</Text>
         <View style={styles.row}>
           <TouchableOpacity
             style={[
@@ -38,7 +40,7 @@ export function SettingsScreen() {
                 settings.language === "en" && styles.chipTextActive,
               ]}
             >
-              English
+              {t.settings.languageEnglish}
             </Text>
           </TouchableOpacity>
 
@@ -55,38 +57,57 @@ export function SettingsScreen() {
                 settings.language === "tr" && styles.chipTextActive,
               ]}
             >
-              Türkçe
+              {t.settings.languageTurkish}
             </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.helperText}>{t.settings.languageHelper}</Text>
       </View>
 
-      {/* Theme section */}
+      {/* Theme */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.settings.themeTitle}</Text>
-        <TouchableOpacity
-          style={styles.themeButton}
-          onPress={toggleTheme}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.themeButtonText}>
-            {t.settings.themeButton(settings.theme)}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.helperText}>{t.settings.themeHelper}</Text>
+        <Text style={styles.sectionTitle}>{t.settings.themeSection}</Text>
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              settings.theme === "dark" && styles.chipActive,
+            ]}
+            onPress={toggleTheme}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                settings.theme === "dark" && styles.chipTextActive,
+              ]}
+            >
+              {t.settings.themeDark}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              settings.theme === "light" && styles.chipActive,
+            ]}
+            onPress={toggleTheme}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                settings.theme === "light" && styles.chipTextActive,
+              ]}
+            >
+              {t.settings.themeLight}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Status */}
-      <View style={styles.footer}>
-        {loading ? (
-          <Text style={styles.footerText}>{t.common.loadingSettings}</Text>
-        ) : saving ? (
-          <Text style={styles.footerText}>{t.common.saving}</Text>
-        ) : (
-          <Text style={styles.footerText}>{t.common.settingsSaved}</Text>
-        )}
-      </View>
+      {(loading || saving) && (
+        <Text style={styles.statusText}>
+          {loading ? t.common.loading : t.common.saving}
+        </Text>
+      )}
     </SafeAreaView>
   );
 }
@@ -107,18 +128,20 @@ const createStyles = (palette: Palette) =>
     subtitle: {
       marginTop: 4,
       color: palette.textSecondary,
+      marginBottom: 16,
     },
     section: {
-      marginTop: 24,
+      marginBottom: 18,
     },
     sectionTitle: {
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: "600",
       color: palette.textPrimary,
       marginBottom: 8,
     },
     row: {
       flexDirection: "row",
+      gap: 8,
     },
     chip: {
       paddingHorizontal: 12,
@@ -126,40 +149,21 @@ const createStyles = (palette: Palette) =>
       borderRadius: 999,
       borderWidth: 1,
       borderColor: palette.chipBorder,
-      marginRight: 8,
+      backgroundColor: palette.card,
     },
     chipActive: {
       backgroundColor: palette.accentSoft,
       borderColor: palette.accent,
     },
     chipText: {
-      color: palette.textPrimary,
+      color: palette.textSecondary,
+      fontWeight: "500",
     },
     chipTextActive: {
       color: palette.accent,
-      fontWeight: "600",
     },
-    helperText: {
-      marginTop: 6,
-      fontSize: 12,
-      color: palette.textMuted,
-    },
-    themeButton: {
-      backgroundColor: palette.card,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: palette.border,
-      marginTop: 4,
-    },
-    themeButtonText: {
-      color: palette.textPrimary,
-    },
-    footer: {
-      marginTop: 32,
-    },
-    footerText: {
+    statusText: {
+      marginTop: 10,
       color: palette.textMuted,
     },
   });

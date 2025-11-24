@@ -6,15 +6,21 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 export function GuideScreen() {
   const { settings } = useSettings();
   const t = getStrings(settings.language);
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
+
+  const wuduSteps: string[] = t.guide.wuduSteps || [];
+  const prayerSteps: string[] = t.guide.prayerSteps || [];
+
+  const formatStepLabel = (n: number) =>
+    (t.guide.stepLabel as string).replace("{n}", String(n));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,11 +30,9 @@ export function GuideScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.guide.wuduTitle}</Text>
-          {t.guide.wuduSteps.map((step, index) => (
+          {wuduSteps.map((step, index) => (
             <View key={index} style={styles.card}>
-              <Text style={styles.cardIndex}>
-                {t.guide.stepLabel(index + 1)}
-              </Text>
+              <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
           ))}
@@ -36,11 +40,9 @@ export function GuideScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.guide.prayerTitle}</Text>
-          {t.guide.prayerSteps.map((step, index) => (
+          {prayerSteps.map((step, index) => (
             <View key={index} style={styles.card}>
-              <Text style={styles.cardIndex}>
-                {t.guide.stepLabel(index + 1)}
-              </Text>
+              <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
           ))}
@@ -61,19 +63,19 @@ const createStyles = (palette: Palette) =>
     scrollContent: {
       paddingHorizontal: 16,
       paddingTop: 12,
-      paddingBottom: 24,
     },
     title: {
       fontSize: 24,
       fontWeight: "700",
       color: palette.textPrimary,
+      marginBottom: 4,
     },
     subtitle: {
-      marginTop: 4,
       color: palette.textSecondary,
+      marginBottom: 16,
     },
     section: {
-      marginTop: 20,
+      marginBottom: 18,
     },
     sectionTitle: {
       fontSize: 18,
@@ -83,18 +85,18 @@ const createStyles = (palette: Palette) =>
     },
     card: {
       backgroundColor: palette.card,
-      borderRadius: 12,
+      borderRadius: 16,
       padding: 12,
       marginBottom: 8,
       borderWidth: 1,
       borderColor: palette.border,
     },
     cardIndex: {
-      fontSize: 12,
-      color: palette.progress,
+      fontWeight: "600",
+      color: palette.accent,
       marginBottom: 4,
     },
     cardText: {
-      color: palette.textPrimary,
+      color: palette.textSecondary,
     },
   });

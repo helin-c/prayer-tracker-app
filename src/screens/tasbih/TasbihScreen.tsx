@@ -3,13 +3,13 @@ import {
   SafeAreaView,
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 const STORAGE_KEY = "tasbih-state";
 
@@ -24,78 +24,73 @@ export function TasbihScreen() {
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
 
-  const [count, setCount] = useState(0);
-  const [target, setTarget] = useState(33);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<TasbihState>({ count: 0, target: 33 });
+  const { count, target } = state;
 
+  // load saved state
   useEffect(() => {
-    const load = async () => {
+    (async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as TasbihState;
-          setCount(parsed.count ?? 0);
-          setTarget(parsed.target ?? 33);
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          setState(JSON.parse(saved) as TasbihState);
         }
       } catch (e) {
         console.warn("Error loading tasbih state:", e);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    load();
+    })();
   }, []);
 
+  // save on change
   useEffect(() => {
-    if (loading) return;
-    const save = async () => {
+    (async () => {
       try {
-        const data: TasbihState = { count, target };
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (e) {
         console.warn("Error saving tasbih state:", e);
       }
-    };
-    save();
-  }, [count, target, loading]);
+    })();
+  }, [state]);
 
-  const increment = () => setCount((c) => c + 1);
-
-  const reset = () => setCount(0);
-
-  const setTargetValue = (value: number) => {
-    setTarget(value);
+  const increment = () => {
+    setState((prev) => ({ ...prev, count: prev.count + 1 }));
   };
 
-  const progress =
-    target > 0 ? Math.min(100, Math.round((count / target) * 100)) : 0;
+  const reset = () => {
+    setState((prev) => ({ ...prev, count: 0 }));
+  };
 
-  const quickTargets = [33, 99, 100];
+  const setTarget = (value: number) => {
+    setState((prev) => ({ ...prev, target: value }));
+  };
+
+  const percent =
+    target > 0 ? Math.min(100, Math.round((count / target) * 100)) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>{t.tasbih.title}</Text>
-      <Text style={styles.subtitle}>{t.tasbih.subtitle}</Text>
 
-      <View style={styles.counterCard}>
-        <Text style={styles.counterLabel}>{t.tasbih.currentCount}</Text>
-        <Text style={styles.counterValue}>{count}</Text>
-        <Text style={styles.progressText}>
-          {t.tasbih.targetProgress(target, progress)}
+      <View style={styles.card}>
+        <Text style={styles.label}>{t.tasbih.currentCount}</Text>
+        <Text style={styles.count}>{count}</Text>
+
+        <Text style={styles.label}>
+          {t.tasbih.target}: {target}
         </Text>
+        <Text style={styles.progressText}>{percent}%</Text>
       </View>
 
       <View style={styles.targetRow}>
-        <Text style={styles.targetLabel}>{t.tasbih.quickTargets}</Text>
-        {quickTargets.map((value) => (
+        <Text style={styles.targetLabel}>{t.tasbih.targetLabel}:</Text>
+        {[33, 99, 100].map((value) => (
           <TouchableOpacity
             key={value}
             style={[
               styles.targetChip,
               target === value && styles.targetChipActive,
             ]}
-            onPress={() => setTargetValue(value)}
+            onPress={() => setTarget(value)}
             activeOpacity={0.8}
           >
             <Text
@@ -116,17 +111,19 @@ export function TasbihScreen() {
           onPress={increment}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>{t.tasbih.buttonIncrement}</Text>
+          <Text style={styles.buttonText}>Tap +1</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+      <TouchableOpacity
           style={[styles.button, styles.resetButton]}
           onPress={reset}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>{t.tasbih.buttonReset}</Text>
+          <Text style={styles.buttonText}>{t.tasbih.reset}</Text>
         </TouchableOpacity>
       </View>
+
+      <Text style={styles.hintText}>{t.tasbih.tapHint}</Text>
     </SafeAreaView>
   );
 }
@@ -138,96 +135,98 @@ const createStyles = (palette: Palette) =>
       backgroundColor: palette.background,
       paddingHorizontal: 16,
       paddingTop: 12,
+      alignItems: "center",
     },
     title: {
       fontSize: 24,
       fontWeight: "700",
       color: palette.textPrimary,
+      marginBottom: 16,
+      alignSelf: "flex-start",
     },
-    subtitle: {
-      marginTop: 4,
-      color: palette.textSecondary,
-    },
-    counterCard: {
-      marginTop: 20,
+    card: {
+      width: "100%",
       backgroundColor: palette.card,
-      borderRadius: 16,
-      paddingVertical: 20,
-      paddingHorizontal: 16,
-      alignItems: "center",
+      borderRadius: 20,
+      padding: 20,
       borderWidth: 1,
       borderColor: palette.border,
+      alignItems: "center",
+      marginBottom: 16,
     },
-    counterLabel: {
-      fontSize: 14,
+    label: {
       color: palette.textSecondary,
+      marginBottom: 4,
     },
-    counterValue: {
-      marginTop: 8,
+    count: {
       fontSize: 48,
-      fontWeight: "700",
-      color: palette.accent,
+      fontWeight: "800",
+      color: palette.textPrimary,
+      marginBottom: 8,
     },
     progressText: {
-      marginTop: 6,
-      fontSize: 14,
-      color: palette.progress,
+      marginTop: 4,
+      color: palette.accent,
+      fontWeight: "600",
     },
     targetRow: {
-      marginTop: 20,
+      width: "100%",
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "flex-start",
+      marginBottom: 16,
       flexWrap: "wrap",
     },
     targetLabel: {
-      fontSize: 14,
-      color: palette.textPrimary,
+      color: palette.textSecondary,
       marginRight: 8,
     },
     targetChip: {
-      paddingHorizontal: 12,
+      paddingHorizontal: 10,
       paddingVertical: 6,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: palette.chipBorder,
       marginRight: 8,
-      marginTop: 4,
     },
     targetChipActive: {
       backgroundColor: palette.accentSoft,
-      borderColor: palette.accent,
     },
     targetChipText: {
-      color: palette.textPrimary,
+      color: palette.textSecondary,
+      fontWeight: "500",
     },
     targetChipTextActive: {
-      color: palette.accent,
-      fontWeight: "600",
+      color: palette.textPrimary,
     },
     actionsRow: {
-      marginTop: 28,
       flexDirection: "row",
       justifyContent: "space-between",
+      width: "100%",
+      marginBottom: 8,
     },
     button: {
       flex: 1,
       paddingVertical: 14,
-      borderRadius: 14,
+      borderRadius: 999,
       alignItems: "center",
+      justifyContent: "center",
+      marginHorizontal: 4,
     },
     incrementButton: {
       backgroundColor: palette.accent,
-      marginRight: 8,
     },
     resetButton: {
-      backgroundColor: palette.card,
-      borderWidth: 1,
-      borderColor: palette.border,
-      marginLeft: 8,
+      backgroundColor: palette.header,
     },
     buttonText: {
-      fontSize: 16,
+      color: "#ffffff",
       fontWeight: "600",
-      color: palette.textPrimary,
+      fontSize: 16,
+    },
+    hintText: {
+      marginTop: 4,
+      color: palette.textMuted,
+      textAlign: "center",
     },
   });

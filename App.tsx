@@ -3,13 +3,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
-import { HomeScreen } from "./src/screens/HomeScreen";
-import { DhikrScreen } from "./src/screens/DhikrScreen";
-import { TasbihScreen } from "./src/screens/TasbihScreen";
-import { GuideScreen } from "./src/screens/GuideScreen";
+import { HomeScreen } from "./src/screens/home/HomeScreen";
+import { DhikrScreen } from "./src/screens/tasbih/DhikrScreen";
+import { TasbihScreen } from "./src/screens/tasbih/TasbihScreen";
+import { GuideScreen } from "./src/screens/guides/GuideScreen";
 import { StatsScreen } from "./src/screens/StatsScreen";
-import { SettingsScreen } from "./src/screens/SettingsScreen";
+import { SettingsScreen } from "./src/screens/settings/SettingsScreen";
 import { SettingsProvider } from "./src/context/SettingsContext";
+
 
 export type RootTabParamList = {
   Home: undefined;
