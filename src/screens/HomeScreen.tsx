@@ -9,6 +9,8 @@ import {
   ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSettings } from "../context/SettingsContext";
+import { getStrings } from "../i18n/translations";
 
 // --------- TYPES / DATA MODEL ---------
 
@@ -75,6 +77,9 @@ const fetchPrayerTimes = async (city: string, country: string) => {
 };
 
 export function HomeScreen({ navigation }: { navigation: any }) {
+  const { settings } = useSettings();
+  const t = getStrings(settings.language);
+
   const [prayers, setPrayers] = useState<Prayer[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -177,44 +182,42 @@ export function HomeScreen({ navigation }: { navigation: any }) {
     return (
       <SafeAreaView style={styles.centered}>
         <ActivityIndicator size="large" />
-        <Text style={styles.loadingText}>Loading today&apos;s prayers...</Text>
+        <Text style={styles.loadingText}>{t.home.loading}</Text>
       </SafeAreaView>
     );
   }
+
+  const nextPrayerText = nextPrayer
+    ? t.home.nextPrayer(nextPrayer.label, nextPrayer.time)
+    : t.home.allPassed;
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.appTitle}>Prayer Tracker</Text>
+          <Text style={styles.appTitle}>{t.home.title}</Text>
           <Text style={styles.dateText}>{todayKey}</Text>
           <Text style={styles.progressText}>
-            {done}/{total} prayers completed ({percent}%)
+            {t.home.progress(done, total, percent)}
           </Text>
-          {nextPrayer ? (
-            <Text style={styles.nextPrayerText}>
-              Next prayer: {nextPrayer.label} at {nextPrayer.time}
-            </Text>
-          ) : (
-            <Text style={styles.nextPrayerText}>
-              All prayers for today have passed.
-            </Text>
-          )}
+          <Text style={styles.nextPrayerText}>{nextPrayerText}</Text>
         </View>
 
         {/* Feature cards */}
         <View style={styles.featureSection}>
-          <Text style={styles.sectionTitle}>Features</Text>
+          <Text style={styles.sectionTitle}>{t.home.featuresTitle}</Text>
           <View style={styles.featureRow}>
             <TouchableOpacity
               style={styles.featureCard}
               onPress={() => navigation.navigate("Dhikr")}
               activeOpacity={0.8}
             >
-              <Text style={styles.featureTitle}>Dhikr</Text>
+              <Text style={styles.featureTitle}>
+                {t.home.featureDhikrTitle}
+              </Text>
               <Text style={styles.featureDesc}>
-                Daily dhikr suggestions and recommended counts.
+                {t.home.featureDhikrDesc}
               </Text>
             </TouchableOpacity>
 
@@ -223,9 +226,11 @@ export function HomeScreen({ navigation }: { navigation: any }) {
               onPress={() => navigation.navigate("Tasbih")}
               activeOpacity={0.8}
             >
-              <Text style={styles.featureTitle}>Tasbih Counter</Text>
+              <Text style={styles.featureTitle}>
+                {t.home.featureTasbihTitle}
+              </Text>
               <Text style={styles.featureDesc}>
-                Track your tasbih count with saved targets.
+                {t.home.featureTasbihDesc}
               </Text>
             </TouchableOpacity>
           </View>
@@ -236,9 +241,11 @@ export function HomeScreen({ navigation }: { navigation: any }) {
               onPress={() => navigation.navigate("Guide")}
               activeOpacity={0.8}
             >
-              <Text style={styles.featureTitle}>Abdest & Namaz</Text>
+              <Text style={styles.featureTitle}>
+                {t.home.featureGuideTitle}
+              </Text>
               <Text style={styles.featureDesc}>
-                Step-by-step wudu and prayer guide in TR/EN.
+                {t.home.featureGuideDesc}
               </Text>
             </TouchableOpacity>
           </View>
@@ -246,7 +253,9 @@ export function HomeScreen({ navigation }: { navigation: any }) {
 
         {/* Today's prayers */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Today&apos;s Prayers</Text>
+          <Text style={styles.sectionTitle}>
+            {t.home.todaysPrayersTitle}
+          </Text>
         </View>
 
         <View style={styles.list}>
@@ -262,11 +271,15 @@ export function HomeScreen({ navigation }: { navigation: any }) {
             >
               <View>
                 <Text style={styles.prayerName}>{prayer.label}</Text>
-                <Text style={styles.prayerTime}>Time: {prayer.time}</Text>
+                <Text style={styles.prayerTime}>
+                  {t.home.timeLabel(prayer.time)}
+                </Text>
               </View>
               <View>
                 <Text style={styles.prayerStatus}>
-                  {prayer.completed ? "✅ Done" : "⭕ Not done"}
+                  {prayer.completed
+                    ? t.home.statusDone
+                    : t.home.statusNotDone}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -274,10 +287,9 @@ export function HomeScreen({ navigation }: { navigation: any }) {
         </View>
 
         <View style={styles.footer}>
-          {saving ? (
-            <Text style={styles.footerText}>Saving...</Text>
-          ) : (
-            <Text style={styles.footerText}>Tap a prayer to toggle it</Text>
+          <Text style={styles.footerText}>{t.home.footer}</Text>
+          {saving && (
+            <Text style={styles.footerText}>{t.common.saving}</Text>
           )}
         </View>
       </ScrollView>

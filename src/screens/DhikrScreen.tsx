@@ -1,48 +1,43 @@
 import React from "react";
-import { SafeAreaView, View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+import { useSettings } from "../context/SettingsContext";
+import { getStrings } from "../i18n/translations";
 
 const DHIKR_ITEMS = [
-  {
-    id: 1,
-    title: "Subhanallah",
-    description: "Glory be to Allah.",
-    recommendedCount: 33,
-  },
-  {
-    id: 2,
-    title: "Alhamdulillah",
-    description: "All praise is due to Allah.",
-    recommendedCount: 33,
-  },
-  {
-    id: 3,
-    title: "Allahu Akbar",
-    description: "Allah is the Greatest.",
-    recommendedCount: 34,
-  },
+  { id: 1, key: "Subhanallah", descKey: "Glory be to Allah." },
+  { id: 2, key: "Alhamdulillah", descKey: "All praise is due to Allah." },
+  { id: 3, key: "Allahu Akbar", descKey: "Allah is the Greatest." },
   {
     id: 4,
-    title: "La ilaha illallah",
-    description: "There is no deity except Allah.",
-    recommendedCount: 100,
+    key: "La ilaha illallah",
+    descKey: "There is no deity except Allah.",
   },
 ];
 
 export function DhikrScreen() {
+  const { settings } = useSettings();
+  const t = getStrings(settings.language);
+
+  const counts = [33, 33, 34, 100];
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Daily Dhikr</Text>
-      <Text style={styles.subtitle}>
-        Simple dhikr you can repeat throughout your day.
-      </Text>
+      <Text style={styles.title}>{t.dhikr.title}</Text>
+      <Text style={styles.subtitle}>{t.dhikr.subtitle}</Text>
 
       <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 24 }}>
-        {DHIKR_ITEMS.map((item) => (
+        {DHIKR_ITEMS.map((item, idx) => (
           <View key={item.id} style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardDesc}>{item.description}</Text>
+            <Text style={styles.cardTitle}>{item.key}</Text>
+            <Text style={styles.cardDesc}>{item.descKey}</Text>
             <Text style={styles.cardCount}>
-              Recommended: {item.recommendedCount} times
+              {t.dhikr.recommended(counts[idx])}
             </Text>
           </View>
         ))}

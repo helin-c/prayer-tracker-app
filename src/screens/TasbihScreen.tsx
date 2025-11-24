@@ -7,79 +7,88 @@ import {
   TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSettings } from "../context/SettingsContext";
+import { getStrings } from "../i18n/translations";
 
-const TASBIH_STORAGE_KEY = "tasbih-count";
-const DEFAULT_TARGET = 33;
+const STORAGE_KEY = "tasbih-state";
+
+interface TasbihState {
+  count: number;
+  target: number;
+}
 
 export function TasbihScreen() {
+  const { settings } = useSettings();
+  const t = getStrings(settings.language);
+
   const [count, setCount] = useState(0);
-  const [target, setTarget] = useState<number>(DEFAULT_TARGET);
+  const [target, setTarget] = useState(33);
   const [loading, setLoading] = useState(true);
 
-  // Load saved count from storage
+  // Load saved state
   useEffect(() => {
-    const loadCount = async () => {
+    const load = async () => {
       try {
-        const saved = await AsyncStorage.getItem(TASBIH_STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as TasbihState;
           setCount(parsed.count ?? 0);
-          setTarget(parsed.target ?? DEFAULT_TARGET);
+          setTarget(parsed.target ?? 33);
         }
-      } catch (error) {
-        console.warn("Error loading tasbih count:", error);
+      } catch (e) {
+        console.warn("Error loading tasbih state:", e);
       } finally {
         setLoading(false);
       }
     };
 
-    loadCount();
+    load();
   }, []);
 
-  // Save whenever count or target changes
+  // Save state
   useEffect(() => {
+    if (loading) return;
     const save = async () => {
       try {
-        await AsyncStorage.setItem(
-          TASBIH_STORAGE_KEY,
-          JSON.stringify({ count, target })
-        );
-      } catch (error) {
-        console.warn("Error saving tasbih count:", error);
+        const data: TasbihState = { count, target };
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.warn("Error saving tasbih state:", e);
       }
     };
-
-    if (!loading) {
-      save();
-    }
+    save();
   }, [count, target, loading]);
 
-  const increment = () => setCount((prev) => prev + 1);
-  const reset = () => setCount(0);
-  const setTargetValue = (value: number) => setTarget(value);
+  const increment = () => setCount((c) => c + 1);
 
-  const progress = target > 0 ? Math.min(100, Math.round((count / target) * 100)) : 0;
+  const reset = () => setCount(0);
+
+  const setTargetValue = (value: number) => {
+    setTarget(value);
+    // optional: if count > new target, keep count, just change progress
+  };
+
+  const progress =
+    target > 0 ? Math.min(100, Math.round((count / target) * 100)) : 0;
+
+  const quickTargets = [33, 99, 100];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Tasbih Counter</Text>
-      <Text style={styles.subtitle}>
-        Tap the button to increase your count.
-      </Text>
+      <Text style={styles.title}>{t.tasbih.title}</Text>
+      <Text style={styles.subtitle}>{t.tasbih.subtitle}</Text>
 
-      <View style={styles.center}>
-        <View style={styles.counterCircle}>
-          <Text style={styles.counterText}>{count}</Text>
-          <Text style={styles.counterSubText}>Current count</Text>
-        </View>
+      <View style={styles.counterCard}>
+        <Text style={styles.counterLabel}>{t.tasbih.currentCount}</Text>
+        <Text style={styles.counterValue}>{count}</Text>
         <Text style={styles.progressText}>
-          Target: {target} • Progress: {progress}%
+          {t.tasbih.targetProgress(target, progress)}
         </Text>
       </View>
 
       <View style={styles.targetRow}>
-        <Text style={styles.targetLabel}>Quick targets:</Text>
-        {[33, 99, 100].map((value) => (
+        <Text style={styles.targetLabel}>{t.tasbih.quickTargets}</Text>
+        {quickTargets.map((value) => (
           <TouchableOpacity
             key={value}
             style={[
@@ -87,6 +96,7 @@ export function TasbihScreen() {
               target === value && styles.targetChipActive,
             ]}
             onPress={() => setTargetValue(value)}
+            activeOpacity={0.8}
           >
             <Text
               style={[
@@ -106,7 +116,7 @@ export function TasbihScreen() {
           onPress={increment}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Tap +1</Text>
+          <Text style={styles.buttonText}>{t.tasbih.buttonIncrement}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -114,7 +124,7 @@ export function TasbihScreen() {
           onPress={reset}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Reset</Text>
+          <Text style={styles.buttonText}>{t.tasbih.buttonReset}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -137,52 +147,48 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#9ca3af",
   },
-  center: {
+  counterCard: {
+    marginTop: 20,
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     alignItems: "center",
-    marginTop: 32,
   },
-  counterCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 4,
-    borderColor: "#22c55e",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#020617",
-  },
-  counterText: {
-    fontSize: 40,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  counterSubText: {
-    marginTop: 4,
+  counterLabel: {
+    fontSize: 14,
     color: "#9ca3af",
   },
+  counterValue: {
+    marginTop: 8,
+    fontSize: 48,
+    fontWeight: "700",
+    color: "#22c55e",
+  },
   progressText: {
-    marginTop: 16,
+    marginTop: 6,
+    fontSize: 14,
     color: "#a5b4fc",
-    fontWeight: "500",
   },
   targetRow: {
+    marginTop: 20,
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 24,
     flexWrap: "wrap",
   },
   targetLabel: {
-    color: "#9ca3af",
+    fontSize: 14,
+    color: "#e5e7eb",
     marginRight: 8,
   },
   targetChip: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#4b5563",
     marginRight: 8,
-    marginTop: 8,
+    marginTop: 4,
   },
   targetChipActive: {
     backgroundColor: "#22c55e33",
@@ -196,14 +202,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   actionsRow: {
+    marginTop: 28,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 32,
   },
   button: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
   },
   incrementButton: {
@@ -212,11 +218,13 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: "#4b5563",
     marginLeft: 8,
   },
   buttonText: {
-    color: "#f9fafb",
-    fontWeight: "600",
     fontSize: 16,
+    fontWeight: "600",
+    color: "#f9fafb",
   },
 });

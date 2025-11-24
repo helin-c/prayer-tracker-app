@@ -6,58 +6,38 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-
-const WUDU_STEPS = [
-  "1. Niyet etmek – Intend to perform wudu for the sake of Allah.",
-  "2. Bismillah diyerek başlamak – Begin by saying 'Bismillah'.",
-  "3. Elleri bileklere kadar üç kez yıkamak.",
-  "4. Ağıza üç kez su verip çalkalamak.",
-  "5. Buruna üç kez su çekip temizlemek.",
-  "6. Yüzü saç diplerinden çene altına kadar üç kez yıkamak.",
-  "7. Kolları dirseklerle birlikte üç kez yıkamak – önce sağ, sonra sol.",
-  "8. Başın mesh edilmesi – başın üstünü ıslak elle meshetmek.",
-  "9. Kulakları mesh etmek – iç ve dış kısımlarını silmek.",
-  "10. Ayakları topuklarla birlikte üç kez yıkamak – önce sağ, sonra sol.",
-];
-
-const PRAYER_STEPS = [
-  "1. Niyet – Stand facing the Qibla and make intention for the specific prayer.",
-  "2. Tekbir (Allahu Ekber) – Raise hands to ears/shoulders and say 'Allahu Ekber'.",
-  "3. Kıyam – Stand and recite Surah Al-Fatiha + another surah.",
-  "4. Rüku – Bow, hands on knees, saying 'Subhana Rabbiyal Azim' three times.",
-  "5. Kıyama dönüş – Stand back up, saying 'Sami'allahu liman hamidah'.",
-  "6. Secde – Prostrate with forehead, nose, palms, knees and toes on the ground.",
-  "7. Celse – Sit briefly between two sajdahs.",
-  "8. İkinci secde – Perform the second sajdah.",
-  "9. Ka'de/Teşehhud – Sit and recite 'At-tahiyyat', salawat etc.",
-  "10. Selam – End the prayer by turning the head right and left saying 'Assalamu alaykum wa rahmatullah'.",
-];
+import { useSettings } from "../context/SettingsContext";
+import { getStrings } from "../i18n/translations";
 
 export function GuideScreen() {
+  const { settings } = useSettings();
+  const t = getStrings(settings.language);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Abdest ve Namaz Kılma Rehberi</Text>
-        <Text style={styles.subtitle}>
-          Wudu (abdest) ve namaz adımlarını özetleyen kısa bir rehber. Metinleri
-          istedikçe detaylandırabilirsin.
-        </Text>
+        <Text style={styles.title}>{t.guide.title}</Text>
+        <Text style={styles.subtitle}>{t.guide.subtitle}</Text>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Abdest Adımları (Wudu)</Text>
-          {WUDU_STEPS.map((step, index) => (
+          <Text style={styles.sectionTitle}>{t.guide.wuduTitle}</Text>
+          {t.guide.wuduSteps.map((step, index) => (
             <View key={index} style={styles.card}>
-              <Text style={styles.cardIndex}>Adım {index + 1}</Text>
+              <Text style={styles.cardIndex}>
+                {t.guide.stepLabel(index + 1)}
+              </Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
           ))}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Namaz Kılma Adımları</Text>
-          {PRAYER_STEPS.map((step, index) => (
+          <Text style={styles.sectionTitle}>{t.guide.prayerTitle}</Text>
+          {t.guide.prayerSteps.map((step, index) => (
             <View key={index} style={styles.card}>
-              <Text style={styles.cardIndex}>Adım {index + 1}</Text>
+              <Text style={styles.cardIndex}>
+                {t.guide.stepLabel(index + 1)}
+              </Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
           ))}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   SafeAreaView,
   View,
@@ -6,95 +6,21 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const SETTINGS_STORAGE_KEY = "app-settings";
-
-type Language = "en" | "tr";
-type ThemeMode = "dark" | "light";
-
-interface AppSettings {
-  language: Language;
-  theme: ThemeMode;
-}
+import { useSettings } from "../context/SettingsContext";
+import { getStrings } from "../i18n/translations";
 
 export function SettingsScreen() {
-  const [settings, setSettings] = useState<AppSettings>({
-    language: "en",
-    theme: "dark",
-  });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  // Load settings from storage
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as AppSettings;
-          setSettings(parsed);
-        }
-      } catch (error) {
-        console.warn("Error loading settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSettings();
-  }, []);
-
-  // Save settings whenever they change (after initial load)
-  useEffect(() => {
-    const save = async () => {
-      try {
-        setSaving(true);
-        await AsyncStorage.setItem(
-          SETTINGS_STORAGE_KEY,
-          JSON.stringify(settings)
-        );
-      } catch (error) {
-        console.warn("Error saving settings:", error);
-      } finally {
-        setSaving(false);
-      }
-    };
-
-    if (!loading) {
-      save();
-    }
-  }, [settings, loading]);
-
-  const setLanguage = (lang: Language) => {
-    setSettings((prev) => ({ ...prev, language: lang }));
-  };
-
-  const toggleTheme = () => {
-    setSettings((prev) => ({
-      ...prev,
-      theme: prev.theme === "dark" ? "light" : "dark",
-    }));
-  };
-
-  const isTR = settings.language === "tr";
+  const { settings, loading, saving, setLanguage, toggleTheme } = useSettings();
+  const t = getStrings(settings.language);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>
-        {isTR ? "Ayarlar" : "Settings"}
-      </Text>
-      <Text style={styles.subtitle}>
-        {isTR
-          ? "Uygulama tercihlerini buradan düzenleyebilirsin."
-          : "Manage your app preferences here."}
-      </Text>
+      <Text style={styles.title}>{t.settings.title}</Text>
+      <Text style={styles.subtitle}>{t.settings.subtitle}</Text>
 
       {/* Language section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isTR ? "Dil" : "Language"}
-        </Text>
+        <Text style={styles.sectionTitle}>{t.settings.languageTitle}</Text>
         <View style={styles.row}>
           <TouchableOpacity
             style={[
@@ -130,50 +56,34 @@ export function SettingsScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.helperText}>
-          {isTR
-            ? "Şimdilik sadece ayarlar ekranında dili değiştiriyoruz. Sonra tüm uygulamaya yayabiliriz."
-            : "For now the language is applied here. Later we can apply it across the whole app."}
-        </Text>
+        <Text style={styles.helperText}>{t.settings.languageHelper}</Text>
       </View>
 
       {/* Theme section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isTR ? "Tema" : "Theme"}
-        </Text>
+        <Text style={styles.sectionTitle}>{t.settings.themeTitle}</Text>
         <TouchableOpacity
           style={styles.themeButton}
           onPress={toggleTheme}
           activeOpacity={0.8}
         >
           <Text style={styles.themeButtonText}>
-            {isTR
-              ? `Şu anki tema: ${settings.theme === "dark" ? "Koyu" : "Açık"} (dokunarak değiştir)`
-              : `Current theme: ${settings.theme} (tap to toggle)`}
+            {t.settings.themeButton(settings.theme)}
           </Text>
         </TouchableOpacity>
-        <Text style={styles.helperText}>
-          {isTR
-            ? "Tema henüz ekranda görsel olarak değişmiyor, ama seçimin kaydediliyor. Sonra tasarımla entegre edebiliriz."
-            : "Theme isn’t visually changing the app yet, but your preference is saved. We can connect it to the design later."}
-        </Text>
+        <Text style={styles.helperText}>{t.settings.themeHelper}</Text>
       </View>
 
       {/* Status */}
       <View style={styles.footer}>
         {loading ? (
           <Text style={styles.footerText}>
-            {isTR ? "Ayarlar yükleniyor..." : "Loading settings..."}
+            {t.common.loadingSettings}
           </Text>
         ) : saving ? (
-          <Text style={styles.footerText}>
-            {isTR ? "Kaydediliyor..." : "Saving..."}
-          </Text>
+          <Text style={styles.footerText}>{t.common.saving}</Text>
         ) : (
-          <Text style={styles.footerText}>
-            {isTR ? "Ayarlar kaydedildi ✅" : "Settings saved ✅"}
-          </Text>
+          <Text style={styles.footerText}>{t.common.settingsSaved}</Text>
         )}
       </View>
     </SafeAreaView>
