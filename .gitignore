@@ -39,3 +39,14 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Node / React Native
+node_modules/
+.expo/
+.expo-shared/
+
+# Python
+backend/venv/
+__pycache__/
+backend/app/__pycache__/
+*.pyc
