@@ -7,12 +7,14 @@ import { HomeScreen } from "./src/screens/HomeScreen";
 import { DhikrScreen } from "./src/screens/DhikrScreen";
 import { TasbihScreen } from "./src/screens/TasbihScreen";
 import { GuideScreen } from "./src/screens/GuideScreen";
+import { SettingsScreen } from "./src/screens/SettingsScreen";
 
 export type RootTabParamList = {
   Home: undefined;
   Dhikr: undefined;
   Tasbih: undefined;
   Guide: undefined;
+  Settings: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -38,9 +40,11 @@ export default function App() {
               iconName = "book-outline";
             } else if (route.name === "Tasbih") {
               iconName = "ellipse-outline";
-            } else {
-              // Guide
+            } else if (route.name === "Guide") {
               iconName = "school-outline";
+            } else {
+              // Settings
+              iconName = "settings-outline";
             }
 
             return <Ionicons name={iconName} size={size} color={color} />;
@@ -51,6 +55,7 @@ export default function App() {
         <Tab.Screen name="Dhikr" component={DhikrScreen} />
         <Tab.Screen name="Tasbih" component={TasbihScreen} />
         <Tab.Screen name="Guide" component={GuideScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
