@@ -11,6 +11,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // --------- TYPES / DATA MODEL (backend-ish) ---------
 
+type AladhanResponse = {
+  data: {
+    timings: {
+      Fajr: string;
+      Dhuhr: string;
+      Asr: string;
+      Maghrib: string;
+      Isha: string;
+      [key: string]: string;
+    };
+  };
+};
+
+
 type PrayerName = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
 
 interface Prayer {
@@ -31,6 +45,34 @@ const getTodayKey = () => {
 
 // AsyncStorage key prefix
 const STORAGE_KEY_PREFIX = "prayers-";
+
+// Fetch prayer times from AlAdhan API for a given city/country
+const fetchPrayerTimes = async (
+  city: string,
+  country: string
+): Promise<Partial<Record<PrayerName, string>>> => {
+  const url = `https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(
+    city
+  )}&country=${encodeURIComponent(country)}&method=2`;
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch prayer times: ${res.status}`);
+  }
+
+  const json: AladhanResponse = await res.json();
+  const timings = json.data.timings;
+
+  // Map API timings to our PrayerName keys
+  return {
+    Fajr: timings.Fajr,
+    Dhuhr: timings.Dhuhr,
+    Asr: timings.Asr,
+    Maghrib: timings.Maghrib,
+    Isha: timings.Isha,
+  };
+};
+
 
 const createDefaultPrayers = (): Prayer[] => [
   { id: "Fajr",    label: "Fajr",    time: "05:30", completed: false },
@@ -72,6 +114,50 @@ export default function App() {
     loadPrayers();
   }, [storageKey]);
 
+  useEffect(() => {
+    const loadPrayers = async () => {
+      try {
+       // 1) Try to load today's data from storage
+        const stored = await AsyncStorage.getItem(storageKey);
+        let basePrayers: Prayer[];
+
+        if (stored) {
+          basePrayers = JSON.parse(stored) as Prayer[];
+        } else {
+          basePrayers = createDefaultPrayers();
+        }
+
+        // 2) Fetch real prayer times from API (for now: London, UK)
+        try {
+          const apiTimes = await fetchPrayerTimes("London", "United Kingdom");
+
+          const withRealTimes = basePrayers.map((p) => {
+            const apiTime = apiTimes[p.id];
+            // Use API time if we have it, otherwise keep existing time
+            return apiTime ? { ...p, time: apiTime } : p;
+          });
+
+          basePrayers = withRealTimes;
+
+          // Save with updated times so we don't depend on API every open
+          await AsyncStorage.setItem(storageKey, JSON.stringify(withRealTimes));
+        } catch (apiError) {
+          console.warn("Error fetching prayer times, using fallback:", apiError);
+        }
+
+        setPrayers(basePrayers);
+      } catch (error) {
+        console.warn("Error loading prayers:", error);
+        setPrayers(createDefaultPrayers());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPrayers();
+  }, [storageKey]);
+  
+
   // Toggle a prayer as done / not done
   const togglePrayer = async (id: PrayerName) => {
     if (!prayers) return;
@@ -96,6 +182,41 @@ export default function App() {
   const done = prayers?.filter((p) => p.completed).length ?? 0;
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
+  const getNextPrayer = () => {
+  if (!prayers) return null;
+
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let next: Prayer | null = null;
+
+  prayers.forEach((p) => {
+    // time format "HH:MM"
+    const [h, m] = p.time.split(":").map((x) => parseInt(x, 10));
+    if (Number.isNaN(h) || Number.isNaN(m)) {
+      return;
+    }
+    const prayerMinutes = h * 60 + m;
+
+    if (prayerMinutes > nowMinutes) {
+      if (!next) {
+        next = p;
+      } else {
+        const [nh, nm] = next.time.split(":").map((x) => parseInt(x, 10));
+        const nextMinutes = nh * 60 + nm;
+        if (prayerMinutes < nextMinutes) {
+          next = p;
+        }
+      }
+    }
+  });
+
+  return next;
+};
+
+const nextPrayer = getNextPrayer();
+
+
   // --------- SIMPLE UI (we’ll beautify later) ---------
 
   if (loading || !prayers) {
@@ -110,13 +231,24 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header / summary */}
+    
       <View style={styles.header}>
         <Text style={styles.appTitle}>Prayer Tracker</Text>
         <Text style={styles.dateText}>{todayKey}</Text>
         <Text style={styles.progressText}>
           {done}/{total} prayers completed ({percent}%)
         </Text>
+        {nextPrayer ? (
+          <Text style={styles.nextPrayerText}>
+            Next prayer: {nextPrayer.label} at {nextPrayer.time}
+          </Text>
+        ) : (
+          <Text style={styles.nextPrayerText}>
+            All prayers for today have passed.
+          </Text>
+        )}
       </View>
+
 
       {/* List of prayers */}
       <View style={styles.list}>
@@ -192,6 +324,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     color: "#a5b4fc",
+  },
+  nextPrayerText: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#6ee7b7",
   },
   list: {
     flex: 1,
