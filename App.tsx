@@ -7,6 +7,7 @@ import { HomeScreen } from "./src/screens/HomeScreen";
 import { DhikrScreen } from "./src/screens/DhikrScreen";
 import { TasbihScreen } from "./src/screens/TasbihScreen";
 import { GuideScreen } from "./src/screens/GuideScreen";
+import { StatsScreen } from "./src/screens/StatsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { SettingsProvider } from "./src/context/SettingsContext";
 
@@ -15,6 +16,7 @@ export type RootTabParamList = {
   Dhikr: undefined;
   Tasbih: undefined;
   Guide: undefined;
+  Stats: undefined;
   Settings: undefined;
 };
 
@@ -44,8 +46,9 @@ export default function App() {
                 iconName = "ellipse-outline";
               } else if (route.name === "Guide") {
                 iconName = "school-outline";
+              } else if (route.name === "Stats") {
+                iconName = "stats-chart-outline";
               } else {
-                // Settings
                 iconName = "settings-outline";
               }
 
@@ -57,6 +60,7 @@ export default function App() {
           <Tab.Screen name="Dhikr" component={DhikrScreen} />
           <Tab.Screen name="Tasbih" component={TasbihScreen} />
           <Tab.Screen name="Guide" component={GuideScreen} />
+          <Tab.Screen name="Stats" component={StatsScreen} />
           <Tab.Screen name="Settings" component={SettingsScreen} />
         </Tab.Navigator>
       </NavigationContainer>

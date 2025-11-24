@@ -86,6 +86,21 @@ export const translations = {
         "End the prayer with salam to the right and left.",
       ],
     },
+    stats: {
+      title: "Prayer Stats",
+      subtitle: "Your recent prayer completion and streaks.",
+      last7Days: "Last 7 days",
+      todaySummary: "Today",
+      completionLabel: "Completion",
+      currentStreakLabel: "Current streak",
+      bestStreakLabel: "Best streak",
+      fullyCompletedDaysLabel: "Days fully completed",
+      noData:
+        "Not enough data yet. Use the tracker for a few days to see stats.",
+      dayNamesShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      daysSuffix: "days",
+      daySuffix: "day",
+    },
   },
 
   tr: {
@@ -173,6 +188,21 @@ export const translations = {
         "Teşehhüdde oturulur, ettehiyyat, salavat ve dualar okunur.",
         "Sağa ve sola selam verilerek namaz bitirilir.",
       ],
+    },
+    stats: {
+      title: "Namaz İstatistikleri",
+      subtitle: "Son günlerdeki namaz tamamlama oranların ve serilerin.",
+      last7Days: "Son 7 gün",
+      todaySummary: "Bugün",
+      completionLabel: "Tamamlama",
+      currentStreakLabel: "Mevcut seri",
+      bestStreakLabel: "En iyi seri",
+      fullyCompletedDaysLabel: "Tam kılınan gün sayısı",
+      noData:
+        "Şimdilik yeterli veri yok. Birkaç gün boyunca takip ekranını kullanınca burada görünecek.",
+      dayNamesShort: ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"],
+      daysSuffix: "gün",
+      daySuffix: "gün",
     },
   },
 } as const;
