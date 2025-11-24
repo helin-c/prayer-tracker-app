@@ -6,9 +6,9 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 const DHIKR_ITEMS = [
   { id: 1, key: "Subhanallah", descKey: "Glory be to Allah." },

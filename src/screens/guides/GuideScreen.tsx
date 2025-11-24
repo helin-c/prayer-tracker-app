@@ -6,9 +6,9 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 export function GuideScreen() {
   const { settings } = useSettings();

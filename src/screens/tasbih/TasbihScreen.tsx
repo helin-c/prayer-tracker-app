@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 const STORAGE_KEY = "tasbih-state";
 

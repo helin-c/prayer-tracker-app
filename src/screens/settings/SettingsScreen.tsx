@@ -6,9 +6,9 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { useSettings } from "../context/SettingsContext";
-import { getStrings } from "../i18n/translations";
-import { getPalette, Palette } from "../theme/theme";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 export function SettingsScreen() {
   const { settings, loading, saving, setLanguage, toggleTheme } = useSettings();
