@@ -107,6 +107,18 @@ export const translations = {
       laIlahaIllallahDesc:
         "There is no deity except Allah.",
     },
+
+    auth: {
+        title: "Welcome",
+        loginSubtitle: "Log in to sync your prayers and tasbih across devices.",
+        registerSubtitle: "Create an account to keep your progress safe.",
+        login: "Login",
+        register: "Register",
+        email: "Email",
+        password: "Password",
+        loginButton: "Log in",
+        registerButton: "Create account",
+    },
   },
 
   tr: {
@@ -216,6 +228,18 @@ export const translations = {
       laIlahaIllallahTitle: "La ilahe illallah",
       laIlahaIllallahDesc:
         "Allah'tan başka ilah yoktur.",
+    },
+
+    auth: {
+        title: "Hoş geldin",
+        loginSubtitle: "Namaz ve tesbih ilerlemeni cihazlar arasında eşitle.",
+        registerSubtitle: "İlerlemeni kaybetmemek için bir hesap oluştur.",
+        login: "Giriş",
+        register: "Kayıt ol",
+        email: "E-posta",
+        password: "Şifre",
+        loginButton: "Giriş yap",
+        registerButton: "Hesap oluştur",
     },
   },
 } as const;
