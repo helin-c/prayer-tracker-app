@@ -1,3 +1,4 @@
+// src/screens/home/HomeScreen.tsx
 import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
@@ -6,11 +7,14 @@ import {
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { useSettings } from "../../context/SettingsContext";
 import { getStrings } from "../../i18n/translations";
 import { getPalette, Palette } from "../../theme/theme";
+import { getPrayerTimesByCity, PrayerTimings } from "../..//api/prayerTimes";
 
 type PrayerName = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
 
@@ -23,7 +27,31 @@ interface Prayer {
 
 const STORAGE_KEY_PREFIX = "prayers-";
 
-export function HomeScreen() {
+function getTodayKey(date: Date): string {
+  // YYYY-MM-DD
+  return date.toISOString().split("T")[0];
+}
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(":");
+  const hh = parseInt(h, 10);
+  const mm = parseInt(m, 10);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return 0;
+  return hh * 60 + mm;
+}
+
+function findNextPrayer(prayers: Prayer[], now: Date): Prayer | null {
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const upcoming = prayers
+    .filter((p) => !p.completed)
+    .filter((p) => timeToMinutes(p.time) >= currentMinutes)
+    .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+  return upcoming[0] ?? null;
+}
+
+export default function HomeScreen() {
   const { settings } = useSettings();
   const t = getStrings(settings.language);
   const palette = getPalette(settings.theme);
@@ -32,81 +60,103 @@ export function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [prayers, setPrayers] = useState<Prayer[]>([]);
   const [todayKey, setTodayKey] = useState<string>("");
-
-  // Create date key like 2025-11-24
-  useEffect(() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    setTodayKey(`${y}-${m}-${day}`);
-  }, []);
+  const [nextPrayer, setNextPrayer] = useState<Prayer | null>(null);
 
   useEffect(() => {
-    if (!todayKey) return;
-
     const load = async () => {
       setLoading(true);
-      const key = STORAGE_KEY_PREFIX + todayKey;
-
       try {
-        const saved = await AsyncStorage.getItem(key);
-        if (saved) {
-          setPrayers(JSON.parse(saved) as Prayer[]);
-          setLoading(false);
-          return;
+        const today = new Date();
+        const key = getTodayKey(today);
+        setTodayKey(key);
+
+        const storageKey = `${STORAGE_KEY_PREFIX}${key}`;
+        const stored = await AsyncStorage.getItem(storageKey);
+
+        let dayPrayers: Prayer[];
+
+        if (stored) {
+          // Use saved completion state
+          dayPrayers = JSON.parse(stored) as Prayer[];
+        } else {
+          // Get prayer times (shape can be either {data:{timings}} or just timings)
+          const raw = await getPrayerTimes(settings.city, settings.country);
+          const timings = (raw as any).data?.timings ?? raw;
+
+          dayPrayers = [
+            {
+              id: "Fajr",
+              label: "Fajr",
+              time: timings.Fajr,
+              completed: false,
+            },
+            {
+              id: "Dhuhr",
+              label: "Dhuhr",
+              time: timings.Dhuhr,
+              completed: false,
+            },
+            {
+              id: "Asr",
+              label: "Asr",
+              time: timings.Asr,
+              completed: false,
+            },
+            {
+              id: "Maghrib",
+              label: "Maghrib",
+              time: timings.Maghrib,
+              completed: false,
+            },
+            {
+              id: "Isha",
+              label: "Isha",
+              time: timings.Isha,
+              completed: false,
+            },
+          ];
+
+          await AsyncStorage.setItem(storageKey, JSON.stringify(dayPrayers));
         }
 
-        // Default times for now (you can replace with real API later)
-        const defaultTimes: Record<PrayerName, string> = {
-          Fajr: "05:30",
-          Dhuhr: "12:30",
-          Asr: "15:45",
-          Maghrib: "16:30",
-          Isha: "18:00",
-        };
-
-        const initial: Prayer[] = (Object.keys(defaultTimes) as PrayerName[]).map(
-          (name) => ({
-            id: name,
-            label: name,
-            time: defaultTimes[name],
-            completed: false,
-          })
-        );
-
-        setPrayers(initial);
-        await AsyncStorage.setItem(key, JSON.stringify(initial));
+        setPrayers(dayPrayers);
+        setNextPrayer(findNextPrayer(dayPrayers, new Date()));
       } catch (e) {
-        console.warn("Error loading prayers:", e);
+        console.warn("Error loading prayer times:", e);
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, [todayKey]);
+  }, [settings.city, settings.country, settings.language]);
 
   const togglePrayer = async (id: PrayerName) => {
-    const updated = prayers.map((p) =>
-      p.id === id ? { ...p, completed: !p.completed } : p
-    );
-    setPrayers(updated);
+    setPrayers((prev) => {
+      const updated = prev.map((p) =>
+        p.id === id ? { ...p, completed: !p.completed } : p
+      );
 
-    if (!todayKey) return;
-    const key = STORAGE_KEY_PREFIX + todayKey;
-    try {
-      await AsyncStorage.setItem(key, JSON.stringify(updated));
-    } catch (e) {
-      console.warn("Error saving prayers:", e);
-    }
+      if (todayKey) {
+        const storageKey = `${STORAGE_KEY_PREFIX}${todayKey}`;
+        AsyncStorage.setItem(storageKey, JSON.stringify(updated)).catch(
+          (e) => {
+            console.warn("Error saving prayers:", e);
+          }
+        );
+      }
+
+      setNextPrayer(findNextPrayer(updated, new Date()));
+      return updated;
+    });
   };
 
   const total = prayers.length;
   const done = prayers.filter((p) => p.completed).length;
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  const nextPrayer = prayers.find((p) => !p.completed) ?? null;
+  const completedSummaryTemplate = t.home.completedSummary || "";
+  const nextPrayerTemplate = t.home.nextPrayerText || "";
 
   if (loading) {
     return (
@@ -122,10 +172,16 @@ export function HomeScreen() {
       <View style={styles.header}>
         <Text style={styles.appTitle}>{t.home.title}</Text>
         <Text style={styles.dateText}>{todayKey}</Text>
+        <Text style={styles.dateText}>
+          {t.home.prayerTimesForCity
+            .replace("{city}", settings.city)
+            .replace("{country}", settings.country)}
+        </Text>
+      </View>
 
-        {/* uses the string template, NOT a function */}
+      <View style={styles.progressCard}>
         <Text style={styles.progressText}>
-          {t.home.completedSummary
+          {completedSummaryTemplate
             .replace("{done}", String(done))
             .replace("{total}", String(total))
             .replace("{percent}", String(percent))}
@@ -133,7 +189,9 @@ export function HomeScreen() {
 
         {nextPrayer ? (
           <Text style={styles.nextPrayerText}>
-            {t.home.nextPrayer}: {nextPrayer.label} at {nextPrayer.time}
+            {nextPrayerTemplate
+              .replace("{name}", nextPrayer.label)
+              .replace("{time}", nextPrayer.time)}
           </Text>
         ) : (
           <Text style={styles.nextPrayerText}>{t.home.allDone}</Text>
@@ -142,24 +200,22 @@ export function HomeScreen() {
 
       <ScrollView style={styles.list}>
         {prayers.map((p) => (
-          <View
+          <TouchableOpacity
             key={p.id}
             style={[
-              styles.prayerCard,
-              p.completed && styles.prayerCardCompleted,
+              styles.prayerItem,
+              p.completed && styles.prayerItemCompleted,
             ]}
+            onPress={() => togglePrayer(p.id)}
           >
             <View>
               <Text style={styles.prayerLabel}>{p.label}</Text>
-              <Text style={styles.prayerTime}>Time: {p.time}</Text>
+              <Text style={styles.prayerTime}>{p.time}</Text>
             </View>
-            <Text
-              style={styles.statusText}
-              onPress={() => togglePrayer(p.id)}
-            >
-              {p.completed ? "Done" : "Not done"}
+            <Text style={styles.prayerStatus}>
+              {p.completed ? "✓" : "•"}
             </Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -172,67 +228,76 @@ const createStyles = (palette: Palette) =>
       flex: 1,
       backgroundColor: palette.background,
       paddingHorizontal: 16,
-      paddingTop: 12,
+      paddingTop: 16,
     },
     centered: {
       flex: 1,
-      alignItems: "center",
       justifyContent: "center",
+      alignItems: "center",
       backgroundColor: palette.background,
     },
     loadingText: {
-      marginTop: 8,
-      color: palette.textPrimary,
+      marginTop: 12,
+      color: palette.textSecondary,
     },
     header: {
-      marginBottom: 12,
+      marginBottom: 16,
     },
     appTitle: {
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: "700",
       color: palette.textPrimary,
+      marginBottom: 4,
     },
     dateText: {
-      marginTop: 4,
+      fontSize: 14,
       color: palette.textSecondary,
+    },
+    progressCard: {
+      padding: 12,
+      borderRadius: 12,
+      backgroundColor: palette.card,
+      marginBottom: 16,
     },
     progressText: {
-      marginTop: 4,
-      color: palette.textSecondary,
+      fontSize: 14,
+      color: palette.textPrimary,
+      marginBottom: 4,
     },
     nextPrayerText: {
-      marginTop: 6,
-      color: palette.nextPrayer,
-      fontWeight: "500",
+      fontSize: 14,
+      color: palette.accent,
     },
     list: {
       flex: 1,
     },
-    prayerCard: {
-      backgroundColor: palette.card,
-      borderRadius: 16,
-      padding: 14,
-      marginBottom: 10,
-      borderWidth: 1,
-      borderColor: palette.border,
+    prayerItem: {
       flexDirection: "row",
-      alignItems: "center",
       justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: palette.border,
     },
-    prayerCardCompleted: {
-      backgroundColor: palette.completedCardBackground,
+    prayerItemCompleted: {
+      opacity: 0.6,
     },
     prayerLabel: {
       fontSize: 16,
-      fontWeight: "600",
       color: palette.textPrimary,
     },
     prayerTime: {
-      marginTop: 2,
-      color: palette.textMuted,
+      fontSize: 14,
+      color: palette.textSecondary,
     },
-    statusText: {
+    prayerStatus: {
+      fontSize: 18,
       color: palette.accent,
-      fontWeight: "600",
     },
   });
+
+export type HomeScreenStyles = ReturnType<typeof createStyles>;
+function getPrayerTimes(city: string, country: string) {
+  throw new Error("Function not implemented.");
+}
+

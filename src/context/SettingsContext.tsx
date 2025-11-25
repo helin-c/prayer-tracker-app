@@ -1,70 +1,73 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
+// src/context/SettingsContext.tsx
+import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export type Language = "en" | "tr";
 export type ThemeMode = "dark" | "light";
+export type LanguageCode = "en" | "tr";
 
-export interface SettingsState {
-  language: Language;
+export interface Settings {
+  language: LanguageCode;
   theme: ThemeMode;
+  city: string;
+  country: string;
 }
 
 interface SettingsContextValue {
-  settings: SettingsState;
+  settings: Settings;
   loading: boolean;
   saving: boolean;
-  setLanguage: (lang: Language) => Promise<void>;
-  toggleTheme: () => Promise<void>;
+  setLanguage: (lang: LanguageCode) => void;
+  toggleTheme: () => void;
+  setLocation: (city: string, country: string) => void;
 }
 
-const DEFAULT_SETTINGS: SettingsState = {
+const STORAGE_KEY = "app-settings";
+
+const defaultSettings: Settings = {
   language: "en",
   theme: "dark",
+  city: "London",
+  country: "United Kingdom",
 };
 
-const STORAGE_KEY = "app-settings-v1";
+const SettingsContext = createContext<SettingsContextValue>({
+  settings: defaultSettings,
+  loading: true,
+  saving: false,
+  setLanguage: () => {},
+  toggleTheme: () => {},
+  setLocation: () => {},
+});
 
-const SettingsContext = createContext<SettingsContextValue | undefined>(
-  undefined
-);
-
-export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
+export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Load on mount
+  // load from AsyncStorage once
   useEffect(() => {
-    const load = async () => {
+    (async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
         if (saved) {
-          const parsed = JSON.parse(saved) as SettingsState;
-          setSettings({
-            language: parsed.language ?? "en",
-            theme: parsed.theme ?? "dark",
-          });
+          const parsed = JSON.parse(saved) as Partial<Settings>;
+          setSettings({ ...defaultSettings, ...parsed });
         }
       } catch (e) {
         console.warn("Error loading settings:", e);
       } finally {
         setLoading(false);
       }
-    };
-    load();
+    })();
   }, []);
 
-  const persist = async (next: SettingsState) => {
+  const persist = async (next: Settings) => {
     setSaving(true);
+    setSettings(next);
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      setSettings(next);
     } catch (e) {
       console.warn("Error saving settings:", e);
     } finally {
@@ -72,28 +75,26 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setLanguage = async (lang: Language) => {
-    await persist({ ...settings, language: lang });
+  const setLanguage = (language: LanguageCode) => {
+    persist({ ...settings, language });
   };
 
-  const toggleTheme = async () => {
-    const nextTheme: ThemeMode = settings.theme === "dark" ? "light" : "dark";
-    await persist({ ...settings, theme: nextTheme });
+  const toggleTheme = () => {
+    const theme: ThemeMode = settings.theme === "dark" ? "light" : "dark";
+    persist({ ...settings, theme });
+  };
+
+  const setLocation = (city: string, country: string) => {
+    persist({ ...settings, city, country });
   };
 
   return (
     <SettingsContext.Provider
-      value={{ settings, loading, saving, setLanguage, toggleTheme }}
+      value={{ settings, loading, saving, setLanguage, toggleTheme, setLocation }}
     >
       {children}
     </SettingsContext.Provider>
   );
-}
+};
 
-export function useSettings(): SettingsContextValue {
-  const ctx = useContext(SettingsContext);
-  if (!ctx) {
-    throw new Error("useSettings must be used inside SettingsProvider");
-  }
-  return ctx;
-}
+export const useSettings = () => useContext(SettingsContext);

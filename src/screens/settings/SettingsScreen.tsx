@@ -11,7 +11,9 @@ import { getStrings } from "../../i18n/translations";
 import { getPalette, Palette } from "../../theme/theme";
 
 export function SettingsScreen() {
-  const { settings, loading, saving, setLanguage, toggleTheme } = useSettings();
+  const { settings, loading, saving, setLanguage, toggleTheme, setLocation } =
+    useSettings();
+
   const t = getStrings(settings.language);
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
@@ -20,12 +22,15 @@ export function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{isTR ? "Ayarlar" : "Settings"}</Text>
+      <Text style={styles.title}>{t.settings.title}</Text>
       <Text style={styles.subtitle}>{t.settings.subtitle}</Text>
+
+      {loading && <Text style={styles.badge}>{t.common.loading}</Text>}
+      {saving && <Text style={styles.badge}>{t.common.saving}</Text>}
 
       {/* Language */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.settings.languageSection}</Text>
+        <Text style={styles.sectionTitle}>{t.settings.languageTitle}</Text>
         <View style={styles.row}>
           <TouchableOpacity
             style={[
@@ -40,10 +45,9 @@ export function SettingsScreen() {
                 settings.language === "en" && styles.chipTextActive,
               ]}
             >
-              {t.settings.languageEnglish}
+              English
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.chip,
@@ -57,7 +61,7 @@ export function SettingsScreen() {
                 settings.language === "tr" && styles.chipTextActive,
               ]}
             >
-              {t.settings.languageTurkish}
+              Türkçe
             </Text>
           </TouchableOpacity>
         </View>
@@ -65,7 +69,7 @@ export function SettingsScreen() {
 
       {/* Theme */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.settings.themeSection}</Text>
+        <Text style={styles.sectionTitle}>{t.settings.themeTitle}</Text>
         <View style={styles.row}>
           <TouchableOpacity
             style={[
@@ -80,10 +84,9 @@ export function SettingsScreen() {
                 settings.theme === "dark" && styles.chipTextActive,
               ]}
             >
-              {t.settings.themeDark}
+              {isTR ? "Koyu" : "Dark"}
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.chip,
@@ -97,17 +100,61 @@ export function SettingsScreen() {
                 settings.theme === "light" && styles.chipTextActive,
               ]}
             >
-              {t.settings.themeLight}
+              {isTR ? "Açık" : "Light"}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {(loading || saving) && (
-        <Text style={styles.statusText}>
-          {loading ? t.common.loading : t.common.saving}
+      {/* Location for prayer times */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t.settings.locationTitle}</Text>
+        <Text style={styles.sectionSubtitle}>
+          {t.settings.locationSubtitle}
         </Text>
-      )}
+
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              settings.city === "London" && styles.chipActive,
+            ]}
+            onPress={() => setLocation("London", "United Kingdom")}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                settings.city === "London" && styles.chipTextActive,
+              ]}
+            >
+              London
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              settings.city === "Istanbul" && styles.chipActive,
+            ]}
+            onPress={() => setLocation("Istanbul", "Turkey")}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                settings.city === "Istanbul" && styles.chipTextActive,
+              ]}
+            >
+              İstanbul
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.currentLocation}>
+          {t.settings.currentLocation
+            .replace("{city}", settings.city)
+            .replace("{country}", settings.country)}
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -124,11 +171,21 @@ const createStyles = (palette: Palette) =>
       fontSize: 24,
       fontWeight: "700",
       color: palette.textPrimary,
+      marginBottom: 4,
     },
     subtitle: {
-      marginTop: 4,
       color: palette.textSecondary,
-      marginBottom: 16,
+      marginBottom: 12,
+    },
+    badge: {
+      alignSelf: "flex-start",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 999,
+      backgroundColor: palette.accentSoft,
+      color: palette.textPrimary,
+      marginBottom: 10,
+      fontSize: 12,
     },
     section: {
       marginBottom: 18,
@@ -137,33 +194,38 @@ const createStyles = (palette: Palette) =>
       fontSize: 16,
       fontWeight: "600",
       color: palette.textPrimary,
+      marginBottom: 6,
+    },
+    sectionSubtitle: {
+      color: palette.textMuted,
       marginBottom: 8,
     },
     row: {
       flexDirection: "row",
+      flexWrap: "wrap",
       gap: 8,
     },
     chip: {
       paddingHorizontal: 12,
-      paddingVertical: 8,
+      paddingVertical: 6,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: palette.chipBorder,
-      backgroundColor: palette.card,
+      marginRight: 8,
+      marginBottom: 8,
     },
     chipActive: {
       backgroundColor: palette.accentSoft,
-      borderColor: palette.accent,
     },
     chipText: {
       color: palette.textSecondary,
       fontWeight: "500",
     },
     chipTextActive: {
-      color: palette.accent,
+      color: palette.textPrimary,
     },
-    statusText: {
-      marginTop: 10,
-      color: palette.textMuted,
+    currentLocation: {
+      marginTop: 8,
+      color: palette.textSecondary,
     },
   });

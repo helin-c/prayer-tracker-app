@@ -1,3 +1,4 @@
+// src/screens/guides/GuideScreen.tsx
 import React from "react";
 import {
   SafeAreaView,
@@ -16,11 +17,14 @@ export function GuideScreen() {
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
 
-  const wuduSteps: string[] = t.guide.wuduSteps || [];
-  const prayerSteps: string[] = t.guide.prayerSteps || [];
+  // Make sure these are always arrays so .map never errors
+  const wuduSteps = t.guide.wuduSteps ?? [];
+  const prayerSteps = t.guide.prayerSteps ?? [];
 
-  const formatStepLabel = (n: number) =>
-    (t.guide.stepLabel as string).replace("{n}", String(n));
+  const formatStepLabel = (n: number) => {
+    const template: string = t.guide.stepLabel ?? "Step {n}";
+    return template.replace("{n}", String(n));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -28,20 +32,22 @@ export function GuideScreen() {
         <Text style={styles.title}>{t.guide.title}</Text>
         <Text style={styles.subtitle}>{t.guide.subtitle}</Text>
 
+        {/* Wudu section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.guide.wuduTitle}</Text>
           {wuduSteps.map((step, index) => (
-            <View key={index} style={styles.card}>
+            <View key={`wudu-${index}`} style={styles.card}>
               <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
           ))}
         </View>
 
+        {/* Prayer section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.guide.prayerTitle}</Text>
           {prayerSteps.map((step, index) => (
-            <View key={index} style={styles.card}>
+            <View key={`prayer-${index}`} style={styles.card}>
               <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
               <Text style={styles.cardText}>{step}</Text>
             </View>
@@ -54,49 +60,54 @@ export function GuideScreen() {
   );
 }
 
-const createStyles = (palette: Palette) =>
-  StyleSheet.create({
+function createStyles(palette: Palette) {
+  return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: palette.background,
     },
     scrollContent: {
       paddingHorizontal: 16,
-      paddingTop: 12,
+      paddingVertical: 20,
     },
     title: {
-      fontSize: 24,
+      fontSize: 26,
       fontWeight: "700",
       color: palette.textPrimary,
       marginBottom: 4,
     },
     subtitle: {
+      fontSize: 14,
       color: palette.textSecondary,
-      marginBottom: 16,
+      marginBottom: 20,
     },
     section: {
-      marginBottom: 18,
+      marginBottom: 24,
     },
     sectionTitle: {
       fontSize: 18,
       fontWeight: "600",
       color: palette.textPrimary,
-      marginBottom: 8,
+      marginBottom: 12,
     },
     card: {
       backgroundColor: palette.card,
-      borderRadius: 16,
-      padding: 12,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
       marginBottom: 8,
       borderWidth: 1,
       borderColor: palette.border,
     },
     cardIndex: {
+      fontSize: 12,
       fontWeight: "600",
       color: palette.accent,
       marginBottom: 4,
     },
     cardText: {
-      color: palette.textSecondary,
+      fontSize: 14,
+      color: palette.textPrimary,
     },
   });
+}

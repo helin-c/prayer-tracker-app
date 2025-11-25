@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
-import { HomeScreen } from "./src/screens/home/HomeScreen";
+import  HomeScreen  from "./src/screens/home/HomeScreen";
 import { DhikrScreen } from "./src/screens/tasbih/DhikrScreen";
 import { TasbihScreen } from "./src/screens/tasbih/TasbihScreen";
 import { GuideScreen } from "./src/screens/guides/GuideScreen";
