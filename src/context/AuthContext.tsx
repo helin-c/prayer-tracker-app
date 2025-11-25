@@ -1,16 +1,17 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
-import { supabase } from '../api/supabaseClient';
-
-export type AuthUser = {
-  id: string;
-  email: string | null;
-};
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { supabase } from "../api/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 type AuthContextValue = {
-  user: AuthUser | null;
-  initializing: boolean;
+  user: User | null;
+  loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -18,48 +19,34 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [initializing, setInitializing] = useState(true);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Load existing session on app start
+  // Load initial session and listen for changes
   useEffect(() => {
     let isMounted = true;
 
     const init = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
+      if (!isMounted) return;
 
-        if (isMounted && session?.user) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email ?? null,
-          });
-        }
-      } catch (e) {
-        console.warn('Error loading session', e);
-      } finally {
-        if (isMounted) setInitializing(false);
+      if (error) {
+        console.warn("Error loading Supabase session:", error.message);
       }
+
+      setUser(data.session?.user ?? null);
+      setLoading(false);
     };
 
     init();
 
-    // listen to auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email ?? null,
-        });
-      } else {
-        setUser(null);
-      }
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => {
@@ -69,40 +56,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.warn('signIn error', error);
-      Alert.alert('Login failed', error.message);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      setUser(data.user ?? null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) {
-      console.warn('signUp error', error);
-      Alert.alert('Sign up failed', error.message);
-    } else {
-      Alert.alert(
-        'Check your email',
-        'We sent you a confirmation link. Please confirm your email, then log in.'
-      );
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // Supabase may require email confirmation; user can be null here
+      setUser(data.user ?? null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.warn('signOut error', error);
-      Alert.alert('Error', error.message);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const value: AuthContextValue = {
     user,
-    initializing,
+    loading,
     signIn,
     signUp,
     signOut,
@@ -111,10 +110,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used inside AuthProvider');
+    throw new Error("useAuth must be used inside an AuthProvider");
   }
   return ctx;
 }

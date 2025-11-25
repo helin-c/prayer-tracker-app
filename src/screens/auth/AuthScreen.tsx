@@ -1,7 +1,8 @@
 // src/screens/auth/AuthScreen.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -10,11 +11,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../context/SettingsContext';
-import { getStrings } from '../../i18n/translations';
-import { getPalette, Palette } from '../../theme/theme';
+} from "react-native";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { getStrings } from "../../i18n/translations";
+import { getPalette, Palette } from "../../theme/theme";
 
 export default function AuthScreen() {
   const { signIn, signUp } = useAuth();
@@ -23,17 +24,24 @@ export default function AuthScreen() {
   const palette = getPalette(settings.theme);
   const styles = React.useMemo(() => createStyles(palette), [palette]);
 
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isLogin = mode === 'login';
+  const isLogin = mode === "login";
 
   const onSubmit = async () => {
-    if (!email || !password) {
+    if (!email.trim() || !password) {
+      Alert.alert(
+        settings.language === "tr" ? "Eksik bilgi" : "Missing information",
+        settings.language === "tr"
+          ? "Lütfen e-posta ve şifreyi gir."
+          : "Please enter both email and password."
+      );
       return;
     }
+
     try {
       setLoading(true);
       if (isLogin) {
@@ -50,7 +58,7 @@ export default function AuthScreen() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <Text style={styles.title}>{t.auth.title}</Text>
         <Text style={styles.subtitle}>
@@ -60,18 +68,31 @@ export default function AuthScreen() {
         <View style={styles.toggleRow}>
           <TouchableOpacity
             style={[styles.toggleChip, isLogin && styles.toggleChipActive]}
-            onPress={() => setMode('login')}
+            onPress={() => setMode("login")}
           >
-            <Text style={[styles.toggleText, isLogin && styles.toggleTextActive]}>
+            <Text
+              style={[
+                styles.toggleText,
+                isLogin && styles.toggleTextActive,
+              ]}
+            >
               {t.auth.login}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.toggleChip, !isLogin && styles.toggleChipActive]}
-            onPress={() => setMode('register')}
+            style={[
+              styles.toggleChip,
+              !isLogin && styles.toggleChipActive,
+            ]}
+            onPress={() => setMode("register")}
           >
-            <Text style={[styles.toggleText, !isLogin && styles.toggleTextActive]}>
+            <Text
+              style={[
+                styles.toggleText,
+                !isLogin && styles.toggleTextActive,
+              ]}
+            >
               {t.auth.register}
             </Text>
           </TouchableOpacity>
@@ -132,7 +153,7 @@ const createStyles = (palette: Palette) =>
     },
     title: {
       fontSize: 28,
-      fontWeight: '700',
+      fontWeight: "700",
       color: palette.textPrimary,
       marginBottom: 4,
     },
@@ -142,7 +163,7 @@ const createStyles = (palette: Palette) =>
       marginBottom: 24,
     },
     toggleRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       marginBottom: 24,
     },
     toggleChip: {
@@ -159,10 +180,10 @@ const createStyles = (palette: Palette) =>
     },
     toggleText: {
       color: palette.textSecondary,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     toggleTextActive: {
-      color: '#ffffff',
+      color: "#ffffff",
     },
     form: {
       marginTop: 8,
@@ -186,15 +207,15 @@ const createStyles = (palette: Palette) =>
       marginTop: 24,
       borderRadius: 16,
       paddingVertical: 12,
-      alignItems: 'center',
+      alignItems: "center",
       backgroundColor: palette.accent,
     },
     buttonDisabled: {
       opacity: 0.7,
     },
     buttonText: {
-      color: '#ffffff',
-      fontWeight: '600',
+      color: "#ffffff",
+      fontWeight: "600",
       fontSize: 16,
     },
   });

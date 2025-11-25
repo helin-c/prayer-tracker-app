@@ -5,17 +5,20 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
+// ---- SCREENS ----
 import HomeScreen from "./src/screens/home/HomeScreen";
-import DhikrScreen from "./src/screens/tasbih/DhikrScreen";
-import TasbihScreen from "./src/screens/tasbih/TasbihScreen";
-import GuideScreen from "./src/screens/guides/GuideScreen";
-import StatsScreen from "./src/screens/StatsScreen";
-import SettingsScreen from "./src/screens/settings/SettingsScreen";
-
+import {DhikrScreen} from "./src/screens/tasbih/DhikrScreen";
+import {TasbihScreen} from "./src/screens/tasbih/TasbihScreen";
+import {GuideScreen} from "./src/screens/guides/GuideScreen";
+import {StatsScreen} from "./src/screens/StatsScreen";
+import {SettingsScreen} from "./src/screens/settings/SettingsScreen";
 import AuthScreen from "./src/screens/auth/AuthScreen";
+
+// ---- CONTEXTS ----
 import { SettingsProvider } from "./src/context/SettingsContext";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 
+// --------- TYPES ---------
 export type RootTabParamList = {
   Home: undefined;
   Dhikr: undefined;
@@ -25,14 +28,15 @@ export type RootTabParamList = {
   Settings: undefined;
 };
 
-type RootStackParamList = {
-  Auth: undefined;
+export type RootStackParamList = {
   Main: undefined;
+  Auth: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// --------- MAIN TABS ---------
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -48,11 +52,11 @@ function MainTabs() {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
 
           if (route.name === "Home") iconName = "home";
-          if (route.name === "Dhikr") iconName = "musical-notes-outline";
-          if (route.name === "Tasbih") iconName = "ellipse-outline";
-          if (route.name === "Guide") iconName = "book-outline";
-          if (route.name === "Stats") iconName = "stats-chart-outline";
-          if (route.name === "Settings") iconName = "settings-outline";
+          if (route.name === "Dhikr") iconName = "heart";
+          if (route.name === "Tasbih") iconName = "ellipse";
+          if (route.name === "Guide") iconName = "book";
+          if (route.name === "Stats") iconName = "stats-chart";
+          if (route.name === "Settings") iconName = "settings";
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -68,11 +72,12 @@ function MainTabs() {
   );
 }
 
+// --------- ROOT NAV (AUTH ↔ MAIN) ---------
 function RootNavigator() {
-  const { user, initializing } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (initializing) {
-    // Tiny splash while we check stored session
+  // Optional: show nothing while restoring session
+  if (loading) {
     return null;
   }
 
@@ -87,6 +92,7 @@ function RootNavigator() {
   );
 }
 
+// --------- APP ROOT ---------
 export default function App() {
   return (
     <AuthProvider>
