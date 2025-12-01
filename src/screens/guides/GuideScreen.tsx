@@ -1,113 +1,379 @@
-// src/screens/guides/GuideScreen.tsx
-import React from "react";
+// @ts-nocheck
+import React from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
   View,
   Text,
   StyleSheet,
-} from "react-native";
-import { useSettings } from "../../context/SettingsContext";
-import { getStrings } from "../../i18n/translations";
-import { getPalette, Palette } from "../../theme/theme";
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-export function GuideScreen() {
-  const { settings } = useSettings();
-  const t = getStrings(settings.language);
-  const palette = getPalette(settings.theme);
-  const styles = React.useMemo(() => createStyles(palette), [palette]);
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 60) / 2; // 2 cards per row with padding
 
-  // Make sure these are always arrays so .map never errors
-  const wuduSteps = t.guide.wuduSteps ?? [];
-  const prayerSteps = t.guide.prayerSteps ?? [];
+const guides = [
+  {
+    id: 'prayer',
+    title: 'How to Pray',
+    subtitle: 'Step-by-step Salah guide',
+    icon: 'hand-right',
+    color: '#00A86B',
+    gradient: ['#00A86B', '#00D084'],
+    screen: 'PrayerGuide',
+  },
+  {
+    id: 'wudu',
+    title: 'Wudu (Ablution)',
+    subtitle: 'Purification before prayer',
+    icon: 'water',
+    color: '#3498DB',
+    gradient: ['#3498DB', '#5DADE2'],
+    screen: 'WuduGuide',
+  },
+  {
+    id: 'pillars',
+    title: 'Five Pillars',
+    subtitle: 'Foundation of Islam',
+    icon: 'cube',
+    color: '#9B59B6',
+    gradient: ['#9B59B6', '#BB8FCE'],
+    screen: 'PillarsGuide',
+  },
+  {
+    id: 'duas',
+    title: 'Daily Duas',
+    subtitle: 'Essential supplications',
+    icon: 'book',
+    color: '#E67E22',
+    gradient: ['#E67E22', '#F39C12'],
+    screen: 'DuasGuide',
+  },
+  {
+    id: 'quran',
+    title: 'Understanding Quran',
+    subtitle: 'Introduction to Holy Book',
+    icon: 'library',
+    color: '#16A085',
+    gradient: ['#16A085', '#1ABC9C'],
+    screen: 'QuranGuide',
+  },
+  {
+    id: 'ramadan',
+    title: 'Ramadan & Fasting',
+    subtitle: 'Month of blessing',
+    icon: 'moon',
+    color: '#8E44AD',
+    gradient: ['#8E44AD', '#A569BD'],
+    screen: 'RamadanGuide',
+  },
+  {
+    id: 'hajj',
+    title: 'Hajj & Umrah',
+    subtitle: 'Sacred pilgrimage',
+    icon: 'business',
+    color: '#C0392B',
+    gradient: ['#C0392B', '#E74C3C'],
+    screen: 'HajjGuide',
+  },
+  {
+    id: 'basics',
+    title: 'Islam Basics',
+    subtitle: 'For beginners',
+    icon: 'bulb',
+    color: '#F39C12',
+    gradient: ['#F39C12', '#F1C40F'],
+    screen: 'BasicsGuide',
+  },
+];
 
-  const formatStepLabel = (n: number) => {
-    const template: string = t.guide.stepLabel ?? "Step {n}";
-    return template.replace("{n}", String(n));
+export const GuidesScreen = ({ navigation }) => {
+  const handleGuidePress = (guide) => {
+    navigation.navigate(guide.screen, { guide });
   };
 
+  const renderGuideCard = (guide) => (
+    <TouchableOpacity
+      key={guide.id}
+      style={styles.cardWrapper}
+      onPress={() => handleGuidePress(guide)}
+      activeOpacity={0.8}
+    >
+      <LinearGradient
+        colors={guide.gradient}
+        style={styles.card}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons name={guide.icon} size={32} color="#FFF" />
+        </View>
+        <Text style={styles.cardTitle}>{guide.title}</Text>
+        <Text style={styles.cardSubtitle}>{guide.subtitle}</Text>
+        <View style={styles.cardArrow}>
+          <Ionicons name="arrow-forward" size={20} color="#FFF" />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>{t.guide.title}</Text>
-        <Text style={styles.subtitle}>{t.guide.subtitle}</Text>
-
-        {/* Wudu section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t.guide.wuduTitle}</Text>
-          {wuduSteps.map((step, index) => (
-            <View key={`wudu-${index}`} style={styles.card}>
-              <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
-              <Text style={styles.cardText}>{step}</Text>
-            </View>
-          ))}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Islamic Guides</Text>
+          <Text style={styles.subtitle}>
+            Learn about Islam, prayer, and faith
+          </Text>
         </View>
 
-        {/* Prayer section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t.guide.prayerTitle}</Text>
-          {prayerSteps.map((step, index) => (
-            <View key={`prayer-${index}`} style={styles.card}>
-              <Text style={styles.cardIndex}>{formatStepLabel(index + 1)}</Text>
-              <Text style={styles.cardText}>{step}</Text>
+        {/* Featured Card */}
+        <TouchableOpacity
+          style={styles.featuredCard}
+          onPress={() => handleGuidePress(guides[0])}
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={['#00A86B', '#00D084']}
+            style={styles.featuredGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.featuredContent}>
+              <View style={styles.featuredIcon}>
+                <Ionicons name="hand-right" size={48} color="#FFF" />
+              </View>
+              <View style={styles.featuredText}>
+                <Text style={styles.featuredBadge}>POPULAR</Text>
+                <Text style={styles.featuredTitle}>How to Pray</Text>
+                <Text style={styles.featuredSubtitle}>
+                  Complete step-by-step guide to perform Salah
+                </Text>
+              </View>
             </View>
-          ))}
+            <Ionicons
+              name="arrow-forward-circle"
+              size={32}
+              color="#FFF"
+              style={styles.featuredArrow}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Categories */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Browse All Guides</Text>
+          <View style={styles.cardsGrid}>
+            {guides.slice(1).map((guide) => renderGuideCard(guide))}
+          </View>
         </View>
 
-        <View style={{ height: 24 }} />
+        {/* Help Section */}
+        <View style={styles.helpSection}>
+          <View style={styles.helpCard}>
+            <Ionicons name="help-circle" size={32} color="#00A86B" />
+            <Text style={styles.helpTitle}>New to Islam?</Text>
+            <Text style={styles.helpText}>
+              Start with our beginner's guide to learn the basics
+            </Text>
+            <TouchableOpacity
+              style={styles.helpButton}
+              onPress={() =>
+                navigation.navigate('BasicsGuide', {
+                  guide: guides.find((g) => g.id === 'basics'),
+                })
+              }
+            >
+              <Text style={styles.helpButtonText}>Get Started</Text>
+              <Ionicons name="arrow-forward" size={16} color="#00A86B" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
-function createStyles(palette: Palette) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: palette.background,
-    },
-    scrollContent: {
-      paddingHorizontal: 16,
-      paddingVertical: 20,
-    },
-    title: {
-      fontSize: 26,
-      fontWeight: "700",
-      color: palette.textPrimary,
-      marginBottom: 4,
-    },
-    subtitle: {
-      fontSize: 14,
-      color: palette.textSecondary,
-      marginBottom: 20,
-    },
-    section: {
-      marginBottom: 24,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: palette.textPrimary,
-      marginBottom: 12,
-    },
-    card: {
-      backgroundColor: palette.card,
-      borderRadius: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      marginBottom: 8,
-      borderWidth: 1,
-      borderColor: palette.border,
-    },
-    cardIndex: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: palette.accent,
-      marginBottom: 4,
-    },
-    cardText: {
-      fontSize: 14,
-      color: palette.textPrimary,
-    },
-  });
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  featuredCard: {
+    marginBottom: 32,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  featuredGradient: {
+    padding: 24,
+    minHeight: 160,
+  },
+  featuredContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featuredIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  featuredText: {
+    flex: 1,
+  },
+  featuredBadge: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  featuredTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  featuredSubtitle: {
+    fontSize: 14,
+    color: '#FFF',
+    opacity: 0.9,
+  },
+  featuredArrow: {
+    alignSelf: 'flex-end',
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 16,
+  },
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  cardWrapper: {
+    width: CARD_WIDTH,
+    marginBottom: 16,
+  },
+  card: {
+    borderRadius: 16,
+    padding: 20,
+    minHeight: 160,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 12,
+    color: '#FFF',
+    opacity: 0.9,
+    marginBottom: 12,
+  },
+  cardArrow: {
+    alignSelf: 'flex-end',
+  },
+  helpSection: {
+    marginTop: 16,
+  },
+  helpCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  helpTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  helpText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  helpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FFF4',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  helpButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00A86B',
+  },
+});

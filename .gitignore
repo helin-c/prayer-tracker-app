@@ -1,52 +1,120 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ============================================================
+# FRONTEND (Expo / React Native)
+# ============================================================
 
-# dependencies
+# Dependencies
 node_modules/
 
 # Expo
 .expo/
-dist/
-web-build/
+.expo-shared/
 expo-env.d.ts
+web-build/
+dist/
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Transpiled / build artifacts
+build/
+android/
+ios/
 
-# Metro
+# Metro bundler cache
+.metro-cache/
 .metro-health-check*
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Images cache
+*.png.tmp
+*.jpg.tmp
+
+# ============================================================
+# BACKEND (FastAPI / Python)
+# ============================================================
+
+# Virtual environments
+venv/
+backend/venv/
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# MyPy / Pyright
+.mypy_cache/
+.pytype/
+.dmypy.json
+.pyre/
+
+# pytest
+.pytest_cache/
+
+# SQLAlchemy Alembic Cache (KEEP migrations!)
+alembic/versions/__pycache__/
+
+# ============================================================
+# ENVIRONMENT & SECRETS (VERY IMPORTANT)
+# ============================================================
+
+# Env vars
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Local-only env
+.env.local
+.env.*.local
+
+# Expo vars
+*.secret
+
+# OAuth / Certificates / Keys
+*.pem
+*.p12
+*.p8
+*.key
+*.mobileprovision
+*.jks
+
+# ============================================================
+# IDE / OS FILES
+# ============================================================
 
 # macOS
 .DS_Store
-*.pem
 
-# local env files
-.env*.local
+# VSCode
+.vscode/
 
-# typescript
-*.tsbuildinfo
+# Webstorm / JetBrains
+.idea/
 
-# generated native folders
-/ios
-/android
+# Backup / Temp
+*.tmp
+*.bak
+*.swp
+*.swo
 
-# Node / React Native
-node_modules/
-.expo/
-.expo-shared/
+# ============================================================
+# PROJECT-SPECIFIC
+# ============================================================
 
-# Python
-backend/venv/
-__pycache__/
-backend/app/__pycache__/
-*.pyc
+# Expo assets auto-generated metadata
+assets/*.json
+
+# Local-only scripts
+*.sh
+*.command
+
+# Backend logs
+backend/logs/
+*.log
+
