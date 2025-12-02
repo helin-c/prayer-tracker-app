@@ -199,27 +199,10 @@ async def refresh_access_token(
     token_request: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ):
-    """
-    Refresh access token using valid refresh token.
-    
-    **Process:**
-    - Validates refresh token
-    - Verifies user status
-    - Issues new token pair
-    
-    **Returns:**
-    - New access and refresh tokens
-    
-    **Raises:**
-    - 401: Invalid or expired refresh token
-    - 403: User inactive
-    - 500: Server error
-    """
     try:
-        # Validate refresh token and get user
-        user = validate_refresh_token(token_request.refresh_token, db)
+        # ✅ async ise mutlaka await et
+        user = await validate_refresh_token(token_request.refresh_token, db)
         
-        # Generate new token pair
         access_token = create_access_token(data={"sub": str(user.id)})
         refresh_token = create_refresh_token(data={"sub": str(user.id)})
         
@@ -239,6 +222,7 @@ async def refresh_access_token(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to refresh token"
         )
+
 
 
 # ============================================================================

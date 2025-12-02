@@ -9,7 +9,13 @@ export const ROUTES = {
   PRAYER_TRACKER: 'PrayerTracker',
   QIBLA: 'Qibla',
   GUIDES: 'Guides', // Changed from STATISTICS
+  PROFILE: 'Profile',
+
   SETTINGS: 'Settings',
+  EDIT_PROFILE: 'EditProfile',
+  ADD_FRIEND: 'AddFriend',
+  FRIEND_PROFILE: 'FriendProfile',
+  FRIEND_REQUEST: 'FriendRequest',
   
   // Guide Detail Screens
   PRAYER_GUIDE: 'PrayerGuide',

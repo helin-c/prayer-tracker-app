@@ -98,8 +98,6 @@ export default function AuthScreen() {
   );
 }
 
-/* -------------------- STYLES -------------------- */
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
