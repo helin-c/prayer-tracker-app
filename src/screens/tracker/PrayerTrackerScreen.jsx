@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/tracker/PrayerTrackerScreen.jsx
+// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (UPDATED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
+import { useTasbihStore } from '../../store/tasbihStore';
 import { StatsSection } from '../../components/tracker/StatsSection';
 
 const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
@@ -28,12 +29,14 @@ export const PRAYER_ICONS = {
   Isha: 'moon',
 };
 
-export const PrayerTrackerScreen = () => {
+export const PrayerTrackerScreen = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState([]);
   const [selectedPrayer, setSelectedPrayer] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const { loadSessions } = useTasbihStore();
 
   const {
     dayPrayers,
@@ -47,6 +50,7 @@ export const PrayerTrackerScreen = () => {
 
   useEffect(() => {
     generateWeekDates();
+    loadSessions();
   }, []);
 
   useEffect(() => {
@@ -77,9 +81,9 @@ export const PrayerTrackerScreen = () => {
 
   const generateWeekDates = () => {
     const today = new Date();
-    const currentDay = today.getDay(); // 0 = Sunday
+    const currentDay = today.getDay();
     const monday = new Date(today);
-    monday.setDate(today.getDate() - ((currentDay + 6) % 7)); // Go to Monday
+    monday.setDate(today.getDate() - ((currentDay + 6) % 7));
 
     const week = [];
     for (let i = 0; i < 7; i++) {
@@ -112,11 +116,8 @@ export const PrayerTrackerScreen = () => {
   const handlePrayerAction = async (action) => {
     if (!selectedPrayer) return;
 
-    // Determine prayer status
     const completed = action !== 'missed';
     const onTime = action === 'ontime';
-    const missed = action === 'missed';
-
     const dateStr = formatDate(selectedDate);
     
     try {
@@ -129,8 +130,6 @@ export const PrayerTrackerScreen = () => {
       });
 
       setModalVisible(false);
-      
-      // Reload data
       await loadData();
       
     } catch (err) {
@@ -151,7 +150,6 @@ export const PrayerTrackerScreen = () => {
     return (
       <View style={styles.circularProgress}>
         <Svg width={size} height={size}>
-          {/* Background circle */}
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -160,7 +158,6 @@ export const PrayerTrackerScreen = () => {
             strokeWidth={strokeWidth}
             fill="none"
           />
-          {/* Progress circle */}
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -318,7 +315,6 @@ export const PrayerTrackerScreen = () => {
                 style={[
                   styles.prayerCard,
                   prayer.completed && styles.prayerCardCompleted,
-                  // Red style for missed prayers (tracked but not completed)
                   (prayer.id && !prayer.completed) && styles.prayerCardMissed,
                 ]}
                 onPress={() => handlePrayerPress(prayer)}
@@ -373,6 +369,43 @@ export const PrayerTrackerScreen = () => {
               </TouchableOpacity>
             ))
           )}
+        </View>
+
+        {/* Digital Tasbih Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="leaf-outline" size={20} color="#00A86B" />
+            <Text style={styles.sectionTitle}>After Prayer Remembrance</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.tasbihCard}
+            onPress={() => navigation.navigate('Tasbih')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.tasbihIconContainer}>
+              <Ionicons name="infinite" size={48} color="#00A86B" />
+            </View>
+            
+            <View style={styles.tasbihContent}>
+              <Text style={styles.tasbihTitle}>Digital Tesbih</Text>
+              <Text style={styles.tasbihSubtitle}>
+                Count your dhikr after prayers
+              </Text>
+              <View style={styles.tasbihBadges}>
+                <View style={styles.tasbihBadge}>
+                  <Ionicons name="bookmark-outline" size={14} color="#666" />
+                  <Text style={styles.tasbihBadgeText}>Save Progress</Text>
+                </View>
+                <View style={styles.tasbihBadge}>
+                  <Ionicons name="trending-up-outline" size={14} color="#666" />
+                  <Text style={styles.tasbihBadgeText}>Track History</Text>
+                </View>
+              </View>
+            </View>
+
+            <Ionicons name="chevron-forward" size={24} color="#CCC" />
+          </TouchableOpacity>
         </View>
 
         {/* Statistics */}
@@ -534,11 +567,19 @@ const styles = StyleSheet.create({
   prayerList: {
     marginBottom: 24,
   },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1A1A1A',
-    marginBottom: 16,
   },
   loadingContainer: {
     padding: 40,
@@ -610,6 +651,56 @@ const styles = StyleSheet.create({
   },
   missedBadge: {
     marginRight: 8,
+  },
+  tasbihCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 2,
+    borderColor: '#F0FFF4',
+  },
+  tasbihIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#F0FFF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  tasbihContent: {
+    flex: 1,
+  },
+  tasbihTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  tasbihSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  tasbihBadges: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  tasbihBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tasbihBadgeText: {
+    fontSize: 12,
+    color: '#666',
   },
   errorContainer: {
     flex: 1,

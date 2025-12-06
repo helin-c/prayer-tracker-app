@@ -1,6 +1,3 @@
-// ============================================================================
-// FILE: src/navigation/MainNavigator.jsx (UPDATED)
-// ============================================================================
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,8 +6,8 @@ import { ROUTES } from './routes';
 // Import screens and navigators
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { QiblaScreen } from '../screens/qibla/QiblaScreen';
-import { PrayerTrackerScreen } from '../screens/tracker/PrayerTrackerScreen';
-import { ProfileNavigator } from './ProfileNavigator';  // NEW: Import ProfileNavigator
+import { TrackerNavigator } from './TrackerNavigator';  // CHANGED: Import TrackerNavigator
+import { ProfileNavigator } from './ProfileNavigator';
 import { GuidesNavigator } from './GuidesNavigator';
 
 const Tab = createBottomTabNavigator();
@@ -53,7 +50,7 @@ export const MainNavigator = () => {
       />
       <Tab.Screen 
         name={ROUTES.PRAYER_TRACKER}
-        component={PrayerTrackerScreen}
+        component={TrackerNavigator}  // CHANGED: Use TrackerNavigator
         options={{ tabBarLabel: 'Tracker' }}
       />
       <Tab.Screen 
@@ -68,7 +65,7 @@ export const MainNavigator = () => {
       />
       <Tab.Screen 
         name={ROUTES.PROFILE}
-        component={ProfileNavigator} 
+        component={ProfileNavigator}
         options={{ tabBarLabel: 'Profile' }}
       />
     </Tab.Navigator>
