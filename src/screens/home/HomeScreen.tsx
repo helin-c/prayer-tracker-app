@@ -1,4 +1,7 @@
 // @ts-nocheck
+// ============================================================================
+// FILE: src/screens/home/HomeScreen.jsx (WITH i18n)
+// ============================================================================
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -10,19 +13,23 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
+  Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { usePrayerStore } from '../../store/prayerStore';
 import { NextPrayerCard } from '../../components/prayers/NextPrayerCard';
 import { PrayerTimesList } from '../../components/prayers/PrayerTimesList';
-import { LinearGradient } from 'expo-linear-gradient';
+import { formatIslamicDate } from '../../utils/timeUtils';
 
 const { width } = Dimensions.get('window');
 
 export const HomeScreen = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
   const {
     prayerTimes,
@@ -48,7 +55,6 @@ export const HomeScreen = ({ navigation }) => {
   // Check cache validity when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      // If cache is expired, fetch new data
       if (prayerTimes && !isCacheValid()) {
         console.log('Cache expired, refreshing prayer times');
         fetchWithCurrentLocation(true);
@@ -57,10 +63,7 @@ export const HomeScreen = ({ navigation }) => {
   );
 
   const initializePrayerTimes = async () => {
-    // Try to load saved location first
     await loadSavedLocation();
-
-    // If no saved location, fetch current location
     if (!location && !prayerTimes) {
       await fetchWithCurrentLocation();
     }
@@ -70,17 +73,16 @@ export const HomeScreen = ({ navigation }) => {
     setRefreshing(true);
     clearError();
 
-    const result = await fetchWithCurrentLocation(true); // Force refresh
+    const result = await fetchWithCurrentLocation(true);
 
     if (!result.success) {
-      // Show user-friendly error
       Alert.alert(
-        'Unable to Refresh',
+        t('home.unableToRefresh'),
         result.error,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Retry',
+            text: t('common.retry'),
             onPress: () => {
               setRetryCount((prev) => prev + 1);
               onRefresh();
@@ -96,28 +98,26 @@ export const HomeScreen = ({ navigation }) => {
 
   const handleLocationPress = async () => {
     Alert.alert(
-      'Update Location',
-      'Get prayer times for your current location?',
+      t('home.updateLocation'),
+      t('home.getLocationQuestion'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Update',
+          text: t('home.update'),
           onPress: async () => {
             clearError();
             const result = await fetchWithCurrentLocation(true);
 
             if (!result.success) {
-              // More specific error handling
               if (result.error.includes('permission')) {
                 Alert.alert(
-                  'Location Permission Required',
-                  'Please enable location access in your device settings.',
+                  t('home.locationPermissionRequired'),
+                  t('home.enableLocationMessage'),
                   [
-                    { text: 'Cancel', style: 'cancel' },
+                    { text: t('common.cancel'), style: 'cancel' },
                     {
-                      text: 'Open Settings',
+                      text: t('home.openSettings'),
                       onPress: () => {
-                        // Open app settings
                         if (Platform.OS === 'ios') {
                           Linking.openURL('app-settings:');
                         } else {
@@ -128,7 +128,7 @@ export const HomeScreen = ({ navigation }) => {
                   ]
                 );
               } else {
-                Alert.alert('Error', result.error);
+                Alert.alert(t('common.error'), result.error);
               }
             }
           },
@@ -139,9 +139,9 @@ export const HomeScreen = ({ navigation }) => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return t('home.goodMorning');
+    if (hour < 17) return t('home.goodAfternoon');
+    return t('home.goodEvening');
   };
 
   const getGreetingIcon = () => {
@@ -158,11 +158,11 @@ export const HomeScreen = ({ navigation }) => {
     const updated = new Date(lastUpdated);
     const diffMinutes = Math.floor((now - updated) / (1000 * 60));
 
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 1) return t('home.justNow');
+    if (diffMinutes < 60) return t('home.minutesAgo', { minutes: diffMinutes });
 
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 24) return t('home.hoursAgo', { hours: diffHours });
 
     return updated.toLocaleDateString();
   };
@@ -178,11 +178,13 @@ export const HomeScreen = ({ navigation }) => {
           <ActivityIndicator size="large" color="#00A86B" style={styles.spinner} />
           <Text style={styles.loadingText}>
             {retryCount > 0
-              ? 'Retrying... Please wait'
-              : 'Fetching prayer times...'}
+              ? t('home.retrying')
+              : t('home.fetchingPrayerTimes')}
           </Text>
           <Text style={styles.loadingSubtext}>
-            {retryCount > 0 ? `Attempt ${retryCount + 1}` : 'Getting your location'}
+            {retryCount > 0 
+              ? `${t('home.attempt')} ${retryCount + 1}` 
+              : t('home.gettingLocation')}
           </Text>
         </View>
       </SafeAreaView>
@@ -199,8 +201,6 @@ export const HomeScreen = ({ navigation }) => {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor="#00A86B"
-            title="Pull to refresh"
-            titleColor="#666"
           />
         }
         showsVerticalScrollIndicator={false}
@@ -215,14 +215,14 @@ export const HomeScreen = ({ navigation }) => {
               <View>
                 <Text style={styles.greeting}>{getGreeting()}</Text>
                 <Text style={styles.userName}>
-                  {user?.full_name || user?.username || 'Guest'}
+                  {user?.full_name || user?.username || t('home.guest')}
                 </Text>
               </View>
             </View>
 
             <TouchableOpacity
               style={styles.profileButton}
-              onPress={() => navigation.navigate('Settings')}
+              onPress={() => navigation.navigate('Profile')}
             >
               <Ionicons name="person-circle-outline" size={36} color="#00A86B" />
             </TouchableOpacity>
@@ -242,7 +242,7 @@ export const HomeScreen = ({ navigation }) => {
                 <Text style={styles.locationText}>
                   {location.city
                     ? `${location.city}, ${location.country}`
-                    : 'Current Location'}
+                    : t('home.currentLocation')}
                 </Text>
               </View>
               <Ionicons name="refresh-outline" size={18} color="#00A86B" />
@@ -274,7 +274,7 @@ export const HomeScreen = ({ navigation }) => {
           <View style={styles.infoBanner}>
             <Ionicons name="information-circle-outline" size={20} color="#17A2B8" />
             <Text style={styles.infoText}>
-              Prayer times are available offline for today
+              {t('home.offlineDataAvailable')}
             </Text>
           </View>
         )}
@@ -291,7 +291,7 @@ export const HomeScreen = ({ navigation }) => {
           <View style={styles.listContainer}>
             <View style={styles.sectionHeader}>
               <Ionicons name="list-outline" size={22} color="#00A86B" />
-              <Text style={styles.sectionTitle}>Today's Prayer Times</Text>
+              <Text style={styles.sectionTitle}>{t('home.todayPrayerTimes')}</Text>
             </View>
             <PrayerTimesList prayerTimes={prayerTimes} />
           </View>
@@ -304,14 +304,9 @@ export const HomeScreen = ({ navigation }) => {
               <Ionicons name="calendar-outline" size={24} color="#00A86B" />
             </View>
             <View style={styles.dateContent}>
-              <Text style={styles.dateLabel}>Islamic Date</Text>
+              <Text style={styles.dateLabel}>{t('home.islamicDate')}</Text>
               <Text style={styles.dateValue}>
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                {formatIslamicDate(new Date(), i18n.language)}
               </Text>
             </View>
           </View>
@@ -323,16 +318,16 @@ export const HomeScreen = ({ navigation }) => {
             <View style={styles.emptyIconContainer}>
               <Ionicons name="location-outline" size={64} color="#00A86B" />
             </View>
-            <Text style={styles.emptyTitle}>Welcome to Prayer Tracker</Text>
+            <Text style={styles.emptyTitle}>{t('home.welcome')}</Text>
             <Text style={styles.emptyText}>
-              Enable location access to get accurate prayer times for your area and never miss a prayer
+              {t('home.enableLocationDescription')}
             </Text>
             <TouchableOpacity
               style={styles.enableLocationButton}
               onPress={handleLocationPress}
             >
               <Ionicons name="location" size={20} color="#FFF" />
-              <Text style={styles.enableLocationText}>Enable Location</Text>
+              <Text style={styles.enableLocationText}>{t('home.enableLocation')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -460,12 +455,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#00A86B',
     fontWeight: '600',
-  },
-  locationSubtext: {
-    fontSize: 12,
-    color: '#00A86B',
-    opacity: 0.7,
-    marginTop: 2,
   },
   errorBanner: {
     flexDirection: 'row',

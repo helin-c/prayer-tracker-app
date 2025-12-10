@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (COMPLETE REDESIGN)
+// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (i18n INTEGRATED)
 // ============================================================================
 import React, { useEffect } from 'react';
 import {
@@ -12,10 +12,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTasbihStore } from '../../store/tasbihStore';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { enUS, tr } from 'date-fns/locale';
 
 export const ZikrHistoryScreen = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const { 
     sessions, 
     deleteSession, 
@@ -28,6 +31,10 @@ export const ZikrHistoryScreen = ({ navigation }) => {
     loadSessions();
   }, []);
 
+  const getDateFnsLocale = () => {
+    return i18n.language === 'tr' ? tr : enUS;
+  };
+
   const handleContinue = (session) => {
     continueSession(session);
     navigation.goBack();
@@ -35,12 +42,12 @@ export const ZikrHistoryScreen = ({ navigation }) => {
 
   const handleDelete = (id, name) => {
     Alert.alert(
-      'Delete Session',
-      `Are you sure you want to delete "${name}"?`,
+      t('zikrHistory.deleteSession'),
+      t('zikrHistory.deleteConfirm', { name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('zikrHistory.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('zikrHistory.delete'),
           style: 'destructive',
           onPress: () => deleteSession(id),
         },
@@ -50,12 +57,12 @@ export const ZikrHistoryScreen = ({ navigation }) => {
 
   const handleClearAll = () => {
     Alert.alert(
-      'Clear All History',
-      'This will permanently delete all saved zikr sessions.',
+      t('zikrHistory.clearAllHistory'),
+      t('zikrHistory.clearAllConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('zikrHistory.cancel'), style: 'cancel' },
         {
-          text: 'Clear All',
+          text: t('zikrHistory.clearAll'),
           style: 'destructive',
           onPress: clearAllSessions,
         },
@@ -94,13 +101,17 @@ export const ZikrHistoryScreen = ({ navigation }) => {
             <View style={styles.sessionStats}>
               <View style={styles.statItem}>
                 <Ionicons name="radio-button-on" size={14} color="#00A86B" />
-                <Text style={styles.statText}>{item.count} counts</Text>
+                <Text style={styles.statText}>
+                  {item.count} {t('zikrHistory.counts')}
+                </Text>
               </View>
               
               {hasTarget && (
                 <View style={styles.statItem}>
                   <Ionicons name="flag" size={14} color="#3498DB" />
-                  <Text style={styles.statTextSecondary}>Target: {item.target}</Text>
+                  <Text style={styles.statTextSecondary}>
+                    {t('zikrHistory.target')} {item.target}
+                  </Text>
                 </View>
               )}
             </View>
@@ -127,7 +138,10 @@ export const ZikrHistoryScreen = ({ navigation }) => {
             )}
 
             <Text style={styles.sessionDate}>
-              {formatDistanceToNow(new Date(item.lastUpdated), { addSuffix: true })}
+              {formatDistanceToNow(new Date(item.lastUpdated), { 
+                addSuffix: true,
+                locale: getDateFnsLocale()
+              })}
             </Text>
           </View>
 
@@ -168,10 +182,10 @@ export const ZikrHistoryScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Sessions</Text>
+        <Text style={styles.headerTitle}>{t('zikrHistory.title')}</Text>
         {totalSessions > 0 && (
           <TouchableOpacity onPress={handleClearAll}>
-            <Text style={styles.clearAllText}>Clear All</Text>
+            <Text style={styles.clearAllText}>{t('zikrHistory.clearAll')}</Text>
           </TouchableOpacity>
         )}
         {totalSessions === 0 && <View style={{ width: 70 }} />}
@@ -183,19 +197,19 @@ export const ZikrHistoryScreen = ({ navigation }) => {
           <View style={styles.statCard}>
             <Ionicons name="bookmark" size={20} color="#00A86B" />
             <Text style={styles.statValue}>{totalSessions}</Text>
-            <Text style={styles.statLabel}>Sessions</Text>
+            <Text style={styles.statLabel}>{t('zikrHistory.sessions')}</Text>
           </View>
           
           <View style={styles.statCard}>
             <Ionicons name="infinite" size={20} color="#3498DB" />
             <Text style={styles.statValue}>{totalCounts}</Text>
-            <Text style={styles.statLabel}>Total Counts</Text>
+            <Text style={styles.statLabel}>{t('zikrHistory.totalCounts')}</Text>
           </View>
 
           <View style={styles.statCard}>
             <Ionicons name="checkmark-circle" size={20} color="#9B59B6" />
             <Text style={styles.statValue}>{completedSessions}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
+            <Text style={styles.statLabel}>{t('zikrHistory.completed')}</Text>
           </View>
         </View>
       )}
@@ -214,17 +228,18 @@ export const ZikrHistoryScreen = ({ navigation }) => {
           <View style={styles.emptyIconContainer}>
             <Ionicons name="bookmark-outline" size={64} color="#CCC" />
           </View>
-          <Text style={styles.emptyTitle}>No Saved Sessions</Text>
+          <Text style={styles.emptyTitle}>{t('zikrHistory.empty.title')}</Text>
           <Text style={styles.emptyText}>
-            Your saved zikr sessions will appear here.{'\n'}
-            Start counting and save your progress!
+            {t('zikrHistory.empty.message')}
           </Text>
           <TouchableOpacity
             style={styles.startButton}
             onPress={() => navigation.goBack()}
           >
             <Ionicons name="add-circle" size={20} color="#FFF" />
-            <Text style={styles.startButtonText}>Start Counting</Text>
+            <Text style={styles.startButtonText}>
+              {t('zikrHistory.empty.startButton')}
+            </Text>
           </TouchableOpacity>
         </View>
       )}

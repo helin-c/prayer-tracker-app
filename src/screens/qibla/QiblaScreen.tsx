@@ -1,4 +1,7 @@
 // @ts-nocheck
+// ============================================================================
+// FILE: src/screens/qibla/QiblaScreen.jsx (PROFESSIONAL & i18n)
+// ============================================================================
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -10,17 +13,23 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const KAABA_LOCATION = { latitude: 21.4225, longitude: 39.8262 };
-const COMPASS_SIZE = Math.min(width * 0.8, 320);
+const COMPASS_SIZE = Math.min(width * 0.75, 300);
+const ALIGNMENT_THRESHOLD = 5; // degrees
+const CALIBRATION_THRESHOLD = 0.1;
 
 export const QiblaScreen = () => {
+  const { t } = useTranslation();
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [qiblaDirection, setQiblaDirection] = useState(0);
@@ -29,27 +38,32 @@ export const QiblaScreen = () => {
   const [distance, setDistance] = useState(null);
   const [calibrationNeeded, setCalibrationNeeded] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState('checking');
+  const [magnetometerAvailable, setMagnetometerAvailable] = useState(true);
+  const [accuracy, setAccuracy] = useState('high');
 
   const compassRotation = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const subscription = useRef(null);
+  const lastValidReading = useRef(0);
 
-  // Pulse animation for when aligned
+  // Pulse animation
   useEffect(() => {
-    Animated.loop(
+    const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
+          toValue: 1.15,
+          duration: 800,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 800,
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    pulse.start();
+    return () => pulse.stop();
   }, []);
 
   // Calculate Qibla direction
@@ -84,26 +98,50 @@ export const QiblaScreen = () => {
     return R * c;
   };
 
+  // Format distance
+  const formatDistance = (km) => {
+    if (km < 1) {
+      return `${Math.round(km * 1000)} m`;
+    } else if (km < 100) {
+      return `${km.toFixed(1)} km`;
+    } else {
+      return `${Math.round(km)} km`;
+    }
+  };
+
   // Get user location
   const getUserLocation = async () => {
     try {
       setPermissionStatus('requesting');
+      
+      const isLocationEnabled = await Location.hasServicesEnabledAsync();
+      if (!isLocationEnabled) {
+        throw new Error('Location services disabled');
+      }
+
       const { status } = await Location.requestForegroundPermissionsAsync();
       
       if (status !== 'granted') {
         setPermissionStatus('denied');
-        setError('Konum izni reddedildi. Lütfen ayarlardan konuma erişimi etkinleştirin.');
+        setError(t('qibla.errors.permissionDenied'));
         setLoading(false);
         return;
       }
 
       setPermissionStatus('granted');
+      
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
+        maximumAge: 10000,
+        timeout: 15000,
       });
 
-      const { latitude, longitude } = location.coords;
+      const { latitude, longitude, accuracy: locationAccuracy } = location.coords;
       setUserLocation({ latitude, longitude });
+      
+      if (locationAccuracy < 20) setAccuracy('high');
+      else if (locationAccuracy < 100) setAccuracy('medium');
+      else setAccuracy('low');
 
       const qibla = calculateQiblaDirection(latitude, longitude);
       setQiblaDirection(qibla);
@@ -119,7 +157,14 @@ export const QiblaScreen = () => {
       setLoading(false);
     } catch (err) {
       console.error('Location error:', err);
-      setError('Konumunuz alınamadı. Lütfen GPS ayarlarınızı kontrol edin.');
+      
+      let errorMessage = t('qibla.errors.locationFailed');
+      
+      if (err.message.includes('denied')) {
+        errorMessage = t('qibla.errors.permissionDenied');
+      }
+      
+      setError(errorMessage);
       setPermissionStatus('error');
       setLoading(false);
     }
@@ -127,38 +172,57 @@ export const QiblaScreen = () => {
 
   // Subscribe to magnetometer
   const subscribeMagnetometer = () => {
-    subscription.current = Magnetometer.addListener((data) => {
-      const { x, y } = data;
-      let angle = Math.atan2(y, x) * (180 / Math.PI);
-      angle = (angle + 360) % 360;
-
-      if (Platform.OS === 'ios') {
-        angle = (angle + 90) % 360;
+    Magnetometer.isAvailableAsync().then((available) => {
+      if (!available) {
+        setMagnetometerAvailable(false);
+        setError(t('qibla.errors.magnetometerUnavailable'));
+        return;
       }
 
-      setMagnetometerData(angle);
+      subscription.current = Magnetometer.addListener((data) => {
+        const { x, y, z } = data;
+        
+        const magnitude = Math.sqrt(x * x + y * y + z * z);
+        
+        if (magnitude < CALIBRATION_THRESHOLD) {
+          setCalibrationNeeded(true);
+        } else {
+          setCalibrationNeeded(false);
+        }
 
-      if (Math.abs(x) < 0.1 && Math.abs(y) < 0.1) {
-        setCalibrationNeeded(true);
-      } else {
-        setCalibrationNeeded(false);
-      }
+        let angle = Math.atan2(y, x) * (180 / Math.PI);
+        angle = (angle + 360) % 360;
 
-      const compassAngle = qiblaDirection - angle;
-      
-      Animated.spring(compassRotation, {
-        toValue: compassAngle,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 40,
-      }).start();
+        if (Platform.OS === 'ios') {
+          angle = (angle + 90) % 360;
+        }
+
+        // Low-pass filter
+        const alpha = 0.8;
+        angle = alpha * angle + (1 - alpha) * lastValidReading.current;
+        lastValidReading.current = angle;
+
+        setMagnetometerData(angle);
+
+        const compassAngle = qiblaDirection - angle;
+        
+        Animated.spring(compassRotation, {
+          toValue: compassAngle,
+          useNativeDriver: true,
+          friction: 10,
+          tension: 40,
+          restDisplacementThreshold: 0.1,
+          restSpeedThreshold: 0.1,
+        }).start();
+      });
+
+      Magnetometer.setUpdateInterval(100);
     });
-
-    Magnetometer.setUpdateInterval(100);
   };
 
   useEffect(() => {
     getUserLocation();
+    
     return () => {
       if (subscription.current) {
         subscription.current.remove();
@@ -167,29 +231,39 @@ export const QiblaScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (!loading && !error && userLocation) {
+    if (!loading && !error && userLocation && magnetometerAvailable) {
       subscribeMagnetometer();
     }
+    
     return () => {
       if (subscription.current) {
         subscription.current.remove();
       }
     };
-  }, [loading, error, userLocation, qiblaDirection]);
+  }, [loading, error, userLocation, qiblaDirection, magnetometerAvailable]);
 
   const handleRetry = () => {
     setLoading(true);
     setError(null);
     setPermissionStatus('checking');
+    setCalibrationNeeded(false);
     getUserLocation();
   };
 
   const showCalibrationInstructions = () => {
     Alert.alert(
-      'Pusulayı Kalibre Et',
-      'Cihazınızı 8 şeklinde hareket ettirerek pusulayı kalibre edin.',
-      [{ text: 'Tamam' }]
+      t('qibla.calibrationTitle'),
+      t('qibla.calibrationMessage'),
+      [{ text: t('common.done') }]
     );
+  };
+
+  const openSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
+    }
   };
 
   // Loading state
@@ -201,11 +275,11 @@ export const QiblaScreen = () => {
             <Ionicons name="compass-outline" size={48} color="#00A86B" />
           </View>
           <ActivityIndicator size="large" color="#00A86B" style={{ marginTop: 20 }} />
-          <Text style={styles.loadingText}>Konumunuz bulunuyor...</Text>
+          <Text style={styles.loadingText}>{t('qibla.findingLocation')}</Text>
           <Text style={styles.loadingSubtext}>
             {permissionStatus === 'requesting' 
-              ? 'Konum izni isteniyor...' 
-              : 'GPS koordinatları alınıyor...'}
+              ? t('qibla.requestingPermission')
+              : t('qibla.gettingCoordinates')}
           </Text>
         </View>
       </SafeAreaView>
@@ -220,16 +294,30 @@ export const QiblaScreen = () => {
           <View style={styles.errorCircle}>
             <Ionicons name="alert-circle-outline" size={64} color="#DC3545" />
           </View>
-          <Text style={styles.errorTitle}>Kıble Yönü Bulunamadı</Text>
+          <Text style={styles.errorTitle}>{t('qibla.notFound')}</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={handleRetry}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="refresh-outline" size={20} color="#FFF" />
-            <Text style={styles.retryButtonText}>Tekrar Dene</Text>
-          </TouchableOpacity>
+          
+          <View style={styles.errorActions}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={handleRetry}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="refresh-outline" size={20} color="#FFF" />
+              <Text style={styles.retryButtonText}>{t('qibla.retry')}</Text>
+            </TouchableOpacity>
+
+            {permissionStatus === 'denied' && (
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={openSettings}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="settings-outline" size={20} color="#00A86B" />
+                <Text style={styles.settingsButtonText}>{t('home.openSettings')}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -240,16 +328,16 @@ export const QiblaScreen = () => {
     outputRange: ['-360deg', '360deg'],
   });
 
-  // Check if aligned (within 5 degrees)
-  const isAligned = Math.abs((qiblaDirection - magnetometerData + 360) % 360) < 5;
+  const angleDiff = Math.abs((qiblaDirection - magnetometerData + 360) % 360);
+  const isAligned = Math.min(angleDiff, 360 - angleDiff) < ALIGNMENT_THRESHOLD;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Kıble Yönü</Text>
-          <Text style={styles.headerSubtitle}>Kabe'ye doğru yönelin</Text>
+          <Text style={styles.headerTitle}>{t('qibla.qiblaDirection')}</Text>
+          <Text style={styles.headerSubtitle}>{t('qibla.faceTowardsKaaba')}</Text>
         </View>
 
         {/* Calibration Warning */}
@@ -261,7 +349,7 @@ export const QiblaScreen = () => {
           >
             <Ionicons name="warning-outline" size={20} color="#F59E0B" />
             <Text style={styles.calibrationText}>
-              Pusula kalibrasyon gerektiriyor
+              {t('qibla.calibrationNeeded')}
             </Text>
             <Ionicons name="chevron-forward" size={20} color="#F59E0B" />
           </TouchableOpacity>
@@ -269,9 +357,9 @@ export const QiblaScreen = () => {
 
         {/* Main Compass Area */}
         <View style={styles.compassArea}>
-          {/* Outer Ring with Degrees */}
+          {/* Outer Ring */}
           <View style={styles.outerRing}>
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((degree) => (
+            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((degree) => (
               <View
                 key={degree}
                 style={[
@@ -279,38 +367,53 @@ export const QiblaScreen = () => {
                   { transform: [{ rotate: `${degree}deg` }] }
                 ]}
               >
-                <View style={styles.degreeTick} />
+                <View style={[
+                  styles.degreeTick,
+                  degree % 90 === 0 && styles.degreeTickMajor
+                ]} />
               </View>
             ))}
           </View>
 
-          {/* Main Compass Circle */}
-          <View style={styles.compassCircle}>
-            {/* Cardinal Directions */}
+          {/* Compass Circle */}
+          <View style={[
+            styles.compassCircle,
+            isAligned && styles.compassCircleAligned
+          ]}>
+            {/* Cardinals */}
             <View style={styles.cardinalContainer}>
-              <Text style={[styles.cardinalText, styles.north]}>N</Text>
-              <Text style={[styles.cardinalText, styles.east]}>E</Text>
-              <Text style={[styles.cardinalText, styles.south]}>S</Text>
-              <Text style={[styles.cardinalText, styles.west]}>W</Text>
+              <Text style={[styles.cardinalText, styles.north]}>
+                {t('qibla.cardinals.north')}
+              </Text>
+              <Text style={[styles.cardinalText, styles.east]}>
+                {t('qibla.cardinals.east')}
+              </Text>
+              <Text style={[styles.cardinalText, styles.south]}>
+                {t('qibla.cardinals.south')}
+              </Text>
+              <Text style={[styles.cardinalText, styles.west]}>
+                {t('qibla.cardinals.west')}
+              </Text>
             </View>
 
-            {/* Rotating Qibla Indicator */}
+            {/* Qibla Indicator */}
             <Animated.View
               style={[
                 styles.qiblaIndicator,
                 { transform: [{ rotate: interpolatedRotation }] }
               ]}
             >
-              {/* Arrow pointing to Qibla */}
               <View style={styles.arrowContainer}>
                 <View style={styles.arrowLine} />
                 <View style={styles.arrowHead} />
                 
-                {/* Kaaba Icon */}
                 <Animated.View 
                   style={[
                     styles.kaabaIconContainer,
-                    isAligned && { transform: [{ scale: pulseAnim }] }
+                    isAligned && { 
+                      transform: [{ scale: pulseAnim }],
+                      shadowOpacity: 0.6
+                    }
                   ]}
                 >
                   <Text style={styles.kaabaIcon}>🕋</Text>
@@ -320,18 +423,55 @@ export const QiblaScreen = () => {
 
             {/* Center Dot */}
             <View style={styles.centerDot}>
-              <View style={styles.centerDotInner} />
+              <View style={[
+                styles.centerDotInner,
+                isAligned && styles.centerDotAligned
+              ]} />
             </View>
           </View>
 
-          {/* Alignment Indicator */}
+          {/* Aligned Banner */}
           {isAligned && (
-            <View style={styles.alignedBanner}>
+            <Animated.View 
+              style={[
+                styles.alignedBanner,
+                { transform: [{ scale: pulseAnim }] }
+              ]}
+            >
               <Ionicons name="checkmark-circle" size={24} color="#00A86B" />
-              <Text style={styles.alignedText}>Kıble yönüne hizalandınız! ✨</Text>
-            </View>
+              <Text style={styles.alignedText}>{t('qibla.aligned')}</Text>
+            </Animated.View>
           )}
         </View>
+
+        {/* Info Cards */}
+        {distance && (
+          <View style={styles.infoRow}>
+            <View style={styles.infoCard}>
+              <Ionicons name="location" size={24} color="#00A86B" />
+              <Text style={styles.infoValue}>{formatDistance(distance)}</Text>
+              <Text style={styles.infoLabel}>{t('qibla.distance')}</Text>
+            </View>
+            
+            <View style={styles.infoCard}>
+              <Ionicons name="compass" size={24} color="#3498DB" />
+              <Text style={styles.infoValue}>{Math.round(qiblaDirection)}°</Text>
+              <Text style={styles.infoLabel}>{t('qibla.direction')}</Text>
+            </View>
+
+            <View style={styles.infoCard}>
+              <Ionicons 
+                name={accuracy === 'high' ? 'checkmark-circle' : 'alert-circle'} 
+                size={24} 
+                color={accuracy === 'high' ? '#00A86B' : '#F59E0B'} 
+              />
+              <Text style={styles.infoValue}>
+                {accuracy === 'high' ? '±5°' : '±15°'}
+              </Text>
+              <Text style={styles.infoLabel}>{t('qibla.accuracy')}</Text>
+            </View>
+          </View>
+        )}
 
         {/* Instructions */}
         <View style={styles.instructionsCard}>
@@ -339,19 +479,25 @@ export const QiblaScreen = () => {
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>1</Text>
             </View>
-            <Text style={styles.instructionText}>Cihazınızı düz tutun</Text>
+            <Text style={styles.instructionText}>
+              {t('qibla.instructions.step1')}
+            </Text>
           </View>
           <View style={styles.instructionRow}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>2</Text>
             </View>
-            <Text style={styles.instructionText}>Kabe ikonu yukarı gelene kadar dönün</Text>
+            <Text style={styles.instructionText}>
+              {t('qibla.instructions.step2')}
+            </Text>
           </View>
           <View style={styles.instructionRow}>
             <View style={styles.instructionNumber}>
               <Text style={styles.instructionNumberText}>3</Text>
             </View>
-            <Text style={styles.instructionText}>O yön Mekke'ye doğrudur</Text>
+            <Text style={styles.instructionText}>
+              {t('qibla.instructions.step3')}
+            </Text>
           </View>
         </View>
 
@@ -362,7 +508,7 @@ export const QiblaScreen = () => {
           activeOpacity={0.8}
         >
           <Ionicons name="refresh-outline" size={20} color="#00A86B" />
-          <Text style={styles.refreshButtonText}>Konumu Yenile</Text>
+          <Text style={styles.refreshButtonText}>{t('qibla.refreshLocation')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -397,6 +543,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#1A1A1A',
+    textAlign: 'center',
   },
   loadingSubtext: {
     marginTop: 8,
@@ -428,9 +575,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 22,
   },
+  errorActions: {
+    gap: 12,
+    width: '100%',
+    paddingHorizontal: 32,
+  },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     backgroundColor: '#00A86B',
     paddingHorizontal: 28,
@@ -444,6 +597,23 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  settingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0FFF4',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#00A86B',
+  },
+  settingsButtonText: {
+    color: '#00A86B',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -503,10 +673,15 @@ const styles = StyleSheet.create({
   },
   degreeTick: {
     width: 2,
-    height: 12,
+    height: 8,
     backgroundColor: '#D1D5DB',
     position: 'absolute',
     top: 0,
+  },
+  degreeTickMajor: {
+    width: 3,
+    height: 14,
+    backgroundColor: '#9CA3AF',
   },
   compassCircle: {
     width: COMPASS_SIZE,
@@ -523,6 +698,11 @@ const styles = StyleSheet.create({
     borderWidth: 8,
     borderColor: '#F0FFF4',
   },
+  compassCircleAligned: {
+    borderColor: '#00A86B',
+    shadowColor: '#00A86B',
+    shadowOpacity: 0.3,
+  },
   cardinalContainer: {
     position: 'absolute',
     width: '100%',
@@ -530,28 +710,28 @@ const styles = StyleSheet.create({
   },
   cardinalText: {
     position: 'absolute',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#374151',
   },
   north: {
-    top: 20,
+    top: 16,
     left: '50%',
-    marginLeft: -10,
+    marginLeft: -8,
   },
   east: {
     top: '50%',
-    right: 20,
+    right: 16,
     marginTop: -10,
   },
   south: {
-    bottom: 20,
+    bottom: 16,
     left: '50%',
-    marginLeft: -10,
+    marginLeft: -8,
   },
   west: {
     top: '50%',
-    left: 20,
+    left: 16,
     marginTop: -10,
   },
   qiblaIndicator: {
@@ -573,22 +753,22 @@ const styles = StyleSheet.create({
   arrowHead: {
     width: 0,
     height: 0,
-    borderLeftWidth: 12,
-    borderRightWidth: 12,
-    borderBottomWidth: 20,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 16,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderBottomColor: '#00A86B',
     marginTop: -1,
   },
   kaabaIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: '#00A86B',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
     shadowColor: '#00A86B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
@@ -598,13 +778,13 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   kaabaIcon: {
-    fontSize: 36,
+    fontSize: 32,
   },
   centerDot: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -615,10 +795,13 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   centerDotInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#1A1A1A',
+  },
+  centerDotAligned: {
+    backgroundColor: '#00A86B',
   },
   alignedBanner: {
     flexDirection: 'row',
@@ -640,14 +823,14 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    gap: 12,
+    gap: 10,
     marginBottom: 16,
   },
   infoCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 16,
+    padding: 14,
+    borderRadius: 14,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -656,14 +839,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   infoValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1A1A1A',
-    marginTop: 8,
-    marginBottom: 4,
+    marginTop: 6,
+    marginBottom: 2,
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
   },
   instructionsCard: {

@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/screens/profile/SettingsScreen.jsx (WITH i18n)
+// ============================================================================
 import React from 'react';
 import {
   View,
@@ -9,37 +12,49 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 
 export const SettingsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const { logout } = useAuthStore();
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: logout,
-      },
-    ]);
+    Alert.alert(
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('profile.logout'),
+          style: 'destructive',
+          onPress: logout,
+        },
+      ]
+    );
   };
 
   const handleChangePassword = () => {
-    Alert.alert('Coming Soon', 'Change password feature will be available soon');
+    Alert.alert(
+      t('profile.comingSoon'),
+      t('profile.featureComingSoon')
+    );
   };
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure? This action cannot be undone.',
+      t('profile.deleteAccount'),
+      t('profile.deleteAccountConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Coming Soon', 'Account deletion will be available soon');
+            Alert.alert(
+              t('profile.comingSoon'),
+              t('profile.featureComingSoon')
+            );
           },
         },
       ]
@@ -56,24 +71,26 @@ export const SettingsScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>{t('profile.settings')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content}>
         {/* Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t('profile.accountInfo')}</Text>
           
           <TouchableOpacity style={styles.settingItem} onPress={handleChangePassword}>
             <Ionicons name="key-outline" size={24} color="#666" />
-            <Text style={styles.settingText}>Change Password</Text>
+            <Text style={styles.settingText}>{t('profile.changePassword')}</Text>
             <Ionicons name="chevron-forward" size={20} color="#CCC" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem} onPress={handleDeleteAccount}>
             <Ionicons name="trash-outline" size={24} color="#DC3545" />
-            <Text style={[styles.settingText, { color: '#DC3545' }]}>Delete Account</Text>
+            <Text style={[styles.settingText, { color: '#DC3545' }]}>
+              {t('profile.deleteAccount')}
+            </Text>
             <Ionicons name="chevron-forward" size={20} color="#CCC" />
           </TouchableOpacity>
         </View>
@@ -81,17 +98,13 @@ export const SettingsScreen = ({ navigation }) => {
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color="#DC3545" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-
-// ============================================================================
-// SHARED STYLES
-// ============================================================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,

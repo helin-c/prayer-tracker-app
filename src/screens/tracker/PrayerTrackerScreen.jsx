@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (UPDATED)
+// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (i18n INTEGRATED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 import { useTasbihStore } from '../../store/tasbihStore';
 import { StatsSection } from '../../components/tracker/StatsSection';
@@ -30,6 +31,7 @@ export const PRAYER_ICONS = {
 };
 
 export const PrayerTrackerScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState([]);
   const [selectedPrayer, setSelectedPrayer] = useState(null);
@@ -99,7 +101,20 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   };
 
   const formatDisplayDate = (date) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      t('prayerTracker.months.jan'),
+      t('prayerTracker.months.feb'),
+      t('prayerTracker.months.mar'),
+      t('prayerTracker.months.apr'),
+      t('prayerTracker.months.may'),
+      t('prayerTracker.months.jun'),
+      t('prayerTracker.months.jul'),
+      t('prayerTracker.months.aug'),
+      t('prayerTracker.months.sep'),
+      t('prayerTracker.months.oct'),
+      t('prayerTracker.months.nov'),
+      t('prayerTracker.months.dec')
+    ];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
@@ -133,7 +148,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       await loadData();
       
     } catch (err) {
-      Alert.alert('Error', 'Failed to track prayer. Please try again.');
+      Alert.alert(t('tasbih.alerts.error'), 'Failed to track prayer. Please try again.');
     }
   };
 
@@ -174,7 +189,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         </Svg>
         <View style={styles.circularProgressText}>
           <Text style={styles.percentageText}>{Math.round(percentage)}%</Text>
-          <Text style={styles.percentageLabel}>Complete</Text>
+          <Text style={styles.percentageLabel}>{t('prayerTracker.complete')}</Text>
         </View>
       </View>
     );
@@ -189,6 +204,16 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     const today = isToday(date);
     const isSelected = date.toDateString() === selectedDate.toDateString();
 
+    const weekDayLabels = [
+      t('prayerTracker.weekDays.monday'),
+      t('prayerTracker.weekDays.tuesday'),
+      t('prayerTracker.weekDays.wednesday'),
+      t('prayerTracker.weekDays.thursday'),
+      t('prayerTracker.weekDays.friday'),
+      t('prayerTracker.weekDays.saturday'),
+      t('prayerTracker.weekDays.sunday')
+    ];
+
     return (
       <TouchableOpacity
         style={styles.weekDayContainer}
@@ -196,7 +221,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         activeOpacity={0.7}
       >
         <Text style={[styles.weekDayName, today && styles.todayText]}>
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'][date.getDay() === 0 ? 6 : date.getDay() - 1]}
+          {weekDayLabels[date.getDay() === 0 ? 6 : date.getDay() - 1]}
         </Text>
         <View style={styles.weekDayCircle}>
           <Svg width={size} height={size}>
@@ -232,6 +257,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     );
   };
 
+  const getPrayerName = (prayerName) => {
+    return t(`prayerTracker.prayers.${prayerName.toLowerCase()}`);
+  };
+
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
@@ -239,7 +268,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           <Ionicons name="alert-circle" size={64} color="#DC3545" />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadData}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={styles.retryButtonText}>{t('prayerTracker.retry')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -258,8 +287,8 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Prayer Tracker</Text>
-          <Text style={styles.subtitle}>Track your daily prayers</Text>
+          <Text style={styles.title}>{t('prayerTracker.title')}</Text>
+          <Text style={styles.subtitle}>{t('prayerTracker.subtitle')}</Text>
         </View>
 
         {/* Week Calendar */}
@@ -290,7 +319,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           <View style={styles.todayHeader}>
             <View>
               <Text style={styles.todayLabel}>
-                {isToday(selectedDate) ? 'Today' : 'Selected Date'}
+                {isToday(selectedDate) ? t('prayerTracker.today') : t('prayerTracker.selectedDate')}
               </Text>
               <Text style={styles.todayDate}>{formatDisplayDate(selectedDate)}</Text>
             </View>
@@ -301,7 +330,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         {/* Prayer List */}
         <View style={styles.prayerList}>
           <Text style={styles.sectionTitle}>
-            {isToday(selectedDate) ? "Today's Prayers" : "Prayers"}
+            {isToday(selectedDate) ? t('prayerTracker.todaysPrayers') : t('prayerTracker.prayers')}
           </Text>
           
           {isLoading && !dayPrayers ? (
@@ -341,15 +370,15 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                     />
                   </View>
                   <View>
-                    <Text style={styles.prayerName}>{prayer.prayer_name}</Text>
+                    <Text style={styles.prayerName}>{getPrayerName(prayer.prayer_name)}</Text>
                     {prayer.completed && prayer.on_time && (
-                      <Text style={styles.onTimeLabel}>✓ On Time</Text>
+                      <Text style={styles.onTimeLabel}>{t('prayerTracker.status.onTime')}</Text>
                     )}
                     {prayer.completed && !prayer.on_time && (
-                      <Text style={styles.lateLabel}>Done (Late)</Text>
+                      <Text style={styles.lateLabel}>{t('prayerTracker.status.late')}</Text>
                     )}
                     {prayer.id && !prayer.completed && (
-                      <Text style={styles.missedLabel}>✗ Missed</Text>
+                      <Text style={styles.missedLabel}>{t('prayerTracker.status.missed')}</Text>
                     )}
                   </View>
                 </View>
@@ -375,7 +404,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="leaf-outline" size={20} color="#00A86B" />
-            <Text style={styles.sectionTitle}>After Prayer Remembrance</Text>
+            <Text style={styles.sectionTitle}>{t('prayerTracker.afterPrayerRemembrance')}</Text>
           </View>
 
           <TouchableOpacity
@@ -388,18 +417,18 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             </View>
             
             <View style={styles.tasbihContent}>
-              <Text style={styles.tasbihTitle}>Digital Tesbih</Text>
+              <Text style={styles.tasbihTitle}>{t('prayerTracker.digitalTasbih')}</Text>
               <Text style={styles.tasbihSubtitle}>
-                Count your dhikr after prayers
+                {t('prayerTracker.countDhikr')}
               </Text>
               <View style={styles.tasbihBadges}>
                 <View style={styles.tasbihBadge}>
                   <Ionicons name="bookmark-outline" size={14} color="#666" />
-                  <Text style={styles.tasbihBadgeText}>Save Progress</Text>
+                  <Text style={styles.tasbihBadgeText}>{t('prayerTracker.saveProgress')}</Text>
                 </View>
                 <View style={styles.tasbihBadge}>
                   <Ionicons name="trending-up-outline" size={14} color="#666" />
-                  <Text style={styles.tasbihBadgeText}>Track History</Text>
+                  <Text style={styles.tasbihBadgeText}>{t('prayerTracker.trackHistory')}</Text>
                 </View>
               </View>
             </View>
@@ -423,21 +452,21 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {selectedPrayer?.prayer_name}
+                {selectedPrayer && getPrayerName(selectedPrayer.prayer_name)}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={28} color="#666" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>Mark this prayer as:</Text>
+            <Text style={styles.modalSubtitle}>{t('prayerTracker.modal.markAs')}</Text>
 
             <TouchableOpacity
               style={[styles.modalButton, styles.modalButtonOnTime]}
               onPress={() => handlePrayerAction('ontime')}
             >
               <Ionicons name="time" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>Done (On Time)</Text>
+              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneOnTime')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -445,7 +474,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               onPress={() => handlePrayerAction('done')}
             >
               <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>Done (Late)</Text>
+              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneLate')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -453,7 +482,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               onPress={() => handlePrayerAction('missed')}
             >
               <Ionicons name="close-circle" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>Missed</Text>
+              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.missed')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/screens/auth/LoginScreen.jsx (WITH i18n)
+// ============================================================================
 import React, { useState } from 'react';
 import {
   View,
@@ -7,30 +10,40 @@ import {
   Platform,
   ScrollView,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
 
 export const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { t } = useTranslation();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
   const [errors, setErrors] = useState({});
 
   const { login, isLoading } = useAuthStore();
 
+  const updateField = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    setErrors({ ...errors, [field]: '' });
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+    if (!formData.email.trim()) {
+      newErrors.email = t('auth.errors.emailRequired');
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = t('auth.errors.emailInvalid');
     }
 
-    if (!password) {
-      newErrors.password = 'Password is required';
+    if (!formData.password) {
+      newErrors.password = t('auth.errors.passwordRequired');
     }
 
     setErrors(newErrors);
@@ -40,10 +53,20 @@ export const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     if (!validateForm()) return;
 
-    const result = await login({ email: email.toLowerCase().trim(), password });
+    const cleanData = {
+      email: formData.email.toLowerCase().trim(),
+      password: formData.password,
+    };
 
-    if (!result.success) {
-      Alert.alert('Login Failed', result.error);
+    const result = await login(cleanData);
+
+    if (result.success) {
+      // Success handled by auth store
+    } else {
+      Alert.alert(
+        t('auth.errors.loginFailed'),
+        result.error || t('auth.errors.invalidCredentials')
+      );
     }
   };
 
@@ -58,69 +81,62 @@ export const LoginScreen = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header with Logo */}
+          {/* Header */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="moon" size={60} color="#00A86B" />
+              <Ionicons name="moon" size={50} color="#00A86B" />
             </View>
-            <Text style={styles.title}>Welcome</Text>
-            <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+            <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+            <Text style={styles.subtitle}>{t('auth.signInToContinue')}</Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             <Input
-              label="Email"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                setErrors({ ...errors, email: '' });
-              }}
-              placeholder="your.email@example.com"
+              label={t('auth.emailAddress')}
+              value={formData.email}
+              onChangeText={(text) => updateField('email', text)}
+              placeholder={t('auth.emailPlaceholder')}
               keyboardType="email-address"
               leftIcon="mail-outline"
               error={errors.email}
             />
 
             <Input
-              label="Password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setErrors({ ...errors, password: '' });
-              }}
-              placeholder="Enter your password"
+              label={t('auth.password')}
+              value={formData.password}
+              onChangeText={(text) => updateField('password', text)}
+              placeholder={t('auth.passwordPlaceholder')}
               secureTextEntry
               leftIcon="lock-closed-outline"
               error={errors.password}
             />
 
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>
+                {t('auth.forgotPassword')}
+              </Text>
+            </TouchableOpacity>
+
             <Button
-              title="Sign In"
+              title={t('auth.signIn')}
               onPress={handleLogin}
               loading={isLoading}
               style={styles.loginButton}
             />
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
+            <View style={styles.registerContainer}>
+              <Text style={styles.registerText}>{t('auth.dontHaveAccount')} </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.registerLink}>{t('auth.signUp')}</Text>
+              </TouchableOpacity>
             </View>
-
-            <Button
-              title="Create New Account"
-              variant="secondary"
-              onPress={() => navigation.navigate('Register')}
-            />
           </View>
 
           {/* Footer Quote */}
           <View style={styles.footerQuote}>
-            <Text style={styles.quoteText}>
-              "Indeed, prayer prohibits immorality and wrongdoing"
-            </Text>
-            <Text style={styles.quoteReference}>Quran 29:45</Text>
+            <Text style={styles.quoteText}>{t('quotes.prayer2')}</Text>
+            <Text style={styles.quoteReference}>{t('quotes.prayer2Ref')}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -143,7 +159,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 40,
   },
   logoContainer: {
     width: 100,
@@ -168,26 +184,35 @@ const styles = StyleSheet.create({
   form: {
     width: '100%',
   },
-  loginButton: {
-    marginTop: 8,
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: -8,
+    marginBottom: 24,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    marginHorizontal: 16,
+  forgotPasswordText: {
     fontSize: 14,
-    color: '#999',
+    color: '#00A86B',
+    fontWeight: '600',
+  },
+  loginButton: {
+    marginBottom: 24,
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  registerText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  registerLink: {
+    fontSize: 14,
+    color: '#00A86B',
+    fontWeight: '600',
   },
   footerQuote: {
-    marginTop: 32,
+    marginTop: 40,
     alignItems: 'center',
     paddingHorizontal: 20,
   },
@@ -200,7 +225,7 @@ const styles = StyleSheet.create({
   },
   quoteReference: {
     fontSize: 12,
-    color: '#00A86B',
+    color: '#0D9488',
     fontWeight: '600',
   },
 });

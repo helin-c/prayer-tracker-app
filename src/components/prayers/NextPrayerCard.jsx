@@ -1,14 +1,19 @@
+// ============================================================================
+// FILE: src/components/prayers/NextPrayerCard.jsx (WITH i18n & TIME FORMAT)
+// ============================================================================
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { formatTime } from '../../utils/timeUtils';
 
 export const NextPrayerCard = ({ prayerTimes }) => {
+  const { t, i18n } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState('');
 
   useEffect(() => {
     if (!prayerTimes) return;
 
-    // Update countdown every second
     const interval = setInterval(() => {
       calculateTimeRemaining();
     }, 1000);
@@ -22,23 +27,19 @@ export const NextPrayerCard = ({ prayerTimes }) => {
     if (!prayerTimes?.next_prayer) return;
 
     const now = new Date();
-    const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
     const nextPrayerName = prayerTimes.next_prayer.toLowerCase();
     
     const nextPrayer = prayerTimes[nextPrayerName];
     if (!nextPrayer?.time) return;
 
-    // Parse prayer time
     const [hours, minutes] = nextPrayer.time.split(':');
     let prayerTime = new Date();
     prayerTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-    // If prayer time is earlier than now, it's tomorrow
     if (prayerTime < now) {
       prayerTime.setDate(prayerTime.getDate() + 1);
     }
 
-    // Calculate difference
     const diff = prayerTime - now;
     const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
     const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -62,6 +63,17 @@ export const NextPrayerCard = ({ prayerTimes }) => {
     return icons[prayerName?.toLowerCase()] || 'time';
   };
 
+  const getPrayerName = (prayerName) => {
+    const names = {
+      fajr: t('prayers.fajr'),
+      dhuhr: t('prayers.dhuhr'),
+      asr: t('prayers.asr'),
+      maghrib: t('prayers.maghrib'),
+      isha: t('prayers.isha'),
+    };
+    return names[prayerName?.toLowerCase()] || prayerName;
+  };
+
   if (!prayerTimes) return null;
 
   const nextPrayerName = prayerTimes.next_prayer;
@@ -75,11 +87,13 @@ export const NextPrayerCard = ({ prayerTimes }) => {
           size={32} 
           color="#00A86B" 
         />
-        <Text style={styles.title}>Next Prayer</Text>
+        <Text style={styles.title}>{t('home.nextPrayer')}</Text>
       </View>
 
-      <Text style={styles.prayerName}>{nextPrayerName}</Text>
-      <Text style={styles.prayerTime}>{nextPrayer?.readable}</Text>
+      <Text style={styles.prayerName}>{getPrayerName(nextPrayerName)}</Text>
+      <Text style={styles.prayerTime}>
+        {formatTime(nextPrayer?.time, i18n.language)}
+      </Text>
       
       <View style={styles.countdownContainer}>
         <Ionicons name="timer-outline" size={20} color="#666" />

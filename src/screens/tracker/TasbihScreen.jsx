@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/tracker/TasbihScreen.jsx (COMPLETE REDESIGN)
+// FILE: src/screens/tracker/TasbihScreen.jsx (i18n INTEGRATED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -15,9 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTasbihStore } from '../../store/tasbihStore';
 
 export const TasbihScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const {
     currentCount,
     targetCount,
@@ -36,13 +38,33 @@ export const TasbihScreen = ({ navigation }) => {
   const [tempName, setTempName] = useState('');
   const [tempTarget, setTempTarget] = useState('');
 
-  // Common zikr presets
+  // Common zikr presets with translation
   const PRESETS = [
-    { name: 'سُبْحَانَ اللّهِ', translation: 'Subhanallah', target: 33 },
-    { name: 'الْحَمْدُ لِلّهِ', translation: 'Alhamdulillah', target: 33 },
-    { name: 'اللّهُ أَكْبَرُ', translation: 'Allahu Akbar', target: 34 },
-    { name: 'لَا إِلٰهَ إِلَّا اللّٰهُ', translation: 'La ilaha illallah', target: 100 },
-    { name: 'أَسْتَغْفِرُ اللّهَ', translation: 'Astaghfirullah', target: 100 },
+    { 
+      name: t('tasbih.presets.subhanallah'), 
+      translation: t('tasbih.presets.subhanallahTrans'), 
+      target: 33 
+    },
+    { 
+      name: t('tasbih.presets.alhamdulillah'), 
+      translation: t('tasbih.presets.alhamdulillahTrans'), 
+      target: 33 
+    },
+    { 
+      name: t('tasbih.presets.allahuAkbar'), 
+      translation: t('tasbih.presets.allahuAkbarTrans'), 
+      target: 34 
+    },
+    { 
+      name: t('tasbih.presets.laIlahaIllallah'), 
+      translation: t('tasbih.presets.laIlahaIllallahTrans'), 
+      target: 100 
+    },
+    { 
+      name: t('tasbih.presets.astaghfirullah'), 
+      translation: t('tasbih.presets.astaghfirullahTrans'), 
+      target: 100 
+    },
   ];
 
   // Calculate progress
@@ -87,12 +109,12 @@ export const TasbihScreen = ({ navigation }) => {
     if (currentCount === 0) return;
     
     Alert.alert(
-      'Reset Counter',
-      'This will reset the count to 0. Your name and target will be kept.',
+      t('tasbih.alerts.resetCounter'),
+      t('tasbih.alerts.resetMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('tasbih.alerts.cancel'), style: 'cancel' },
         {
-          text: 'Reset',
+          text: t('tasbih.alerts.reset'),
           style: 'destructive',
           onPress: resetCounter,
         },
@@ -103,12 +125,12 @@ export const TasbihScreen = ({ navigation }) => {
   // Complete reset with confirmation
   const handleCompleteReset = () => {
     Alert.alert(
-      'Clear Everything',
-      'This will clear the count, name, and target.',
+      t('tasbih.alerts.clearEverything'),
+      t('tasbih.alerts.clearMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('tasbih.alerts.cancel'), style: 'cancel' },
         {
-          text: 'Clear All',
+          text: t('tasbih.alerts.clearAll'),
           style: 'destructive',
           onPress: completeReset,
         },
@@ -121,30 +143,33 @@ export const TasbihScreen = ({ navigation }) => {
     try {
       await saveSession();
       Alert.alert(
-        'Saved!',
-        sessionId ? 'Your progress has been updated.' : 'Your zikr has been saved.',
-        [{ text: 'OK' }]
+        t('tasbih.alerts.saved'),
+        sessionId ? t('tasbih.alerts.progressUpdated') : t('tasbih.alerts.zikrSaved'),
+        [{ text: t('tasbih.alerts.ok') }]
       );
       setShowSaveModal(false);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('tasbih.alerts.error'), error.message);
     }
   };
 
   // Open save modal
   const handleOpenSaveModal = () => {
     if (currentCount === 0) {
-      Alert.alert('Nothing to Save', 'Please count some zikr first.');
+      Alert.alert(
+        t('tasbih.alerts.nothingToSave'), 
+        t('tasbih.alerts.countFirst')
+      );
       return;
     }
     
     if (!zikrName.trim()) {
       Alert.alert(
-        'Name Required',
-        'Please set a name for this zikr before saving.',
+        t('tasbih.alerts.nameRequired'),
+        t('tasbih.alerts.setNameFirst'),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Set Name', onPress: handleOpenSettings },
+          { text: t('tasbih.alerts.cancel'), style: 'cancel' },
+          { text: t('tasbih.alerts.setName'), onPress: handleOpenSettings },
         ]
       );
       return;
@@ -163,7 +188,7 @@ export const TasbihScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Digital Tesbih</Text>
+        <Text style={styles.headerTitle}>{t('tasbih.title')}</Text>
         <TouchableOpacity
           style={styles.historyButton}
           onPress={() => navigation.navigate('ZikrHistory')}
@@ -184,17 +209,23 @@ export const TasbihScreen = ({ navigation }) => {
               <>
                 <Text style={styles.zikrNameText}>{zikrName}</Text>
                 {hasTarget && (
-                  <Text style={styles.zikrTargetText}>Target: {targetCount}</Text>
+                  <Text style={styles.zikrTargetText}>
+                    {t('tasbih.target')}: {targetCount}
+                  </Text>
                 )}
                 {sessionId && (
                   <View style={styles.continuingBadge}>
                     <Ionicons name="sync" size={12} color="#3498DB" />
-                    <Text style={styles.continuingText}>Continuing Session</Text>
+                    <Text style={styles.continuingText}>
+                      {t('tasbih.continuingSession')}
+                    </Text>
                   </View>
                 )}
               </>
             ) : (
-              <Text style={styles.zikrPlaceholder}>Tap to set name & target</Text>
+              <Text style={styles.zikrPlaceholder}>
+                {t('tasbih.setNameTarget')}
+              </Text>
             )}
           </View>
           <Ionicons name="settings-outline" size={20} color="#666" />
@@ -248,7 +279,7 @@ export const TasbihScreen = ({ navigation }) => {
           >
             <Ionicons name="bookmark" size={20} color="#00A86B" />
             <Text style={[styles.actionButtonText, { color: '#00A86B' }]}>
-              Save
+              {t('tasbih.save')}
             </Text>
           </TouchableOpacity>
 
@@ -258,7 +289,7 @@ export const TasbihScreen = ({ navigation }) => {
           >
             <Ionicons name="refresh" size={20} color="#F39C12" />
             <Text style={[styles.actionButtonText, { color: '#F39C12' }]}>
-              Reset
+              {t('tasbih.reset')}
             </Text>
           </TouchableOpacity>
 
@@ -268,16 +299,16 @@ export const TasbihScreen = ({ navigation }) => {
           >
             <Ionicons name="close-circle" size={20} color="#DC3545" />
             <Text style={[styles.actionButtonText, { color: '#DC3545' }]}>
-              Clear
+              {t('tasbih.clear')}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Quick Presets */}
         <View style={styles.presetsSection}>
-          <Text style={styles.sectionTitle}>Quick Start</Text>
+          <Text style={styles.sectionTitle}>{t('tasbih.quickStart')}</Text>
           <Text style={styles.sectionSubtitle}>
-            Select a common zikr to begin counting
+            {t('tasbih.quickStartSubtitle')}
           </Text>
 
           {PRESETS.map((preset, index) => (
@@ -312,27 +343,27 @@ export const TasbihScreen = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Zikr Settings</Text>
+              <Text style={styles.modalTitle}>{t('tasbih.settings')}</Text>
               <TouchableOpacity onPress={() => setShowSettingsModal(false)}>
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Name</Text>
+            <Text style={styles.inputLabel}>{t('tasbih.name')}</Text>
             <TextInput
               style={styles.modalInput}
               value={tempName}
               onChangeText={setTempName}
-              placeholder="e.g., Subhanallah, Morning Azkar..."
+              placeholder={t('tasbih.namePlaceholder')}
               placeholderTextColor="#999"
             />
 
-            <Text style={styles.inputLabel}>Target (Optional)</Text>
+            <Text style={styles.inputLabel}>{t('tasbih.targetOptional')}</Text>
             <TextInput
               style={styles.modalInput}
               value={tempTarget}
               onChangeText={setTempTarget}
-              placeholder="e.g., 33, 100, 1000..."
+              placeholder={t('tasbih.targetPlaceholder')}
               placeholderTextColor="#999"
               keyboardType="number-pad"
             />
@@ -353,7 +384,7 @@ export const TasbihScreen = ({ navigation }) => {
               style={styles.modalApplyButton}
               onPress={handleApplySettings}
             >
-              <Text style={styles.modalApplyButtonText}>Apply</Text>
+              <Text style={styles.modalApplyButtonText}>{t('tasbih.apply')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -371,21 +402,21 @@ export const TasbihScreen = ({ navigation }) => {
             <Ionicons name="bookmark" size={48} color="#00A86B" style={{ alignSelf: 'center', marginBottom: 16 }} />
             
             <Text style={styles.modalTitle}>
-              {sessionId ? 'Update Session?' : 'Save Session?'}
+              {sessionId ? t('tasbih.saveModal.updateSession') : t('tasbih.saveModal.saveSession')}
             </Text>
             
             <View style={styles.saveInfoCard}>
               <View style={styles.saveInfoRow}>
-                <Text style={styles.saveInfoLabel}>Zikr:</Text>
+                <Text style={styles.saveInfoLabel}>{t('tasbih.saveModal.zikr')}</Text>
                 <Text style={styles.saveInfoValue}>{zikrName}</Text>
               </View>
               <View style={styles.saveInfoRow}>
-                <Text style={styles.saveInfoLabel}>Count:</Text>
+                <Text style={styles.saveInfoLabel}>{t('tasbih.saveModal.count')}</Text>
                 <Text style={styles.saveInfoValue}>{currentCount}</Text>
               </View>
               {hasTarget && (
                 <View style={styles.saveInfoRow}>
-                  <Text style={styles.saveInfoLabel}>Target:</Text>
+                  <Text style={styles.saveInfoLabel}>{t('tasbih.saveModal.target')}</Text>
                   <Text style={styles.saveInfoValue}>{targetCount}</Text>
                 </View>
               )}
@@ -393,8 +424,8 @@ export const TasbihScreen = ({ navigation }) => {
 
             <Text style={styles.modalSubtitle}>
               {sessionId
-                ? 'Your progress will be updated in history.'
-                : 'You can continue this session later from history.'}
+                ? t('tasbih.saveModal.updateMessage')
+                : t('tasbih.saveModal.saveMessage')}
             </Text>
 
             <View style={styles.modalButtons}>
@@ -402,7 +433,9 @@ export const TasbihScreen = ({ navigation }) => {
                 style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={() => setShowSaveModal(false)}
               >
-                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                <Text style={styles.modalButtonTextCancel}>
+                  {t('tasbih.saveModal.cancel')}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -410,7 +443,7 @@ export const TasbihScreen = ({ navigation }) => {
                 onPress={handleSave}
               >
                 <Text style={styles.modalButtonTextSave}>
-                  {sessionId ? 'Update' : 'Save'}
+                  {sessionId ? t('tasbih.saveModal.update') : t('tasbih.saveModal.save')}
                 </Text>
               </TouchableOpacity>
             </View>

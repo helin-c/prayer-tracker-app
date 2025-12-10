@@ -1,11 +1,11 @@
 // ============================================================================
-// FILE: src/store/authStore.js (FIXED - 401 Error)
+// FILE: src/store/authStore.js (WITH i18n SUPPORT - FIXED)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
 import { storage } from '../services/storage';
 import { STORAGE_KEYS } from '../utils/constants';
-
+import i18n from '../i18n';
 
 export const useAuthStore = create((set, get) => ({
   // State
@@ -30,10 +30,19 @@ export const useAuthStore = create((set, get) => ({
       if (accessToken && userData) {
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         
+        // Set user's preferred language
+        if (userData?.preferred_language) {
+          try {
+            await i18n.changeLanguage(userData.preferred_language);
+          } catch (error) {
+            console.log('Language change error:', error);
+          }
+        }
+        
         set({
           accessToken,
           refreshToken,
-          user: userData,   // storage wrapper JSON parse ediyorsa düz koyabilirsin
+          user: userData,
           isAuthenticated: true,
         });
   
@@ -51,7 +60,7 @@ export const useAuthStore = create((set, get) => ({
   // ============================================================================
   // REGISTER
   // ============================================================================
-  register: async ({ email, password, full_name }) => {
+  register: async ({ email, password, full_name, preferred_language }) => {
     set({ isLoading: true, error: null });
   
     try {
@@ -59,14 +68,28 @@ export const useAuthStore = create((set, get) => ({
         email,
         password,
         full_name,
+        preferred_language: preferred_language || i18n.language || 'en',
       });
   
+      const userData = response.data;
+      
+      // Set language after registration
+      if (userData?.preferred_language) {
+        try {
+          await i18n.changeLanguage(userData.preferred_language);
+        } catch (error) {
+          console.log('Language change error:', error);
+        }
+      }
+  
       set({ isLoading: false });
-      return response.data;
+      
+      // Return format expected by RegisterScreen
+      return { success: true, data: userData };
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Registration failed';
       set({ error: errorMessage, isLoading: false });
-      throw new Error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   },  
 
@@ -92,15 +115,21 @@ export const useAuthStore = create((set, get) => ({
         isLoading: false,
       });
  
-      await get().getCurrentUser();
+      // Get user data and set language
+      const userData = await get().getCurrentUser();
+      
+      if (userData?.preferred_language) {
+        try {
+          await i18n.changeLanguage(userData.preferred_language);
+        } catch (error) {
+          console.log('Language change error:', error);
+        }
+      }
  
-      // ✅ LoginScreen’in beklediği format
       return { success: true };
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Login failed';
       set({ error: errorMessage, isLoading: false });
- 
-      // ✅ Burada throw yerine obje döndürelim
       return { success: false, error: errorMessage };
     }
   },
@@ -121,6 +150,13 @@ export const useAuthStore = create((set, get) => ({
     await storage.removeItem(STORAGE_KEYS.USER_DATA);
   
     delete api.defaults.headers.common['Authorization'];
+    
+    // Reset to default language
+    try {
+      await i18n.changeLanguage('en');
+    } catch (error) {
+      console.log('Language reset error:', error);
+    }
   
     set({
       user: null,
@@ -173,11 +209,9 @@ export const useAuthStore = create((set, get) => ({
   
       const { access_token, refresh_token: new_refresh_token } = response.data;
   
-      // ✅ storage + STORAGE_KEYS kullan
       await storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
       await storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, new_refresh_token);
   
-      // Authorization header’ı güncelle
       api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
   
       set({
@@ -203,21 +237,59 @@ export const useAuthStore = create((set, get) => ({
       const response = await api.put('/users/me', profileData);
       const updatedUser = response.data;
   
-      // ✅ storage + STORAGE_KEYS.USER_DATA kullan
       await storage.setItem(STORAGE_KEYS.USER_DATA, updatedUser);
+      
+      // Update language if changed
+      if (profileData.preferred_language && 
+          profileData.preferred_language !== get().user?.preferred_language) {
+        try {
+          await i18n.changeLanguage(profileData.preferred_language);
+        } catch (error) {
+          console.log('Language change error:', error);
+        }
+      }
   
       set({
         user: updatedUser,
         isLoading: false,
       });
   
-      return updatedUser;
+      return { success: true, data: updatedUser };
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to update profile';
       set({ error: errorMessage, isLoading: false });
-      throw new Error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   },  
+
+  // ============================================================================
+  // LANGUAGE MANAGEMENT
+  // ============================================================================
+  
+  // Get current language
+  getCurrentLanguage: () => {
+    return i18n.language || 'en';
+  },
+
+  // Change language
+  changeLanguage: async (languageCode) => {
+    try {
+      await i18n.changeLanguage(languageCode);
+      
+      // Update user profile if authenticated
+      if (get().isAuthenticated) {
+        const result = await get().updateProfile({ 
+          preferred_language: languageCode 
+        });
+        return result;
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Language change error:', error);
+      return { success: false, error: error.message };
+    }
+  },
 
   // ============================================================================
   // UTILITY METHODS

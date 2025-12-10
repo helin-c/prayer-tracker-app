@@ -22,12 +22,20 @@ export const AppNavigator = () => {
 
   const initializeApp = async () => {
     try {
+      // Optional: Clean up corrupted storage (run once if needed)
+      // Uncomment the line below if users report storage issues
+      // await cleanupCorruptedStorage();
+      
       // Initialize all stores in parallel
       await Promise.all([
         initialize(),
         initializeSettings(),
         loadSessions(),
       ]);
+      
+      // Note: i18n language is set in authStore.initialize() 
+      // based on user's preferred_language
+      
     } catch (error) {
       console.error('App initialization error:', error);
     } finally {

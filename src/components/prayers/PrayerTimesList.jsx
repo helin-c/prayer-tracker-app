@@ -1,72 +1,77 @@
+// ============================================================================
+// FILE: src/components/prayers/PrayerTimesList.jsx (WITH i18n & TIME FORMAT)
+// ============================================================================
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { formatTime } from '../../utils/timeUtils';
 
 export const PrayerTimesList = ({ prayerTimes }) => {
+  const { t, i18n } = useTranslation();
+
   if (!prayerTimes) return null;
 
   const prayers = [
-    { name: 'Fajr', data: prayerTimes.fajr, icon: 'cloudy-night-outline' },
-    { name: 'Sunrise', data: prayerTimes.sunrise, icon: 'sunny-outline'},
-    { name: 'Dhuhr', data: prayerTimes.dhuhr, icon: 'sunny' },
-    { name: 'Asr', data: prayerTimes.asr, icon: 'partly-sunny-outline' },
-    { name: 'Maghrib', data: prayerTimes.maghrib, icon: 'cloudy-night' },
-    { name: 'Isha', data: prayerTimes.isha, icon: 'moon' },
+    { name: 'Fajr', key: 'fajr', data: prayerTimes.fajr, icon: 'cloudy-night-outline' },
+    { name: 'Sunrise', key: 'sunrise', data: prayerTimes.sunrise, icon: 'sunny-outline', isSubtle: true },
+    { name: 'Dhuhr', key: 'dhuhr', data: prayerTimes.dhuhr, icon: 'sunny' },
+    { name: 'Asr', key: 'asr', data: prayerTimes.asr, icon: 'partly-sunny-outline' },
+    { name: 'Maghrib', key: 'maghrib', data: prayerTimes.maghrib, icon: 'cloudy-night' },
+    { name: 'Isha', key: 'isha', data: prayerTimes.isha, icon: 'moon' },
   ];
-  
 
-  const isNextPrayer = (prayerName) => {
-    return prayerName.toLowerCase() === prayerTimes.next_prayer?.toLowerCase();
+  const isNextPrayer = (prayerKey) => {
+    return prayerKey.toLowerCase() === prayerTimes.next_prayer?.toLowerCase();
+  };
+
+  const getPrayerName = (key) => {
+    if (key === 'sunrise') return t('home.sunrise');
+    return t(`prayers.${key.toLowerCase()}`);
   };
 
   const renderPrayer = ({ item }) => (
     <View 
       style={[
         styles.prayerItem,
-        isNextPrayer(item.name) && styles.nextPrayerItem,
+        isNextPrayer(item.key) && styles.nextPrayerItem,
         item.isSubtle && styles.subtlePrayer
       ]}
     >
       <View style={styles.prayerLeft}>
         <View style={[
           styles.iconContainer,
-          isNextPrayer(item.name) && styles.nextPrayerIcon
+          isNextPrayer(item.key) && styles.nextPrayerIcon
         ]}>
           <Ionicons 
             name={item.icon} 
             size={24} 
-            color={isNextPrayer(item.name) ? '#00A86B' : '#666'} 
+            color={isNextPrayer(item.key) ? '#00A86B' : '#666'} 
           />
         </View>
         <Text style={[
           styles.prayerName,
           item.isSubtle && styles.subtleText
         ]}>
-          {item.name}
+          {getPrayerName(item.key)}
         </Text>
       </View>
-      
       <Text style={[
         styles.prayerTime,
-        isNextPrayer(item.name) && styles.nextPrayerTime,
+        isNextPrayer(item.key) && styles.nextPrayerTime,
         item.isSubtle && styles.subtleText
       ]}>
-        {item.data?.readable}
+        {formatTime(item.data?.time, i18n.language)}
       </Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Today's Prayer Times</Text>
-        <Text style={styles.hijriDate}>{prayerTimes.hijri_date}</Text>
-      </View>
-      
       <FlatList
         data={prayers}
         renderItem={renderPrayer}
-        keyExtractor={(item) => item.name}
+        keyExtractor={(item) => item.key}
         scrollEnabled={false}
       />
     </View>
@@ -83,22 +88,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  header: {
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    paddingBottom: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 4,
-  },
-  hijriDate: {
-    fontSize: 14,
-    color: '#666',
   },
   prayerItem: {
     flexDirection: 'row',

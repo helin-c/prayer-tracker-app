@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/screens/friends/AddFriendScreen.jsx (WITH i18n)
+// ============================================================================
 import React, { useState } from 'react';
 import {
   View,
@@ -10,24 +13,29 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
 
 export const AddFriendScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const { sendFriendRequest, isLoading } = useFriendsStore();
   const [email, setEmail] = useState('');
 
   const handleSendRequest = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter an email address');
+      Alert.alert(t('common.error'), t('friends.errors.enterEmail'));
       return;
     }
 
     try {
       await sendFriendRequest(email.trim().toLowerCase());
-      Alert.alert('Success', 'Friend request sent successfully');
+      Alert.alert(t('common.success'), t('friends.friendRequestSent'));
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to send friend request');
+      Alert.alert(
+        t('common.error'),
+        error.message || t('friends.errors.sendFailed')
+      );
     }
   };
 
@@ -41,7 +49,7 @@ export const AddFriendScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Friend</Text>
+        <Text style={styles.headerTitle}>{t('friends.addFriend')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -50,16 +58,14 @@ export const AddFriendScreen = ({ navigation }) => {
           <Ionicons name="person-add" size={64} color="#00A86B" />
         </View>
 
-        <Text style={styles.title}>Add a Friend</Text>
-        <Text style={styles.subtitle}>
-          Enter your friend's email address to send them a friend request
-        </Text>
+        <Text style={styles.title}>{t('friends.addAFriend')}</Text>
+        <Text style={styles.subtitle}>{t('friends.enterEmailPrompt')}</Text>
 
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="friend@example.com"
+          placeholder={t('friends.emailPlaceholder')}
           placeholderTextColor="#999"
           keyboardType="email-address"
           autoCapitalize="none"
@@ -76,7 +82,7 @@ export const AddFriendScreen = ({ navigation }) => {
           ) : (
             <>
               <Ionicons name="send" size={20} color="#FFF" />
-              <Text style={styles.sendButtonText}>Send Request</Text>
+              <Text style={styles.sendButtonText}>{t('friends.sendRequest')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -85,10 +91,6 @@ export const AddFriendScreen = ({ navigation }) => {
   );
 };
 
-
-// ============================================================================
-// SHARED STYLES
-// ============================================================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -136,6 +138,14 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 32,
+  },
+  input: {
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   sendButton: {
     flexDirection: 'row',

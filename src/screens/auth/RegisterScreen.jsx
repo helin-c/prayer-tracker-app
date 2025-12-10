@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/screens/auth/RegisterScreen.jsx (WITH i18n)
+// ============================================================================
 import React, { useState } from 'react';
 import {
   View,
@@ -11,15 +14,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
 
+const LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+];
+
 export const RegisterScreen = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     full_name: '',
+    preferred_language: i18n.language || 'en',
   });
   const [errors, setErrors] = useState({});
 
@@ -30,26 +42,32 @@ export const RegisterScreen = ({ navigation }) => {
     setErrors({ ...errors, [field]: '' });
   };
 
+  const handleLanguageSelect = (langCode) => {
+    updateField('preferred_language', langCode);
+    // Optionally change app language immediately
+    i18n.changeLanguage(langCode);
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.errors.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = t('auth.errors.emailInvalid');
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('auth.errors.passwordRequired');
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = t('auth.errors.passwordMinLength');
     }
 
     // Confirm password
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('auth.errors.passwordsNotMatch');
     }
 
     setErrors(newErrors);
@@ -70,9 +88,11 @@ export const RegisterScreen = ({ navigation }) => {
     const result = await register(cleanData);
 
     if (result.success) {
-      Alert.alert('Success', 'Account created successfully! Welcome aboard! 🎉');
+      Alert.alert(t('common.success'), t('auth.accountCreated'));
+      // Auto-login after successful registration
+      navigation.navigate('Login');
     } else {
-      Alert.alert('Registration Failed', result.error);
+      Alert.alert(t('auth.errors.registerFailed'), result.error);
     }
   };
 
@@ -100,72 +120,100 @@ export const RegisterScreen = ({ navigation }) => {
             <View style={styles.logoContainer}>
               <Ionicons name="person-add" size={50} color="#00A86B" />
             </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join our community today</Text>
+            <Text style={styles.title}>{t('auth.createAccount')}</Text>
+            <Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
+          </View>
+
+          {/* Language Selection */}
+          <View style={styles.languageSection}>
+            <Text style={styles.languageLabel}>{t('auth.selectLanguage')}</Text>
+            <View style={styles.languageButtons}>
+              {LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageButton,
+                    formData.preferred_language === lang.code && styles.languageButtonActive,
+                  ]}
+                  onPress={() => handleLanguageSelect(lang.code)}
+                >
+                  <Text style={styles.languageFlag}>{lang.flag}</Text>
+                  <Text
+                    style={[
+                      styles.languageName,
+                      formData.preferred_language === lang.code && styles.languageNameActive,
+                    ]}
+                  >
+                    {lang.name}
+                  </Text>
+                  {formData.preferred_language === lang.code && (
+                    <Ionicons name="checkmark-circle" size={20} color="#00A86B" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             <Input
-              label="Email Address"
+              label={t('auth.emailAddress')}
               value={formData.email}
               onChangeText={(text) => updateField('email', text)}
-              placeholder="your.email@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               keyboardType="email-address"
               leftIcon="mail-outline"
               error={errors.email}
             />
 
             <Input
-              label="Full Name (Optional)"
+              label={t('auth.fullNameOptional')}
               value={formData.full_name}
               onChangeText={(text) => updateField('full_name', text)}
-              placeholder="John Doe"
+              placeholder={t('auth.fullNamePlaceholder')}
               leftIcon="person-outline"
               autoCapitalize="words"
             />
 
             <Input
-              label="Password"
+              label={t('auth.password')}
               value={formData.password}
               onChangeText={(text) => updateField('password', text)}
-              placeholder="Minimum 8 characters"
+              placeholder={t('auth.passwordPlaceholder')}
               secureTextEntry
               leftIcon="lock-closed-outline"
               error={errors.password}
             />
 
             <Input
-              label="Confirm Password"
+              label={t('auth.confirmPassword')}
               value={formData.confirmPassword}
               onChangeText={(text) => updateField('confirmPassword', text)}
-              placeholder="Re-enter your password"
+              placeholder={t('auth.confirmPasswordPlaceholder')}
               secureTextEntry
               leftIcon="lock-closed-outline"
               error={errors.confirmPassword}
             />
 
             <Button
-              title="Create Account"
+              title={t('auth.createAccount')}
               onPress={handleRegister}
               loading={isLoading}
               style={styles.registerButton}
             />
 
             <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Already have an account? </Text>
+              <Text style={styles.loginText}>{t('auth.alreadyHaveAccount')} </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginLink}>Sign In</Text>
+                <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Footer Quote */}
           <View style={styles.footerQuote}>
-            <Text style={styles.quoteText}>
-              "And establish prayer and give zakah and bow with those who bow"
-            </Text>
-            <Text style={styles.quoteReference}>Quran 2:43</Text>
+            <Text style={styles.quoteText}>{t('quotes.prayer1')}</Text>
+            <Text style={styles.quoteReference}>{t('quotes.prayer1Ref')}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -196,7 +244,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   logoContainer: {
     width: 100,
@@ -217,6 +265,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  languageSection: {
+    marginBottom: 24,
+  },
+  languageLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 12,
+  },
+  languageButtons: {
+    gap: 12,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  languageButtonActive: {
+    backgroundColor: '#F0FFF4',
+    borderColor: '#00A86B',
+  },
+  languageFlag: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  languageName: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666',
+  },
+  languageNameActive: {
+    color: '#00A86B',
+    fontWeight: '600',
   },
   form: {
     width: '100%',

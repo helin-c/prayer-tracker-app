@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/screens/profile/EditProfileScreen.jsx (WITH i18n)
+// ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -11,9 +14,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 
+const LANGUAGES = [
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+];
+
 export const EditProfileScreen = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const { user, updateProfile, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
@@ -23,25 +34,48 @@ export const EditProfileScreen = ({ navigation }) => {
     preferred_language: 'en',
   });
 
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     if (user) {
       setFormData({
         full_name: user.full_name || '',
         phone: user.phone || '',
         location: user.location || '',
-        preferred_language: user.preferred_language || 'en',
+        preferred_language: user.preferred_language || i18n.language || 'en',
       });
     }
   }, [user]);
 
   const handleSave = async () => {
+    setIsSaving(true);
+    
     try {
-      await updateProfile(formData);
-      Alert.alert('Success', 'Profile updated successfully');
-      navigation.goBack();
+      const result = await updateProfile(formData);
+      
+      if (result.success) {
+        Alert.alert(
+          t('common.success'),
+          t('profile.profileUpdated'),
+          [
+            {
+              text: t('common.done'),
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        );
+      } else {
+        Alert.alert(t('common.error'), result.error || t('profile.updateFailed'));
+      }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to update profile');
+      Alert.alert(t('common.error'), error.message || t('profile.updateFailed'));
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleLanguageSelect = (langCode) => {
+    setFormData({ ...formData, preferred_language: langCode });
   };
 
   return (
@@ -54,98 +88,121 @@ export const EditProfileScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={styles.headerTitle}>{t('profile.editProfile')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Full Name */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.full_name}
-            onChangeText={(text) => setFormData({ ...formData, full_name: text })}
-            placeholder="Enter your full name"
-            placeholderTextColor="#999"
-          />
+          <Text style={styles.label}>{t('auth.fullName')}</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={formData.full_name}
+              onChangeText={(text) => setFormData({ ...formData, full_name: text })}
+              placeholder={t('auth.fullNamePlaceholder')}
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
 
         {/* Phone */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.phone}
-            onChangeText={(text) => setFormData({ ...formData, phone: text })}
-            placeholder="+1234567890"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-          />
+          <Text style={styles.label}>{t('profile.phoneNumber')}</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={formData.phone}
+              onChangeText={(text) => setFormData({ ...formData, phone: text })}
+              placeholder="+90 5XX XXX XX XX"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+            />
+          </View>
         </View>
 
         {/* Location */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.location}
-            onChangeText={(text) => setFormData({ ...formData, location: text })}
-            placeholder="City, Country"
-            placeholderTextColor="#999"
-          />
+          <Text style={styles.label}>{t('profile.location')}</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              placeholder={t('profile.locationPlaceholder')}
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
 
-        {/* Language */}
+        {/* Language Selection */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Preferred Language</Text>
-          <View style={styles.languageButtons}>
-            <TouchableOpacity
-              style={[
-                styles.languageButton,
-                formData.preferred_language === 'en' && styles.languageButtonActive,
-              ]}
-              onPress={() => setFormData({ ...formData, preferred_language: 'en' })}
-            >
-              <Text
+          <Text style={styles.label}>{t('profile.language')}</Text>
+          <Text style={styles.labelSubtext}>{t('profile.languageDescription')}</Text>
+          
+          <View style={styles.languageList}>
+            {LANGUAGES.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
                 style={[
-                  styles.languageButtonText,
-                  formData.preferred_language === 'en' && styles.languageButtonTextActive,
+                  styles.languageOption,
+                  formData.preferred_language === lang.code && styles.languageOptionActive,
                 ]}
+                onPress={() => handleLanguageSelect(lang.code)}
+                activeOpacity={0.7}
               >
-                English
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.languageButton,
-                formData.preferred_language === 'tr' && styles.languageButtonActive,
-              ]}
-              onPress={() => setFormData({ ...formData, preferred_language: 'tr' })}
-            >
-              <Text
-                style={[
-                  styles.languageButtonText,
-                  formData.preferred_language === 'tr' && styles.languageButtonTextActive,
-                ]}
-              >
-                Türkçe
-              </Text>
-            </TouchableOpacity>
+                <View style={styles.languageLeft}>
+                  <Text style={styles.languageFlag}>{lang.flag}</Text>
+                  <View style={styles.languageText}>
+                    <Text style={styles.languageName}>{lang.nativeName}</Text>
+                    <Text style={styles.languageNameEn}>{lang.name}</Text>
+                  </View>
+                </View>
+                
+                {formData.preferred_language === lang.code && (
+                  <Ionicons name="checkmark-circle" size={24} color="#00A86B" />
+                )}
+              </TouchableOpacity>
+            ))}
           </View>
+
+          {formData.preferred_language !== i18n.language && (
+            <View style={styles.languageNote}>
+              <Ionicons name="information-circle" size={16} color="#3498DB" />
+              <Text style={styles.languageNoteText}>
+                {t('profile.languageChangeNote')}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Save Button */}
         <TouchableOpacity
-          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+          style={[styles.saveButton, (isLoading || isSaving) && styles.saveButtonDisabled]}
           onPress={handleSave}
-          disabled={isLoading}
+          disabled={isLoading || isSaving}
         >
-          {isLoading ? (
+          {(isLoading || isSaving) ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <>
+              <Ionicons name="checkmark-circle" size={20} color="#FFF" />
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+            </>
           )}
+        </TouchableOpacity>
+
+        {/* Discard Button */}
+        <TouchableOpacity
+          style={styles.discardButton}
+          onPress={() => navigation.goBack()}
+          disabled={isLoading || isSaving}
+        >
+          <Text style={styles.discardButtonText}>{t('common.cancel')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -153,93 +210,154 @@ export const EditProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#F8F9FA',
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      backgroundColor: '#FFF',
-      borderBottomWidth: 1,
-      borderBottomColor: '#F0F0F0',
-    },
-    backButton: {
-      width: 40,
-      height: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: '#1A1A1A',
-    },
-    content: {
-      flex: 1,
-      padding: 20,
-    },
-    
-    // Edit Profile
-    inputGroup: {
-      marginBottom: 20,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: '#666',
-      marginBottom: 8,
-    },
-    input: {
-      backgroundColor: '#FFF',
-      borderRadius: 12,
-      padding: 16,
-      fontSize: 16,
-      color: '#1A1A1A',
-      borderWidth: 1,
-      borderColor: '#E0E0E0',
-    },
-    languageButtons: {
-      flexDirection: 'row',
-      gap: 12,
-    },
-    languageButton: {
-      flex: 1,
-      padding: 16,
-      borderRadius: 12,
-      backgroundColor: '#FFF',
-      borderWidth: 2,
-      borderColor: '#E0E0E0',
-      alignItems: 'center',
-    },
-    languageButtonActive: {
-      borderColor: '#00A86B',
-      backgroundColor: '#F0FFF4',
-    },
-    languageButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#666',
-    },
-    languageButtonTextActive: {
-      color: '#00A86B',
-    },
-    saveButton: {
-      backgroundColor: '#00A86B',
-      padding: 16,
-      borderRadius: 12,
-      alignItems: 'center',
-      marginTop: 20,
-    },
-    saveButtonDisabled: {
-      opacity: 0.6,
-    },
-    saveButtonText: {
-      color: '#FFF',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-  });
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  
+  // Input Groups
+  inputGroup: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  labelSubtext: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 12,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 16,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    padding: 16,
+    fontSize: 16,
+    color: '#1A1A1A',
+  },
+  
+  // Language Selection
+  languageList: {
+    gap: 12,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+  },
+  languageOptionActive: {
+    borderColor: '#00A86B',
+    backgroundColor: '#F0FFF4',
+  },
+  languageLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  languageFlag: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  languageText: {
+    flex: 1,
+  },
+  languageName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 2,
+  },
+  languageNameEn: {
+    fontSize: 13,
+    color: '#666',
+  },
+  languageNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  languageNoteText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#3498DB',
+    lineHeight: 18,
+  },
+  
+  // Buttons
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00A86B',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 8,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  discardButton: {
+    alignItems: 'center',
+    padding: 16,
+    marginTop: 12,
+    marginBottom: 32,
+  },
+  discardButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

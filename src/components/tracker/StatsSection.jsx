@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/tracker/StatsSection.jsx
+// FILE: src/components/tracker/StatsSection.jsx (i18n INTEGRATED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -10,17 +10,19 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 
-const PERIODS = [
-  { key: 'week', label: 'Week' },
-  { key: 'month', label: 'Month' },
-  { key: 'year', label: 'Year' },
-];
-
 export const StatsSection = () => {
+  const { t } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const { periodStats, isLoading, fetchPeriodStats } = usePrayerTrackerStore();
+
+  const PERIODS = [
+    { key: 'week', label: t('prayerTracker.stats.week') },
+    { key: 'month', label: t('prayerTracker.stats.month') },
+    { key: 'year', label: t('prayerTracker.stats.year') },
+  ];
 
   useEffect(() => {
     fetchPeriodStats(selectedPeriod);
@@ -44,11 +46,41 @@ export const StatsSection = () => {
     </View>
   );
 
+  const formatDateRange = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    const months = [
+      t('prayerTracker.months.jan'),
+      t('prayerTracker.months.feb'),
+      t('prayerTracker.months.mar'),
+      t('prayerTracker.months.apr'),
+      t('prayerTracker.months.may'),
+      t('prayerTracker.months.jun'),
+      t('prayerTracker.months.jul'),
+      t('prayerTracker.months.aug'),
+      t('prayerTracker.months.sep'),
+      t('prayerTracker.months.oct'),
+      t('prayerTracker.months.nov'),
+      t('prayerTracker.months.dec')
+    ];
+    
+    const startStr = `${months[startDate.getMonth()]} ${startDate.getDate()}`;
+    const endStr = `${months[endDate.getMonth()]} ${endDate.getDate()}`;
+    
+    return `${startStr} - ${endStr}, ${endDate.getFullYear()}`;
+  };
+
+  const getPrayerName = (prayerName) => {
+    if (!prayerName) return '';
+    return t(`prayerTracker.prayers.${prayerName.toLowerCase()}`);
+  };
+
   if (isLoading && !periodStats) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#00A86B" />
-        <Text style={styles.loadingText}>Loading statistics...</Text>
+        <Text style={styles.loadingText}>{t('prayerTracker.stats.loading')}</Text>
       </View>
     );
   }
@@ -56,7 +88,7 @@ export const StatsSection = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Statistics</Text>
+        <Text style={styles.title}>{t('prayerTracker.statistics')}</Text>
         
         {/* Period Selector */}
         <View style={styles.periodSelector}>
@@ -89,29 +121,29 @@ export const StatsSection = () => {
           <View style={styles.statsGrid}>
             <StatCard
               icon="checkmark-circle"
-              label="Completion Rate"
+              label={t('prayerTracker.stats.completionRate')}
               value={periodStats.completion_rate}
               suffix="%"
               color="#00A86B"
             />
             <StatCard
               icon="flame"
-              label="Current Streak"
+              label={t('prayerTracker.stats.currentStreak')}
               value={periodStats.current_streak}
-              suffix=" days"
+              suffix={` ${t('prayerTracker.stats.days')}`}
               color="#FF6B35"
             />
             <StatCard
               icon="time"
-              label="On-Time Prayers"
+              label={t('prayerTracker.stats.onTimePrayers')}
               value={periodStats.on_time_prayers}
               color="#3498DB"
             />
             <StatCard
               icon="trophy"
-              label="Best Streak"
+              label={t('prayerTracker.stats.bestStreak')}
               value={periodStats.best_streak}
-              suffix=" days"
+              suffix={` ${t('prayerTracker.stats.days')}`}
               color="#F39C12"
             />
           </View>
@@ -119,13 +151,17 @@ export const StatsSection = () => {
           {/* Summary Card */}
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Prayers</Text>
+              <Text style={styles.summaryLabel}>
+                {t('prayerTracker.stats.totalPrayers')}
+              </Text>
               <Text style={styles.summaryValue}>{periodStats.total_prayers}</Text>
             </View>
             <View style={styles.summaryDivider} />
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Completed</Text>
+              <Text style={styles.summaryLabel}>
+                {t('prayerTracker.stats.completed')}
+              </Text>
               <Text style={[styles.summaryValue, { color: '#00A86B' }]}>
                 {periodStats.completed_prayers}
               </Text>
@@ -133,7 +169,9 @@ export const StatsSection = () => {
             <View style={styles.summaryDivider} />
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Missed</Text>
+              <Text style={styles.summaryLabel}>
+                {t('prayerTracker.stats.missed')}
+              </Text>
               <Text style={[styles.summaryValue, { color: '#DC3545' }]}>
                 {periodStats.missed_prayers}
               </Text>
@@ -143,9 +181,11 @@ export const StatsSection = () => {
               <>
                 <View style={styles.summaryDivider} />
                 <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Most Consistent</Text>
+                  <Text style={styles.summaryLabel}>
+                    {t('prayerTracker.stats.mostConsistent')}
+                  </Text>
                   <Text style={[styles.summaryValue, { color: '#F39C12' }]}>
-                    {periodStats.most_consistent_prayer}
+                    {getPrayerName(periodStats.most_consistent_prayer)}
                   </Text>
                 </View>
               </>
@@ -160,25 +200,16 @@ export const StatsSection = () => {
       ) : (
         <View style={styles.emptyState}>
           <Ionicons name="stats-chart" size={64} color="#CCC" />
-          <Text style={styles.emptyStateText}>No statistics available</Text>
+          <Text style={styles.emptyStateText}>
+            {t('prayerTracker.stats.noStats')}
+          </Text>
           <Text style={styles.emptyStateSubtext}>
-            Start tracking your prayers to see your progress
+            {t('prayerTracker.stats.startTracking')}
           </Text>
         </View>
       )}
     </View>
   );
-};
-
-const formatDateRange = (start, end) => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  
-  const options = { month: 'short', day: 'numeric' };
-  const startStr = startDate.toLocaleDateString('en-US', options);
-  const endStr = endDate.toLocaleDateString('en-US', options);
-  
-  return `${startStr} - ${endStr}, ${endDate.getFullYear()}`;
 };
 
 const styles = StyleSheet.create({

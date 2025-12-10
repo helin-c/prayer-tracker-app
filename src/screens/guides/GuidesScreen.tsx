@@ -1,5 +1,8 @@
 // @ts-nocheck
-import React from 'react';
+// ============================================================================
+// FILE: src/screens/guides/GuidesScreen.jsx (UPDATED WITH QURAN)
+// ============================================================================
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,88 +14,101 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
+import { useQuranStore } from '../../store/quranStore';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 60) / 2; // 2 cards per row with padding
-
-const guides = [
-  {
-    id: 'prayer',
-    title: 'How to Pray',
-    subtitle: 'Step-by-step Salah guide',
-    icon: 'hand-right',
-    color: '#00A86B',
-    gradient: ['#00A86B', '#00D084'],
-    screen: 'PrayerGuide',
-  },
-  {
-    id: 'wudu',
-    title: 'Wudu (Ablution)',
-    subtitle: 'Purification before prayer',
-    icon: 'water',
-    color: '#3498DB',
-    gradient: ['#3498DB', '#5DADE2'],
-    screen: 'WuduGuide',
-  },
-  {
-    id: 'pillars',
-    title: 'Five Pillars',
-    subtitle: 'Foundation of Islam',
-    icon: 'cube',
-    color: '#9B59B6',
-    gradient: ['#9B59B6', '#BB8FCE'],
-    screen: 'PillarsGuide',
-  },
-  {
-    id: 'duas',
-    title: 'Daily Duas',
-    subtitle: 'Essential supplications',
-    icon: 'book',
-    color: '#E67E22',
-    gradient: ['#E67E22', '#F39C12'],
-    screen: 'DuasGuide',
-  },
-  {
-    id: 'quran',
-    title: 'Understanding Quran',
-    subtitle: 'Introduction to Holy Book',
-    icon: 'library',
-    color: '#16A085',
-    gradient: ['#16A085', '#1ABC9C'],
-    screen: 'QuranGuide',
-  },
-  {
-    id: 'ramadan',
-    title: 'Ramadan & Fasting',
-    subtitle: 'Month of blessing',
-    icon: 'moon',
-    color: '#8E44AD',
-    gradient: ['#8E44AD', '#A569BD'],
-    screen: 'RamadanGuide',
-  },
-  {
-    id: 'hajj',
-    title: 'Hajj & Umrah',
-    subtitle: 'Sacred pilgrimage',
-    icon: 'business',
-    color: '#C0392B',
-    gradient: ['#C0392B', '#E74C3C'],
-    screen: 'HajjGuide',
-  },
-  {
-    id: 'basics',
-    title: 'Islam Basics',
-    subtitle: 'For beginners',
-    icon: 'bulb',
-    color: '#F39C12',
-    gradient: ['#F39C12', '#F1C40F'],
-    screen: 'BasicsGuide',
-  },
-];
+const CARD_WIDTH = (width - 60) / 2;
 
 export const GuidesScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  const { initialize } = useQuranStore();
+
+  useEffect(() => {
+    initialize();
+  }, []);
+
+  const guides = [
+    {
+      id: 'quran',
+      title: t('quran.quran'),
+      subtitle: t('guides.quranSubtitle'),
+      icon: 'book',
+      color: '#00A86B',
+      gradient: ['#00A86B', '#00D084'],
+      action: () => navigation.navigate('QuranSurahList'),
+    },
+    {
+      id: 'prayer',
+      title: t('guides.prayer'),
+      subtitle: t('guides.prayerSubtitle'),
+      icon: 'hand-right',
+      color: '#3498DB',
+      gradient: ['#3498DB', '#5DADE2'],
+      screen: 'PrayerGuide',
+    },
+    {
+      id: 'wudu',
+      title: t('guides.wudu'),
+      subtitle: t('guides.wuduSubtitle'),
+      icon: 'water',
+      color: '#9B59B6',
+      gradient: ['#9B59B6', '#BB8FCE'],
+      screen: 'WuduGuide',
+    },
+    {
+      id: 'pillars',
+      title: t('guides.pillars'),
+      subtitle: t('guides.pillarsSubtitle'),
+      icon: 'cube',
+      color: '#E67E22',
+      gradient: ['#E67E22', '#F39C12'],
+      screen: 'PillarsGuide',
+    },
+    {
+      id: 'duas',
+      title: t('guides.duas'),
+      subtitle: t('guides.duasSubtitle'),
+      icon: 'chatbubbles',
+      color: '#16A085',
+      gradient: ['#16A085', '#1ABC9C'],
+      screen: 'DuasGuide',
+    },
+    {
+      id: 'ramadan',
+      title: t('guides.ramadan'),
+      subtitle: t('guides.ramadanSubtitle'),
+      icon: 'moon',
+      color: '#8E44AD',
+      gradient: ['#8E44AD', '#A569BD'],
+      screen: 'RamadanGuide',
+    },
+    {
+      id: 'hajj',
+      title: t('guides.hajj'),
+      subtitle: t('guides.hajjSubtitle'),
+      icon: 'business',
+      color: '#C0392B',
+      gradient: ['#C0392B', '#E74C3C'],
+      screen: 'HajjGuide',
+    },
+    {
+      id: 'basics',
+      title: t('guides.basics'),
+      subtitle: t('guides.basicsSubtitle'),
+      icon: 'bulb',
+      color: '#F39C12',
+      gradient: ['#F39C12', '#F1C40F'],
+      screen: 'BasicsGuide',
+    },
+  ];
+
   const handleGuidePress = (guide) => {
-    navigation.navigate(guide.screen, { guide });
+    if (guide.action) {
+      guide.action();
+    } else if (guide.screen) {
+      navigation.navigate(guide.screen, { guide });
+    }
   };
 
   const renderGuideCard = (guide) => (
@@ -129,13 +145,11 @@ export const GuidesScreen = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Islamic Guides</Text>
-          <Text style={styles.subtitle}>
-            Learn about Islam, prayer, and faith
-          </Text>
+          <Text style={styles.title}>{t('guides.title')}</Text>
+          <Text style={styles.subtitle}>{t('guides.subtitle')}</Text>
         </View>
 
-        {/* Featured Card */}
+        {/* Featured Card - Quran */}
         <TouchableOpacity
           style={styles.featuredCard}
           onPress={() => handleGuidePress(guides[0])}
@@ -149,13 +163,13 @@ export const GuidesScreen = ({ navigation }) => {
           >
             <View style={styles.featuredContent}>
               <View style={styles.featuredIcon}>
-                <Ionicons name="hand-right" size={48} color="#FFF" />
+                <Ionicons name="book" size={48} color="#FFF" />
               </View>
               <View style={styles.featuredText}>
-                <Text style={styles.featuredBadge}>POPULAR</Text>
-                <Text style={styles.featuredTitle}>How to Pray</Text>
+                <Text style={styles.featuredBadge}>{t('guides.popular')}</Text>
+                <Text style={styles.featuredTitle}>{t('quran.quran')}</Text>
                 <Text style={styles.featuredSubtitle}>
-                  Complete step-by-step guide to perform Salah
+                  {t('guides.quranDescription')}
                 </Text>
               </View>
             </View>
@@ -170,7 +184,7 @@ export const GuidesScreen = ({ navigation }) => {
 
         {/* Categories */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Browse All Guides</Text>
+          <Text style={styles.sectionTitle}>{t('guides.browseAll')}</Text>
           <View style={styles.cardsGrid}>
             {guides.slice(1).map((guide) => renderGuideCard(guide))}
           </View>
@@ -180,10 +194,8 @@ export const GuidesScreen = ({ navigation }) => {
         <View style={styles.helpSection}>
           <View style={styles.helpCard}>
             <Ionicons name="help-circle" size={32} color="#00A86B" />
-            <Text style={styles.helpTitle}>New to Islam?</Text>
-            <Text style={styles.helpText}>
-              Start with our beginner's guide to learn the basics
-            </Text>
+            <Text style={styles.helpTitle}>{t('guides.newToIslam')}</Text>
+            <Text style={styles.helpText}>{t('guides.newToIslamText')}</Text>
             <TouchableOpacity
               style={styles.helpButton}
               onPress={() =>
@@ -192,7 +204,7 @@ export const GuidesScreen = ({ navigation }) => {
                 })
               }
             >
-              <Text style={styles.helpButtonText}>Get Started</Text>
+              <Text style={styles.helpButtonText}>{t('guides.getStarted')}</Text>
               <Ionicons name="arrow-forward" size={16} color="#00A86B" />
             </TouchableOpacity>
           </View>
