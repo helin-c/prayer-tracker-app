@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/api/v1/endpoints/auth.py
+# FILE: backend/app/api/v1/endpoints/auth.py (FIXED)
 # ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -42,21 +42,7 @@ async def register(
     user_data: UserCreate,
     db: Session = Depends(get_db)
 ):
-    """
-    Register a new user account.
-    
-    **Process:**
-    - Validates email uniqueness
-    - Hashes password securely
-    - Creates user with default settings
-    
-    **Returns:**
-    - User profile information
-    
-    **Raises:**
-    - 400: Email already registered
-    - 500: Server error during registration
-    """
+    """Register a new user account."""
     try:
         # Normalize email
         email = user_data.email.lower().strip()
@@ -111,23 +97,7 @@ async def login(
     credentials: UserLogin,
     db: Session = Depends(get_db)
 ):
-    """
-    Authenticate user and return JWT tokens.
-    
-    **Process:**
-    - Validates email and password
-    - Updates last login timestamp
-    - Returns access and refresh tokens
-    
-    **Returns:**
-    - Access token (15 minutes validity)
-    - Refresh token (7 days validity)
-    
-    **Raises:**
-    - 401: Invalid credentials
-    - 403: Account inactive
-    - 500: Server error
-    """
+    """Authenticate user and return JWT tokens."""
     try:
         # Normalize email
         email = credentials.email.lower().strip()
@@ -187,7 +157,7 @@ async def login(
 
 
 # ============================================================================
-# REFRESH TOKEN
+# REFRESH TOKEN (FIXED)
 # ============================================================================
 @router.post(
     "/refresh",
@@ -199,10 +169,27 @@ async def refresh_access_token(
     token_request: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ):
+    """Refresh access token using refresh token."""
     try:
-        # ✅ async ise mutlaka await et
-        user = await validate_refresh_token(token_request.refresh_token, db)
+        # Validate refresh token and get user
+        # validate_refresh_token returns User object directly, not HTTPException
+        user = validate_refresh_token(token_request.refresh_token, db)
         
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        # Check if user is still active
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is inactive"
+            )
+        
+        # Generate new tokens
         access_token = create_access_token(data={"sub": str(user.id)})
         refresh_token = create_refresh_token(data={"sub": str(user.id)})
         
@@ -219,10 +206,10 @@ async def refresh_access_token(
     except Exception as e:
         logger.error(f"Token refresh error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to refresh token"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"}
         )
-
 
 
 # ============================================================================
@@ -237,42 +224,26 @@ async def refresh_access_token(
 async def get_current_user_info(
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get current authenticated user's profile.
-    
-    **Requires:**
-    - Valid access token in Authorization header
-    
-    **Returns:**
-    - User profile information
-    """
+    """Get current authenticated user's profile."""
     return current_user
 
 
 # ============================================================================
-# LOGOUT
+# LOGOUT (FIXED - No token required)
 # ============================================================================
 @router.post(
     "/logout",
     summary="User logout",
     description="Logout current user (client should delete tokens)"
 )
-async def logout(
-    current_user: User = Depends(get_current_user)
-):
+async def logout():
     """
-    Logout current user.
+    Logout endpoint.
     
-    **Note:**
-    - This endpoint doesn't invalidate tokens server-side
-    - Client must delete stored tokens after calling this
-    
-    **Returns:**
-    - Success message with user email
+    Note: This endpoint doesn't require authentication.
+    Client should delete stored tokens after calling this.
     """
-    logger.info(f"User logged out: {current_user.email}")
-    
     return {
         "message": "Successfully logged out",
-        "email": current_user.email
+        "detail": "Please delete your tokens on the client side"
     }

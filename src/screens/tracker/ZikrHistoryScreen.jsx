@@ -1,7 +1,7 @@
 // ============================================================================
-// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (i18n INTEGRATED)
+// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (UPDATED)
 // ============================================================================
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useTasbihStore } from '../../store/tasbihStore';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, tr } from 'date-fns/locale';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 export const ZikrHistoryScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -27,9 +29,16 @@ export const ZikrHistoryScreen = ({ navigation }) => {
     loadSessions 
   } = useTasbihStore();
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    loadSessions();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    await loadSessions();
+    setIsLoading(false);
+  };
 
   const getDateFnsLocale = () => {
     return i18n.language === 'tr' ? tr : enUS;
@@ -172,85 +181,103 @@ export const ZikrHistoryScreen = ({ navigation }) => {
     s.target > 0 && s.count >= s.target
   ).length;
 
+  if (isLoading) {
+    return (
+      <IslamicLoadingScreen 
+        message={t('zikrHistory.loading')} 
+        submessage={t('zikrHistory.loadingSubtitle')}
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('zikrHistory.title')}</Text>
-        {totalSessions > 0 && (
-          <TouchableOpacity onPress={handleClearAll}>
-            <Text style={styles.clearAllText}>{t('zikrHistory.clearAll')}</Text>
-          </TouchableOpacity>
-        )}
-        {totalSessions === 0 && <View style={{ width: 70 }} />}
-      </View>
-
-      {/* Stats Summary */}
-      {totalSessions > 0 && (
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Ionicons name="bookmark" size={20} color="#00A86B" />
-            <Text style={styles.statValue}>{totalSessions}</Text>
-            <Text style={styles.statLabel}>{t('zikrHistory.sessions')}</Text>
-          </View>
-          
-          <View style={styles.statCard}>
-            <Ionicons name="infinite" size={20} color="#3498DB" />
-            <Text style={styles.statValue}>{totalCounts}</Text>
-            <Text style={styles.statLabel}>{t('zikrHistory.totalCounts')}</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Ionicons name="checkmark-circle" size={20} color="#9B59B6" />
-            <Text style={styles.statValue}>{completedSessions}</Text>
-            <Text style={styles.statLabel}>{t('zikrHistory.completed')}</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Sessions List */}
-      {totalSessions > 0 ? (
-        <FlatList
-          data={sessions}
-          renderItem={renderSession}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIconContainer}>
-            <Ionicons name="bookmark-outline" size={64} color="#CCC" />
-          </View>
-          <Text style={styles.emptyTitle}>{t('zikrHistory.empty.title')}</Text>
-          <Text style={styles.emptyText}>
-            {t('zikrHistory.empty.message')}
-          </Text>
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            style={styles.startButton}
+            style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="add-circle" size={20} color="#FFF" />
-            <Text style={styles.startButtonText}>
-              {t('zikrHistory.empty.startButton')}
-            </Text>
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('zikrHistory.title')}</Text>
+          {totalSessions > 0 && (
+            <TouchableOpacity onPress={handleClearAll}>
+              <Text style={styles.clearAllText}>{t('zikrHistory.clearAll')}</Text>
+            </TouchableOpacity>
+          )}
+          {totalSessions === 0 && <View style={{ width: 70 }} />}
         </View>
-      )}
-    </SafeAreaView>
+
+        {/* Stats Summary */}
+        {totalSessions > 0 && (
+          <View style={styles.statsContainer}>
+            <View style={styles.statCard}>
+              <Ionicons name="bookmark" size={20} color="#00A86B" />
+              <Text style={styles.statValue}>{totalSessions}</Text>
+              <Text style={styles.statLabel}>{t('zikrHistory.sessions')}</Text>
+            </View>
+            
+            <View style={styles.statCard}>
+              <Ionicons name="infinite" size={20} color="#3498DB" />
+              <Text style={styles.statValue}>{totalCounts}</Text>
+              <Text style={styles.statLabel}>{t('zikrHistory.totalCounts')}</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Ionicons name="checkmark-circle" size={20} color="#9B59B6" />
+              <Text style={styles.statValue}>{completedSessions}</Text>
+              <Text style={styles.statLabel}>{t('zikrHistory.completed')}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Sessions List */}
+        {totalSessions > 0 ? (
+          <FlatList
+            data={sessions}
+            renderItem={renderSession}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Ionicons name="bookmark-outline" size={64} color="#CCC" />
+            </View>
+            <Text style={styles.emptyTitle}>{t('zikrHistory.empty.title')}</Text>
+            <Text style={styles.emptyText}>
+              {t('zikrHistory.empty.message')}
+            </Text>
+            <TouchableOpacity
+              style={styles.startButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="add-circle" size={20} color="#FFF" />
+              <Text style={styles.startButtonText}>
+                {t('zikrHistory.empty.startButton')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -258,8 +285,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   backButton: {
@@ -285,7 +310,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -310,7 +335,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sessionCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 16,
     marginBottom: 12,
     shadowColor: '#000',
@@ -424,7 +449,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,

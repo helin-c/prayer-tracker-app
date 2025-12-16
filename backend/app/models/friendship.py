@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/models/friendship.py (NEW)
+# FILE: backend/app/models/friendship.py 
 # ============================================================================
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, UniqueConstraint, Index, Enum
 from sqlalchemy.orm import relationship

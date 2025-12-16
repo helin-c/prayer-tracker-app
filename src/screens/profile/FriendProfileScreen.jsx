@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/friends/FriendProfileScreen.jsx (WITH i18n)
+// FILE: src/screens/friends/FriendProfileScreen.jsx (WITH Islamic Loading)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
 import { format, startOfWeek } from 'date-fns';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 export const FriendProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -80,104 +81,120 @@ export const FriendProfileScreen = ({ navigation, route }) => {
     return '#DC3545';
   };
 
+  if (loading) {
+    return (
+      <IslamicLoadingScreen 
+        message={t('friends.loadingProfile')}
+        submessage={t('common.pleaseWait')}
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('friends.friendProfile')}</Text>
-        <TouchableOpacity style={styles.moreButton} onPress={handleRemoveFriend}>
-          <Ionicons name="ellipsis-horizontal" size={24} color="#666" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {getInitials(friend.friend_name)}
-            </Text>
-          </View>
-          <Text style={styles.name}>{friend.friend_name}</Text>
-          <Text style={styles.email}>{friend.friend_email}</Text>
-
-          {/* Stats */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="flame" size={32} color="#FF6B35" />
-              <Text style={styles.statValue}>{friend.current_streak || 0}</Text>
-              <Text style={styles.statLabel}>{t('friends.dayStreak')}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Ionicons name="trophy" size={32} color="#FFD700" />
-              <Text style={styles.statValue}>{friend.best_streak || 0}</Text>
-              <Text style={styles.statLabel}>{t('friends.bestStreak')}</Text>
-            </View>
-          </View>
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('friends.friendProfile')}</Text>
+          <TouchableOpacity style={styles.moreButton} onPress={handleRemoveFriend}>
+            <Ionicons name="ellipsis-horizontal" size={24} color="#666" />
+          </TouchableOpacity>
         </View>
 
-        {/* Week Progress */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('friends.thisWeekProgress')}</Text>
-          
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#00A86B" />
+        <ScrollView style={styles.content}>
+          {/* Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {getInitials(friend.friend_name)}
+              </Text>
             </View>
-          ) : weekData ? (
-            <View style={styles.weekGrid}>
-              {weekData.days.map((day, index) => (
-                <View key={index} style={styles.dayCard}>
-                  <Text style={styles.dayName}>
-                    {format(new Date(day.date), 'EEE')}
-                  </Text>
-                  <View
-                    style={[
-                      styles.dayCircle,
-                      {
-                        backgroundColor: getCompletionColor(day.completion_percentage),
-                      },
-                    ]}
-                  >
-                    <Text style={styles.dayPercentage}>
-                      {Math.round(day.completion_percentage)}%
+            <Text style={styles.name}>{friend.friend_name}</Text>
+            <Text style={styles.email}>{friend.friend_email}</Text>
+
+            {/* Stats */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Ionicons name="flame" size={32} color="#FF6B35" />
+                <Text style={styles.statValue}>{friend.current_streak || 0}</Text>
+                <Text style={styles.statLabel}>{t('friends.dayStreak')}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Ionicons name="trophy" size={32} color="#FFD700" />
+                <Text style={styles.statValue}>{friend.best_streak || 0}</Text>
+                <Text style={styles.statLabel}>{t('friends.bestStreak')}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Week Progress */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('friends.thisWeekProgress')}</Text>
+            
+            {weekData ? (
+              <View style={styles.weekGrid}>
+                {weekData.days.map((day, index) => (
+                  <View key={index} style={styles.dayCard}>
+                    <Text style={styles.dayName}>
+                      {format(new Date(day.date), 'EEE')}
+                    </Text>
+                    <View
+                      style={[
+                        styles.dayCircle,
+                        {
+                          backgroundColor: getCompletionColor(day.completion_percentage),
+                        },
+                      ]}
+                    >
+                      <Text style={styles.dayPercentage}>
+                        {Math.round(day.completion_percentage)}%
+                      </Text>
+                    </View>
+                    <Text style={styles.dayDate}>
+                      {format(new Date(day.date), 'd')}
                     </Text>
                   </View>
-                  <Text style={styles.dayDate}>
-                    {format(new Date(day.date), 'd')}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noData}>{t('friends.noPrayerData')}</Text>
-          )}
-        </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noData}>{t('friends.noPrayerData')}</Text>
+            )}
+          </View>
 
-        {/* Remove Friend Button */}
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={handleRemoveFriend}
-        >
-          <Ionicons name="person-remove-outline" size={20} color="#DC3545" />
-          <Text style={styles.removeButtonText}>{t('friends.removeFriend')}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Remove Friend Button */}
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={handleRemoveFriend}
+          >
+            <Ionicons name="person-remove-outline" size={20} color="#DC3545" />
+            <Text style={styles.removeButtonText}>{t('friends.removeFriend')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -185,8 +202,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   backButton: {

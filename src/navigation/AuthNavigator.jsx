@@ -12,6 +12,7 @@ export const AuthNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        cardStyle: { backgroundColor: '#0B1F18' },
       }}
     >
       <Stack.Screen name={ROUTES.ONBOARDING} component={OnboardingScreen} />

@@ -20,12 +20,12 @@ export const GuidesNavigator = () => {
       }}
     >
       <Stack.Screen name="GuidesList" component={GuidesScreen} />
-      
+
       {/* Quran Screens */}
       <Stack.Screen name="QuranSurahList" component={QuranSurahListScreen} />
       <Stack.Screen name="QuranReader" component={QuranReaderScreen} />
       <Stack.Screen name="QuranBookmarks" component={QuranBookmarksScreen} />
-      
+
       {/* Other Guide Screens */}
       <Stack.Screen name={ROUTES.PRAYER_GUIDE} component={GuideDetailScreen} />
       <Stack.Screen name={ROUTES.WUDU_GUIDE} component={GuideDetailScreen} />

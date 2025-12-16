@@ -1,8 +1,8 @@
 // ============================================================================
-// FILE: src/components/prayers/PrayerTimesList.jsx (WITH i18n & TIME FORMAT)
+// FILE: src/components/prayers/PrayerTimesList.jsx (COMPACT GRID LAYOUT)
 // ============================================================================
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../../utils/timeUtils';
@@ -14,130 +14,172 @@ export const PrayerTimesList = ({ prayerTimes }) => {
 
   const prayers = [
     { name: 'Fajr', key: 'fajr', data: prayerTimes.fajr, icon: 'cloudy-night-outline' },
-    { name: 'Sunrise', key: 'sunrise', data: prayerTimes.sunrise, icon: 'sunny-outline', isSubtle: true },
     { name: 'Dhuhr', key: 'dhuhr', data: prayerTimes.dhuhr, icon: 'sunny' },
     { name: 'Asr', key: 'asr', data: prayerTimes.asr, icon: 'partly-sunny-outline' },
-    { name: 'Maghrib', key: 'maghrib', data: prayerTimes.maghrib, icon: 'cloudy-night' },
-    { name: 'Isha', key: 'isha', data: prayerTimes.isha, icon: 'moon' },
+    { name: 'Maghrib', key: 'maghrib', data: prayerTimes.maghrib, icon: 'moon' },
+    { name: 'Isha', key: 'isha', data: prayerTimes.isha, icon: 'moon-outline' },
   ];
 
   const isNextPrayer = (prayerKey) => {
     return prayerKey.toLowerCase() === prayerTimes.next_prayer?.toLowerCase();
   };
 
+  const isPrayerPassed = (prayerTime) => {
+    if (!prayerTime) return false;
+    const now = new Date();
+    const [hours, minutes] = prayerTime.split(':');
+    const prayerDate = new Date();
+    prayerDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    return now > prayerDate;
+  };
+
   const getPrayerName = (key) => {
-    if (key === 'sunrise') return t('home.sunrise');
     return t(`prayers.${key.toLowerCase()}`);
   };
 
-  const renderPrayer = ({ item }) => (
-    <View 
-      style={[
-        styles.prayerItem,
-        isNextPrayer(item.key) && styles.nextPrayerItem,
-        item.isSubtle && styles.subtlePrayer
-      ]}
-    >
-      <View style={styles.prayerLeft}>
+  const renderPrayerCard = (prayer, index) => {
+    const isNext = isNextPrayer(prayer.key);
+    const isPassed = isPrayerPassed(prayer.data?.time);
+    
+    return (
+      <View 
+        key={prayer.key}
+        style={[
+          styles.prayerCard,
+          isNext && styles.nextPrayerCard,
+          isPassed && styles.passedPrayerCard,
+        ]}
+      >
         <View style={[
           styles.iconContainer,
-          isNextPrayer(item.key) && styles.nextPrayerIcon
+          isNext && styles.nextIconContainer,
+          isPassed && styles.passedIconContainer,
         ]}>
           <Ionicons 
-            name={item.icon} 
-            size={24} 
-            color={isNextPrayer(item.key) ? '#00A86B' : '#666'} 
+            name={prayer.icon} 
+            size={22} 
+            color={isNext ? '#FFFFFF' : isPassed ? '#94A3B8' : '#64748B'} 
           />
         </View>
+        
         <Text style={[
           styles.prayerName,
-          item.isSubtle && styles.subtleText
+          isNext && styles.nextPrayerName,
+          isPassed && styles.passedPrayerName,
         ]}>
-          {getPrayerName(item.key)}
+          {getPrayerName(prayer.key)}
         </Text>
+        
+        <Text style={[
+          styles.prayerTime,
+          isNext && styles.nextPrayerTime,
+          isPassed && styles.passedPrayerTime,
+        ]}>
+          {formatTime(prayer.data?.time, i18n.language)}
+        </Text>
+
+        {isPassed && (
+          <View style={styles.checkmark}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+          </View>
+        )}
       </View>
-      <Text style={[
-        styles.prayerTime,
-        isNextPrayer(item.key) && styles.nextPrayerTime,
-        item.isSubtle && styles.subtleText
-      ]}>
-        {formatTime(item.data?.time, i18n.language)}
-      </Text>
-    </View>
-  );
+    );
+  };
+
+  // Split into two rows: first 3 prayers, then 2 prayers
+  const firstRow = prayers.slice(0, 3);
+  const secondRow = prayers.slice(3);
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={prayers}
-        renderItem={renderPrayer}
-        keyExtractor={(item) => item.key}
-        scrollEnabled={false}
-      />
+      <View style={styles.row}>
+        {firstRow.map((prayer, index) => renderPrayerCard(prayer, index))}
+      </View>
+      <View style={styles.row}>
+        {secondRow.map((prayer, index) => renderPrayerCard(prayer, index + 3))}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF',
+    gap: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  prayerCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 16,
-    padding: 20,
+    padding: 14,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
   },
-  prayerItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+  nextPrayerCard: {
+    backgroundColor: 'rgba(16, 185, 129, 0.95)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    transform: [{ scale: 1.02 }],
   },
-  nextPrayerItem: {
-    backgroundColor: '#F0FFF4',
-    marginHorizontal: -20,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderBottomWidth: 0,
-  },
-  subtlePrayer: {
-    opacity: 0.6,
-  },
-  prayerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  passedPrayerCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    opacity: 0.75,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(100, 116, 139, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginBottom: 8,
   },
-  nextPrayerIcon: {
-    backgroundColor: '#E8F5E9',
+  nextIconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  passedIconContainer: {
+    backgroundColor: 'rgba(148, 163, 184, 0.1)',
   },
   prayerName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  nextPrayerName: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  passedPrayerName: {
+    color: '#94A3B8',
   },
   prayerTime: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '800',
+    color: '#475569',
+    textAlign: 'center',
   },
   nextPrayerTime: {
-    color: '#00A86B',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 17,
   },
-  subtleText: {
-    color: '#999',
+  passedPrayerTime: {
+    color: '#94A3B8',
+  },
+  checkmark: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
   },
 });

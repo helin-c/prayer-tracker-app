@@ -13,7 +13,12 @@
     "retry": "Retry",
     "email": "Email",
     "password": "Password",
-    "language": "Language"
+    "language": "Language",
+    "left": "left",
+    "hour": "hour",
+    "minute": "minute",
+    "second": "second",
+    "pleaseWait" :"Please wait..."
   },
   "auth": {
     "signIn": "Sign In",
@@ -40,6 +45,9 @@
     "joinCommunity": "Join our community today",
     "accountCreated": "Account created successfully! Welcome aboard! 🎉",
     "loginSuccess": "Welcome back!",
+    "signingIn": "Signing In",
+    "creatingAccount": "Creating Account",
+    "pleaseWait": "Please wait...",
     "errors": {
       "emailRequired": "Email is required",
       "emailInvalid": "Email is invalid",
@@ -81,7 +89,13 @@
     "sunrise": "Sunrise",
     "justNow": "Just now",
     "minutesAgo": "{{minutes}}m ago",
-    "hoursAgo": "{{hours}}h ago"
+    "hoursAgo": "{{hours}}h ago",
+    "upcoming": "Upcoming",
+    "upcomingPrayer": "Upcoming Asr",
+    "haveYouPrayed": "Have you prayed",
+    "trackYourPrayers": "Track your daily prayers",
+    "prayersMissed": "prayers missed today",
+    "left": "left"
   },
   "prayers": {
     "fajr": "Fajr",
@@ -127,12 +141,7 @@
       "magnetometerUnavailable": "Compass sensor not available on this device.",
       "networkError": "Network error. Please check your connection."
     },
-    "cardinals": {
-      "north": "N",
-      "south": "S",
-      "east": "E",
-      "west": "W"
-    }
+    "rotateDecive": "Rotate your device"
   },
   "quotes": {
     "prayer1": "And establish prayer and give zakah and bow with those who bow",
@@ -141,11 +150,13 @@
     "prayer2Ref": "Quran 23:1-2"
   },
   "friends": {
+    "friends": "Friends",
     "addFriend": "Add Friend",
     "addAFriend": "Add a Friend",
     "enterEmailPrompt": "Enter your friend's email address to send them a friend request",
     "emailPlaceholder": "friend@example.com",
     "sendRequest": "Send Request",
+    "sendingRequest": "Sending friend request...",
     "friendRequestSent": "Friend request sent successfully",
     "friendRequest": "Friend Request",
     "friendRequests": "Friend Requests",
@@ -155,18 +166,21 @@
     "rejectRequest": "Reject Request",
     "rejectConfirm": "Are you sure you want to reject this friend request?",
     "requestAccepted": "Friend request accepted",
+    "processingRequest": "Processing request...",
     "friendProfile": "Friend Profile",
-    "removeFriend": "Remove Friend",
-    "removeFriendConfirm": "Are you sure you want to remove {{name}} from your friends?",
-    "friendRemoved": "Friend removed successfully",
     "dayStreak": "Day Streak",
     "bestStreak": "Best Streak",
     "thisWeekProgress": "This Week's Progress",
     "noPrayerData": "No prayer data available",
-    "friends": "Friends",
     "noFriends": "No friends yet",
     "noFriendsDescription": "Add friends to see their prayer progress",
-    "sendingRequest": "Sending request...",
+    "removeFriend": "Remove Friend",
+    "removeFriendConfirm": "Are you sure you want to remove {{name}} from your friends?",
+    "friendRemoved": "Friend removed successfully",
+    "friendsAdded": "friends added",
+    "limitReached": "Friend Limit Reached",
+    "limitReachedMessage": "You can only have {{limit}} friends at a time. Please remove a friend before adding a new one.",
+    "loadingProfile": "Loading friend profile...",
     "errors": {
       "enterEmail": "Please enter an email address",
       "sendFailed": "Failed to send friend request",
@@ -197,7 +211,6 @@
     "accountInfo": "Account Info",
     "memberSince": "Member Since",
     "completion": "Completion",
-    "changePassword": "Change Password",
     "deleteAccount": "Delete Account",
     "deleteAccountConfirm": "Are you sure? This action cannot be undone.",
     "comingSoon": "Coming Soon",
@@ -205,7 +218,37 @@
     "version": "Version",
     "english": "English",
     "turkish": "Turkish",
-    "arabic": "Arabic"
+    "arabic": "Arabic",
+    "updatingProfile": "Updating profile...",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "enterCurrentPassword": "Enter your current password",
+    "enterNewPassword": "Enter your new password",
+    "secureYourAccount": "Secure Your Account",
+    "changePasswordDescription": "Choose a strong password to keep your account secure. Make sure it's at least 8 characters long.",
+    "passwordRequirements": "Password Requirements",
+    "atLeast8Characters": "At least 8 characters",
+    "differentFromCurrent": "Different from current password",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "confirmPasswordRequired": "Please confirm your password",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMustBeDifferent": "New password must be different from current password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordChangedSuccess": "Your password has been changed successfully!",
+    "passwordChangeFailed": "Failed to change password. Please try again.",
+    "currentPasswordIncorrect": "Your current password is incorrect",
+    "updateYourPassword": "Update your account password",
+    "permanentlyDelete": "Permanently delete your account",
+    "weak": "Weak",
+    "medium": "Medium",
+    "strong": "Strong",
+    "loadingSettings": "Loading Settings...",
+    "preparingOptions": "Preparing your options",
+    "loadingProfile": "Loading Profile...",
+    "fetchingData": "Fetching your data"
   },
   "prayerTracker": {
     "title": "Prayer Tracker",
@@ -213,7 +256,7 @@
     "today": "Today",
     "selectedDate": "Selected Date",
     "todaysPrayers": "Today's Prayers",
-    "prayers": "Prayers",
+    "prayers1": "Prayers",
     "complete": "Complete",
     "statistics": "Statistics",
     "afterPrayerRemembrance": "After Prayer Remembrance",
@@ -391,7 +434,9 @@
     "hajj": "Hajj & Umrah",
     "hajjSubtitle": "Sacred pilgrimage",
     "basics": "Islam Basics",
-    "basicsSubtitle": "For beginners"
+    "basicsSubtitle": "For beginners",
+    "loadingGuides": "Loading Guides",
+    "preparingContent": "Preparing Content"
   },
   "quran": {
     "quran": "Quran",
@@ -423,6 +468,30 @@
     "lineHeight": "Line Height",
     "goToSurah": "Go to Surah",
     "deleteBookmark": "Delete Bookmark",
-    "deleteBookmarkConfirm": "Are you sure you want to delete this bookmark?"
+    "deleteBookmarkConfirm": "Are you sure you want to delete this bookmark?",
+    "bookmarkAdded": "Bookmark added successfully",
+    "bookmarkRemoved": "Bookmark removed successfully",
+    "bookmarkAddError": "Failed to add bookmark",
+    "bookmarkRemoveError": "Failed to remove bookmark",
+    "deleteBookmarkError": "Failed to delete bookmark",
+    "highlightAddError": "Failed to add highlight",
+    "highlightRemoveError": "Failed to remove highlight",
+    "surahNotFound": "Surah not found",
+    "startReading": "Start Reading",
+    "loading": "Loading..."
+  },
+  "calendar": {
+    "title": "Prayer Calendar",
+    "loading": "Loading Calendar...",
+    "loadingSubtitle": "Fetching your prayer history",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "perfectDays": "Perfect Days",
+    "onTimeRate": "On Time Rate",
+    "legend": "Legend",
+    "perfectDay": "Perfect Day (100%)",
+    "partialDay": "Partial Day",
+    "missedDay": "Missed Day",
+    "futureDay": "Future Day"
   }
 }

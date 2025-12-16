@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/profile/ProfileScreen.jsx (WITH i18n)
+// FILE: src/screens/profile/ProfileScreen.jsx (WITH LOADING)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useFriendsStore } from '../../store/friendsStore';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 import { usePrayerStore } from '../../store/prayerStore';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 export const ProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -33,22 +35,36 @@ export const ProfileScreen = ({ navigation }) => {
   const { location } = usePrayerStore();
   
   const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    try {
+      await Promise.all([
+        fetchFriends(),
+        fetchPendingRequests(),
+        fetchPeriodStats('week'),
+      ]);
+      // Add small delay for smooth transition
+      setTimeout(() => {
+        setInitialLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+      setInitialLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
     await Promise.all([
       fetchFriends(),
       fetchPendingRequests(),
       fetchPeriodStats('week'),
     ]);
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
     setRefreshing(false);
   };
 
@@ -90,232 +106,251 @@ export const ProfileScreen = ({ navigation }) => {
     return t('profile.locationPlaceholder');
   };
 
+  if (initialLoading) {
+    return (
+      <IslamicLoadingScreen 
+        message={t('profile.loadingProfile')}
+        submessage={t('profile.fetchingData')}
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('profile.profile')}</Text>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Ionicons name="settings-outline" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {getInitials(user?.full_name || user?.email)}
-              </Text>
-            </View>
-            <View style={styles.statusBadge}>
-              <View style={styles.statusDot} />
-            </View>
-          </View>
-
-          <Text style={styles.userName}>
-            {user?.full_name || t('home.guest')}
-          </Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
-
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {periodStats?.current_streak || 0}
-              </Text>
-              <Text style={styles.statLabel}>{t('friends.dayStreak')}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {periodStats?.completion_rate?.toFixed(0) || 0}%
-              </Text>
-              <Text style={styles.statLabel}>{t('profile.completion')}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{friends?.length || 0}</Text>
-              <Text style={styles.statLabel}>{t('friends.friends')}</Text>
-            </View>
-          </View>
-
-          {/* Quick Actions */}
-          <View style={styles.quickActions}>
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{t('profile.profile')}</Text>
             <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('EditProfile')}
+              style={styles.settingsButton}
+              onPress={() => navigation.navigate('Settings')}
             >
-              <Ionicons name="create-outline" size={20} color="#00A86B" />
-              <Text style={styles.actionButtonText}>{t('profile.editProfile')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.actionButton, styles.actionButtonSecondary]}
-              onPress={() => navigation.navigate('AddFriend')}
-            >
-              <Ionicons name="person-add-outline" size={20} color="#FFF" />
-              <Text style={styles.actionButtonTextSecondary}>{t('friends.addFriend')}</Text>
+              <Ionicons name="settings-outline" size={24} color="#666" />
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Pending Requests */}
-        {pendingRequests && pendingRequests.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="mail-outline" size={20} color="#00A86B" />
-              <Text style={styles.sectionTitle}>{t('friends.friendRequests')}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{pendingRequests.length}</Text>
+          {/* Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {getInitials(user?.full_name || user?.email)}
+                </Text>
+              </View>
+              <View style={styles.statusBadge}>
+                <View style={styles.statusDot} />
               </View>
             </View>
 
-            {pendingRequests.map((request, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.requestCard}
-                onPress={() => navigation.navigate('FriendRequest', { request })}
-              >
-                <View style={styles.requestAvatar}>
-                  <Text style={styles.requestAvatarText}>
-                    {getInitials(request.sender_name)}
-                  </Text>
-                </View>
-                <View style={styles.requestInfo}>
-                  <Text style={styles.requestName}>{request.sender_name}</Text>
-                  <Text style={styles.requestEmail}>{request.sender_email}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#CCC" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Friends List */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="people-outline" size={20} color="#00A86B" />
-            <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
-            <Text style={styles.sectionCount}>
-              {friends?.length || 0}
+            <Text style={styles.userName}>
+              {user?.full_name || t('home.guest')}
             </Text>
-          </View>
+            <Text style={styles.userEmail}>{user?.email}</Text>
 
-          {friends && friends.length > 0 ? (
-            friends.map((friend, index) => (
+            {/* Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {periodStats?.current_streak || 0}
+                </Text>
+                <Text style={styles.statLabel}>{t('friends.dayStreak')}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {periodStats?.completion_rate?.toFixed(0) || 0}%
+                </Text>
+                <Text style={styles.statLabel}>{t('profile.completion')}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{friends?.length || 0}</Text>
+                <Text style={styles.statLabel}>{t('friends.friends')}</Text>
+              </View>
+            </View>
+
+            {/* Quick Actions */}
+            <View style={styles.quickActions}>
               <TouchableOpacity
-                key={index}
-                style={styles.friendCard}
-                onPress={() => navigation.navigate('FriendProfile', { friend })}
+                style={styles.actionButton}
+                onPress={() => navigation.navigate('EditProfile')}
               >
-                <View style={styles.friendAvatar}>
-                  <Text style={styles.friendAvatarText}>
-                    {getInitials(friend.friend_name)}
-                  </Text>
-                </View>
-                <View style={styles.friendInfo}>
-                  <Text style={styles.friendName}>{friend.friend_name}</Text>
-                  <View style={styles.friendStats}>
-                    <Ionicons name="flame" size={14} color="#FF6B35" />
-                    <Text style={styles.friendStatsText}>
-                      {friend.current_streak || 0} {t('friends.dayStreak').toLowerCase()}
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#CCC" />
+                <Ionicons name="create-outline" size={20} color="#00A86B" />
+                <Text style={styles.actionButtonText}>{t('profile.editProfile')}</Text>
               </TouchableOpacity>
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons name="people-outline" size={48} color="#CCC" />
-              <Text style={styles.emptyText}>{t('friends.noFriends')}</Text>
-              <Text style={styles.emptySubtext}>
-                {t('friends.noFriendsDescription')}
-              </Text>
+
               <TouchableOpacity
-                style={styles.emptyButton}
+                style={[styles.actionButton, styles.actionButtonSecondary]}
                 onPress={() => navigation.navigate('AddFriend')}
               >
-                <Text style={styles.emptyButtonText}>{t('friends.addFriend')}</Text>
+                <Ionicons name="person-add-outline" size={20} color="#FFF" />
+                <Text style={styles.actionButtonTextSecondary}>{t('friends.addFriend')}</Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Pending Requests */}
+          {pendingRequests && pendingRequests.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="mail-outline" size={20} color="#00A86B" />
+                <Text style={styles.sectionTitle}>{t('friends.friendRequests')}</Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{pendingRequests.length}</Text>
+                </View>
+              </View>
+
+              {pendingRequests.map((request, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.requestCard}
+                  onPress={() => navigation.navigate('FriendRequest', { request })}
+                >
+                  <View style={styles.requestAvatar}>
+                    <Text style={styles.requestAvatarText}>
+                      {getInitials(request.sender_name)}
+                    </Text>
+                  </View>
+                  <View style={styles.requestInfo}>
+                    <Text style={styles.requestName}>{request.sender_name}</Text>
+                    <Text style={styles.requestEmail}>{request.sender_email}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#CCC" />
+                </TouchableOpacity>
+              ))}
+            </View>
           )}
-        </View>
 
-        {/* Profile Info */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="information-circle-outline" size={20} color="#00A86B" />
-            <Text style={styles.sectionTitle}>{t('profile.accountInfo')}</Text>
+          {/* Friends List */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="people-outline" size={20} color="#00A86B" />
+              <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
+              <Text style={styles.sectionCount}>
+                {friends?.length || 0}
+              </Text>
+            </View>
+
+            {friends && friends.length > 0 ? (
+              friends.map((friend, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.friendCard}
+                  onPress={() => navigation.navigate('FriendProfile', { friend })}
+                >
+                  <View style={styles.friendAvatar}>
+                    <Text style={styles.friendAvatarText}>
+                      {getInitials(friend.friend_name)}
+                    </Text>
+                  </View>
+                  <View style={styles.friendInfo}>
+                    <Text style={styles.friendName}>{friend.friend_name}</Text>
+                    <View style={styles.friendStats}>
+                      <Ionicons name="flame" size={14} color="#FF6B35" />
+                      <Text style={styles.friendStatsText}>
+                        {friend.current_streak || 0} {t('friends.dayStreak').toLowerCase()}
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#CCC" />
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="people-outline" size={48} color="#CCC" />
+                <Text style={styles.emptyText}>{t('friends.noFriends')}</Text>
+                <Text style={styles.emptySubtext}>
+                  {t('friends.noFriendsDescription')}
+                </Text>
+                <TouchableOpacity
+                  style={styles.emptyButton}
+                  onPress={() => navigation.navigate('AddFriend')}
+                >
+                  <Text style={styles.emptyButtonText}>{t('friends.addFriend')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <View style={styles.infoLeft}>
-                <Ionicons name="location-outline" size={20} color="#666" />
-                <Text style={styles.infoLabel}>{t('profile.location')}</Text>
-              </View>
-              <Text style={styles.infoValue}>
-                {getLocationDisplay()}
-              </Text>
+          {/* Profile Info */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="information-circle-outline" size={20} color="#00A86B" />
+              <Text style={styles.sectionTitle}>{t('profile.accountInfo')}</Text>
             </View>
 
-            <View style={styles.infoDivider} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoLeft}>
-                <Ionicons name="language-outline" size={20} color="#666" />
-                <Text style={styles.infoLabel}>{t('profile.language')}</Text>
+            <View style={styles.infoCard}>
+              <View style={styles.infoRow}>
+                <View style={styles.infoLeft}>
+                  <Ionicons name="location-outline" size={20} color="#666" />
+                  <Text style={styles.infoLabel}>{t('profile.location')}</Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {getLocationDisplay()}
+                </Text>
               </View>
-              <Text style={styles.infoValue}>
-                {user?.preferred_language?.toUpperCase() || 'EN'}
-              </Text>
-            </View>
 
-            <View style={styles.infoDivider} />
+              <View style={styles.infoDivider} />
 
-            <View style={styles.infoRow}>
-              <View style={styles.infoLeft}>
-                <Ionicons name="calendar-outline" size={20} color="#666" />
-                <Text style={styles.infoLabel}>{t('profile.memberSince')}</Text>
+              <View style={styles.infoRow}>
+                <View style={styles.infoLeft}>
+                  <Ionicons name="language-outline" size={20} color="#666" />
+                  <Text style={styles.infoLabel}>{t('profile.language')}</Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {user?.preferred_language?.toUpperCase() || 'EN'}
+                </Text>
               </View>
-              <Text style={styles.infoValue}>
-                {user?.created_at
-                  ? new Date(user.created_at).toLocaleDateString()
-                  : '-'}
-              </Text>
+
+              <View style={styles.infoDivider} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoLeft}>
+                  <Ionicons name="calendar-outline" size={20} color="#666" />
+                  <Text style={styles.infoLabel}>{t('profile.memberSince')}</Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString()
+                    : '-'}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#DC3545" />
-          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-        </TouchableOpacity>
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={20} color="#DC3545" />
+            <Text style={styles.logoutText}>{t('profile.logout')}</Text>
+          </TouchableOpacity>
 
-        {/* Version */}
-        <Text style={styles.versionText}>{t('profile.version')} 1.0.0</Text>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Version */}
+          <Text style={styles.versionText}>{t('profile.version')} 1.0.0</Text>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
-// Styles remain the same as before...
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  container: { flex: 1, backgroundColor: 'transparent' },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },

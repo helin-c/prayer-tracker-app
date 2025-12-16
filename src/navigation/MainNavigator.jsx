@@ -6,7 +6,7 @@ import { ROUTES } from './routes';
 // Import screens and navigators
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { QiblaScreen } from '../screens/qibla/QiblaScreen';
-import { TrackerNavigator } from './TrackerNavigator';  // CHANGED: Import TrackerNavigator
+import { TrackerNavigator } from './TrackerNavigator'; // CHANGED: Import TrackerNavigator
 import { ProfileNavigator } from './ProfileNavigator';
 import { GuidesNavigator } from './GuidesNavigator';
 
@@ -18,11 +18,13 @@ export const MainNavigator = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          
+
           if (route.name === ROUTES.HOME) {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === ROUTES.PRAYER_TRACKER) {
-            iconName = focused ? 'checkmark-circle' : 'checkmark-circle-outline';
+            iconName = focused
+              ? 'checkmark-circle'
+              : 'checkmark-circle-outline';
           } else if (route.name === ROUTES.QIBLA) {
             iconName = focused ? 'compass' : 'compass-outline';
           } else if (route.name === ROUTES.GUIDES) {
@@ -30,11 +32,11 @@ export const MainNavigator = () => {
           } else if (route.name === ROUTES.PROFILE) {
             iconName = focused ? 'person' : 'person-outline';
           }
-          
+
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#00A86B',
-        tabBarInactiveTintColor: '#666',
+        tabBarInactiveTintColor: '#666', // d7e3d5
         headerShown: false,
         tabBarStyle: {
           paddingBottom: 4,
@@ -43,27 +45,27 @@ export const MainNavigator = () => {
         },
       })}
     >
-      <Tab.Screen 
-        name={ROUTES.HOME} 
+      <Tab.Screen
+        name={ROUTES.HOME}
         component={HomeScreen}
         options={{ tabBarLabel: 'Home' }}
       />
-      <Tab.Screen 
+      <Tab.Screen
         name={ROUTES.PRAYER_TRACKER}
-        component={TrackerNavigator}  // CHANGED: Use TrackerNavigator
+        component={TrackerNavigator}
         options={{ tabBarLabel: 'Tracker' }}
       />
-      <Tab.Screen 
-        name={ROUTES.QIBLA} 
+      <Tab.Screen
+        name={ROUTES.QIBLA}
         component={QiblaScreen}
         options={{ tabBarLabel: 'Qibla' }}
       />
-      <Tab.Screen 
+      <Tab.Screen
         name={ROUTES.GUIDES}
         component={GuidesNavigator}
         options={{ tabBarLabel: 'Learn' }}
       />
-      <Tab.Screen 
+      <Tab.Screen
         name={ROUTES.PROFILE}
         component={ProfileNavigator}
         options={{ tabBarLabel: 'Profile' }}

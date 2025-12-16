@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (i18n INTEGRATED)
+// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (UPDATED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 import { useTasbihStore } from '../../store/tasbihStore';
 import { StatsSection } from '../../components/tracker/StatsSection';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 export const PRAYER_ICONS = {
@@ -37,6 +39,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   const [selectedPrayer, setSelectedPrayer] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   
   const { loadSessions } = useTasbihStore();
 
@@ -72,6 +75,8 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       ]);
     } catch (err) {
       console.error('Error loading data:', err);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -261,240 +266,273 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return t(`prayerTracker.prayers.${prayerName.toLowerCase()}`);
   };
 
-  if (error) {
+  if (initialLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={64} color="#DC3545" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadData}>
-            <Text style={styles.retryButtonText}>{t('prayerTracker.retry')}</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <IslamicLoadingScreen 
+        message={t('prayerTracker.loading')} 
+        submessage={t('prayerTracker.loadingSubtitle')}
+      />
+    );
+  }
+
+  if (error && !dayPrayers) {
+    return (
+      <ImageBackground
+        source={require('../../assets/images/illustrations/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={64} color="#DC3545" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+              <Text style={styles.retryButtonText}>{t('prayerTracker.retry')}</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('prayerTracker.title')}</Text>
-          <Text style={styles.subtitle}>{t('prayerTracker.subtitle')}</Text>
-        </View>
-
-        {/* Week Calendar */}
-        <View style={styles.weekCalendar}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.weekScrollContent}
-          >
-            {weekDates.map((date, index) => {
-              const dateStr = formatDate(date);
-              const dayData = weekPrayers?.days?.find(d => d.date === dateStr);
-              const percentage = dayData?.completion_percentage || 0;
-              
-              return (
-                <WeekDayCircle
-                  key={index}
-                  date={date}
-                  percentage={percentage}
-                />
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* Selected Date & Progress */}
-        <View style={styles.todaySection}>
-          <View style={styles.todayHeader}>
-            <View>
-              <Text style={styles.todayLabel}>
-                {isToday(selectedDate) ? t('prayerTracker.today') : t('prayerTracker.selectedDate')}
-              </Text>
-              <Text style={styles.todayDate}>{formatDisplayDate(selectedDate)}</Text>
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.title}>{t('prayerTracker.title')}</Text>
+              <Text style={styles.subtitle}>{t('prayerTracker.subtitle')}</Text>
             </View>
-            <CircularProgress percentage={getCompletionPercentage()} />
-          </View>
-        </View>
-
-        {/* Prayer List */}
-        <View style={styles.prayerList}>
-          <Text style={styles.sectionTitle}>
-            {isToday(selectedDate) ? t('prayerTracker.todaysPrayers') : t('prayerTracker.prayers')}
-          </Text>
-          
-          {isLoading && !dayPrayers ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#00A86B" />
-            </View>
-          ) : (
-            dayPrayers?.prayers?.map((prayer, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.prayerCard,
-                  prayer.completed && styles.prayerCardCompleted,
-                  (prayer.id && !prayer.completed) && styles.prayerCardMissed,
-                ]}
-                onPress={() => handlePrayerPress(prayer)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.prayerCardLeft}>
-                  <View
-                    style={[
-                      styles.prayerIcon,
-                      prayer.completed && styles.prayerIconCompleted,
-                      (prayer.id && !prayer.completed) && styles.prayerIconMissed,
-                    ]}
-                  >
-                    <Ionicons
-                      name={PRAYER_ICONS[prayer.prayer_name]}
-                      size={24}
-                      color={
-                        prayer.completed 
-                          ? '#FFF' 
-                          : (prayer.id && !prayer.completed) 
-                            ? '#FFF' 
-                            : '#00A86B'
-                      }
-                    />
-                  </View>
-                  <View>
-                    <Text style={styles.prayerName}>{getPrayerName(prayer.prayer_name)}</Text>
-                    {prayer.completed && prayer.on_time && (
-                      <Text style={styles.onTimeLabel}>{t('prayerTracker.status.onTime')}</Text>
-                    )}
-                    {prayer.completed && !prayer.on_time && (
-                      <Text style={styles.lateLabel}>{t('prayerTracker.status.late')}</Text>
-                    )}
-                    {prayer.id && !prayer.completed && (
-                      <Text style={styles.missedLabel}>{t('prayerTracker.status.missed')}</Text>
-                    )}
-                  </View>
-                </View>
-                <View style={styles.prayerCardRight}>
-                  {prayer.completed ? (
-                    <View style={styles.completedBadge}>
-                      <Ionicons name="checkmark-circle" size={28} color="#00A86B" />
-                    </View>
-                  ) : prayer.id && !prayer.completed ? (
-                    <View style={styles.missedBadge}>
-                      <Ionicons name="close-circle" size={28} color="#DC3545" />
-                    </View>
-                  ) : (
-                    <Ionicons name="chevron-forward" size={24} color="#CCC" />
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
-
-        {/* Digital Tasbih Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="leaf-outline" size={20} color="#00A86B" />
-            <Text style={styles.sectionTitle}>{t('prayerTracker.afterPrayerRemembrance')}</Text>
+            <TouchableOpacity
+              style={styles.calendarButton}
+              onPress={() => navigation.navigate('PrayerCalendar')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="calendar-outline" size={28} color="#00A86B" />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.tasbihCard}
-            onPress={() => navigation.navigate('Tasbih')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.tasbihIconContainer}>
-              <Ionicons name="infinite" size={48} color="#00A86B" />
+          {/* Week Calendar */}
+          <View style={styles.weekCalendar}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.weekScrollContent}
+            >
+              {weekDates.map((date, index) => {
+                const dateStr = formatDate(date);
+                const dayData = weekPrayers?.days?.find(d => d.date === dateStr);
+                const percentage = dayData?.completion_percentage || 0;
+                
+                return (
+                  <WeekDayCircle
+                    key={index}
+                    date={date}
+                    percentage={percentage}
+                  />
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Selected Date & Progress */}
+          <View style={styles.todaySection}>
+            <View style={styles.todayHeader}>
+              <View>
+                <Text style={styles.todayLabel}>
+                  {isToday(selectedDate) ? t('prayerTracker.today') : t('prayerTracker.selectedDate')}
+                </Text>
+                <Text style={styles.todayDate}>{formatDisplayDate(selectedDate)}</Text>
+              </View>
+              <CircularProgress percentage={getCompletionPercentage()} />
             </View>
+          </View>
+
+          {/* Prayer List */}
+          <View style={styles.prayerList}>
+            <Text style={styles.sectionTitle}>
+              {isToday(selectedDate) ? t('prayerTracker.todaysPrayers') : t('prayerTracker.prayers1')}
+            </Text>
             
-            <View style={styles.tasbihContent}>
-              <Text style={styles.tasbihTitle}>{t('prayerTracker.digitalTasbih')}</Text>
-              <Text style={styles.tasbihSubtitle}>
-                {t('prayerTracker.countDhikr')}
-              </Text>
-              <View style={styles.tasbihBadges}>
-                <View style={styles.tasbihBadge}>
-                  <Ionicons name="bookmark-outline" size={14} color="#666" />
-                  <Text style={styles.tasbihBadgeText}>{t('prayerTracker.saveProgress')}</Text>
-                </View>
-                <View style={styles.tasbihBadge}>
-                  <Ionicons name="trending-up-outline" size={14} color="#666" />
-                  <Text style={styles.tasbihBadgeText}>{t('prayerTracker.trackHistory')}</Text>
+            {isLoading && !dayPrayers ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#00A86B" />
+              </View>
+            ) : (
+              dayPrayers?.prayers?.map((prayer, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.prayerCard,
+                    prayer.completed && styles.prayerCardCompleted,
+                    (prayer.id && !prayer.completed) && styles.prayerCardMissed,
+                  ]}
+                  onPress={() => handlePrayerPress(prayer)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.prayerCardLeft}>
+                    <View
+                      style={[
+                        styles.prayerIcon,
+                        prayer.completed && styles.prayerIconCompleted,
+                        (prayer.id && !prayer.completed) && styles.prayerIconMissed,
+                      ]}
+                    >
+                      <Ionicons
+                        name={PRAYER_ICONS[prayer.prayer_name]}
+                        size={24}
+                        color={
+                          prayer.completed 
+                            ? '#FFF' 
+                            : (prayer.id && !prayer.completed) 
+                              ? '#FFF' 
+                              : '#00A86B'
+                        }
+                      />
+                    </View>
+                    <View>
+                      <Text style={styles.prayerName}>{getPrayerName(prayer.prayer_name)}</Text>
+                      {prayer.completed && prayer.on_time && (
+                        <Text style={styles.onTimeLabel}>{t('prayerTracker.status.onTime')}</Text>
+                      )}
+                      {prayer.completed && !prayer.on_time && (
+                        <Text style={styles.lateLabel}>{t('prayerTracker.status.late')}</Text>
+                      )}
+                      {prayer.id && !prayer.completed && (
+                        <Text style={styles.missedLabel}>{t('prayerTracker.status.missed')}</Text>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.prayerCardRight}>
+                    {prayer.completed ? (
+                      <View style={styles.completedBadge}>
+                        <Ionicons name="checkmark-circle" size={28} color="#00A86B" />
+                      </View>
+                    ) : prayer.id && !prayer.completed ? (
+                      <View style={styles.missedBadge}>
+                        <Ionicons name="close-circle" size={28} color="#DC3545" />
+                      </View>
+                    ) : (
+                      <Ionicons name="chevron-forward" size={24} color="#CCC" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+
+          {/* Digital Tasbih Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="leaf-outline" size={20} color="#00A86B" />
+              <Text style={styles.sectionTitle}>{t('prayerTracker.afterPrayerRemembrance')}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.tasbihCard}
+              onPress={() => navigation.navigate('Tasbih')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.tasbihIconContainer}>
+                <Ionicons name="infinite" size={48} color="#00A86B" />
+              </View>
+              
+              <View style={styles.tasbihContent}>
+                <Text style={styles.tasbihTitle}>{t('prayerTracker.digitalTasbih')}</Text>
+                <Text style={styles.tasbihSubtitle}>
+                  {t('prayerTracker.countDhikr')}
+                </Text>
+                <View style={styles.tasbihBadges}>
+                  <View style={styles.tasbihBadge}>
+                    <Ionicons name="bookmark-outline" size={14} color="#666" />
+                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.saveProgress')}</Text>
+                  </View>
+                  <View style={styles.tasbihBadge}>
+                    <Ionicons name="trending-up-outline" size={14} color="#666" />
+                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.trackHistory')}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <Ionicons name="chevron-forward" size={24} color="#CCC" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Statistics */}
-        <StatsSection />
-      </ScrollView>
-
-      {/* Prayer Action Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {selectedPrayer && getPrayerName(selectedPrayer.prayer_name)}
-              </Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={28} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.modalSubtitle}>{t('prayerTracker.modal.markAs')}</Text>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.modalButtonOnTime]}
-              onPress={() => handlePrayerAction('ontime')}
-            >
-              <Ionicons name="time" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneOnTime')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.modalButtonDone]}
-              onPress={() => handlePrayerAction('done')}
-            >
-              <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneLate')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.modalButtonMissed]}
-              onPress={() => handlePrayerAction('missed')}
-            >
-              <Ionicons name="close-circle" size={24} color="#FFF" />
-              <Text style={styles.modalButtonText}>{t('prayerTracker.modal.missed')}</Text>
+              <Ionicons name="chevron-forward" size={24} color="#CCC" />
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+
+          {/* Statistics */}
+          <StatsSection />
+        </ScrollView>
+
+        {/* Prayer Action Modal */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {selectedPrayer && getPrayerName(selectedPrayer.prayer_name)}
+                </Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Ionicons name="close" size={28} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalSubtitle}>{t('prayerTracker.modal.markAs')}</Text>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonOnTime]}
+                onPress={() => handlePrayerAction('ontime')}
+              >
+                <Ionicons name="time" size={24} color="#FFF" />
+                <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneOnTime')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonDone]}
+                onPress={() => handlePrayerAction('done')}
+              >
+                <Ionicons name="checkmark-circle" size={24} color="#FFF" />
+                <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneLate')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonMissed]}
+                onPress={() => handlePrayerAction('missed')}
+              >
+                <Ionicons name="close-circle" size={24} color="#FFF" />
+                <Text style={styles.modalButtonText}>{t('prayerTracker.modal.missed')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,
@@ -504,7 +542,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 24,
+  },
+  headerLeft: {
+    flex: 1,
   },
   title: {
     fontSize: 32,
@@ -515,6 +559,19 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
+  },
+  calendarButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   weekCalendar: {
     marginBottom: 24,
@@ -550,7 +607,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   todaySection: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
     padding: 24,
     marginBottom: 24,
@@ -609,13 +666,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1A1A1A',
+    marginBottom: 12,
   },
   loadingContainer: {
     padding: 40,
     alignItems: 'center',
   },
   prayerCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -629,10 +687,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   prayerCardCompleted: {
-    backgroundColor: '#F0FFF4',
+    backgroundColor: 'rgba(240, 255, 244, 0.95)',
   },
   prayerCardMissed: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: 'rgba(255, 235, 238, 0.95)',
   },
   prayerCardLeft: {
     flexDirection: 'row',
@@ -684,7 +742,7 @@ const styles = StyleSheet.create({
   tasbihCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
@@ -736,6 +794,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    margin: 20,
   },
   errorText: {
     fontSize: 16,

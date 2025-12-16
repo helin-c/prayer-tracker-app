@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE: src/screens/quran/QuranBookmarksScreen.jsx
 // ============================================================================
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,34 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
+import { useFocusEffect } from '@react-navigation/native';
 
 export const QuranBookmarksScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { bookmarks, removeBookmark, getSurah, getAyah } = useQuranStore();
+  const { 
+    bookmarks, 
+    removeBookmark, 
+    getSurah, 
+    getAyah, 
+    initialize,
+    isLoading,
+    isInitialized 
+  } = useQuranStore();
+
+  // Initialize store when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isInitialized) {
+        initialize();
+      }
+    }, [isInitialized])
+  );
 
   const handleDeleteBookmark = (bookmarkId) => {
     Alert.alert(
@@ -28,7 +47,12 @@ export const QuranBookmarksScreen = ({ navigation }) => {
         {
           text: t('common.delete'),
           style: 'destructive',
-          onPress: () => removeBookmark(bookmarkId),
+          onPress: async () => {
+            const result = await removeBookmark(bookmarkId);
+            if (!result.success) {
+              Alert.alert(t('common.error'), t('quran.deleteBookmarkError'));
+            }
+          },
         },
       ]
     );
@@ -45,7 +69,10 @@ export const QuranBookmarksScreen = ({ navigation }) => {
     const surah = getSurah(bookmark.surahNumber);
     const ayah = getAyah(bookmark.surahNumber, bookmark.ayahNumber);
 
-    if (!surah || !ayah) return null;
+    if (!surah || !ayah) {
+      console.warn('Missing surah or ayah for bookmark:', bookmark);
+      return null;
+    }
 
     return (
       <TouchableOpacity
@@ -72,7 +99,7 @@ export const QuranBookmarksScreen = ({ navigation }) => {
           {ayah.text_ar}
         </Text>
 
-        {bookmark.note && (
+        {bookmark.note && bookmark.note.trim() && (
           <View style={styles.noteContainer}>
             <Ionicons name="document-text-outline" size={16} color="#666" />
             <Text style={styles.noteText} numberOfLines={2}>
@@ -101,7 +128,39 @@ export const QuranBookmarksScreen = ({ navigation }) => {
       </View>
       <Text style={styles.emptyTitle}>{t('quran.noBookmarks')}</Text>
       <Text style={styles.emptyText}>{t('quran.noBookmarksDescription')}</Text>
+      <TouchableOpacity 
+        style={styles.startReadingButton}
+        onPress={() => navigation.navigate('QuranSurahList')}
+      >
+        <Text style={styles.startReadingText}>{t('quran.startReading')}</Text>
+      </TouchableOpacity>
     </View>
+  );
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('quran.bookmarks')}</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00A86B" />
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Sort bookmarks by timestamp (newest first)
+  const sortedBookmarks = [...bookmarks].sort((a, b) => 
+    new Date(b.timestamp) - new Date(a.timestamp)
   );
 
   return (
@@ -114,15 +173,15 @@ export const QuranBookmarksScreen = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('quran.bookmarks')}</Text>
+        <Text style={styles.headerTitle}>
+          {t('quran.bookmarks')} ({bookmarks.length})
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
       {/* Bookmarks List */}
       <FlatList
-        data={bookmarks.sort((a, b) => 
-          new Date(b.timestamp) - new Date(a.timestamp)
-        )}
+        data={sortedBookmarks}
         renderItem={renderBookmark}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
@@ -158,6 +217,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1A1A1A',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
   },
   listContent: {
     padding: 20,
@@ -268,5 +337,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  startReadingButton: {
+    backgroundColor: '#00A86B',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  startReadingText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

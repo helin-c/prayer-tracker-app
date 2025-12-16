@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/api/v1/endpoints/prayers.py (FIXED)
+# FILE: backend/app/api/v1/endpoints/prayers.py (FIXED - Week endpoint returns prayer details)
 # ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
@@ -34,13 +34,7 @@ async def track_prayer(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Track a prayer (mark as done, missed, or on-time).
-    
-    - Creates new log or updates existing
-    - Prevents duplicates with unique constraint
-    - Returns updated prayer log
-    """
+    """Track a prayer (mark as done, missed, or on-time)."""
     try:
         # Check if log already exists
         existing_log = db.query(PrayerLog).filter(
@@ -117,7 +111,6 @@ async def update_prayer_log(
                 detail="Prayer log not found"
             )
         
-        # Update fields
         if update_data.completed is not None:
             prayer_log.completed = update_data.completed
             prayer_log.completed_at = datetime.utcnow() if update_data.completed else None
@@ -152,11 +145,7 @@ async def get_day_prayers(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Get all prayers for a specific day.
-    
-    Returns status of all 5 prayers with completion percentage.
-    """
+    """Get all prayers for a specific day."""
     try:
         # Validate date format
         try:
@@ -201,17 +190,15 @@ async def get_day_prayers(
                 if log.on_time:
                     on_time_count += 1
             else:
-                # Prayer not logged yet
                 prayers.append({
                     "id": None,
                     "prayer_name": prayer_name,
-                    "prayer_time": "00:00",  # Default time
+                    "prayer_time": "00:00",
                     "completed": False,
                     "on_time": False,
                     "completed_at": None
                 })
         
-        # Calculate percentage
         completion_percentage = (completed_count / 5) * 100
         
         return DayPrayerStatus(
@@ -234,7 +221,7 @@ async def get_day_prayers(
 
 
 # ============================================================================
-# GET WEEK PRAYERS
+# GET WEEK PRAYERS (FIXED - NOW INCLUDES PRAYER DETAILS)
 # ============================================================================
 @router.get("/week", response_model=WeekPrayerStatus)
 async def get_week_prayers(
@@ -243,9 +230,8 @@ async def get_week_prayers(
     db: Session = Depends(get_db)
 ):
     """
-    Get prayer completion for a week (7 days).
-    
-    Returns daily completion percentages for calendar view.
+    Get prayer completion for a week (7 days) with detailed prayer information.
+    Returns daily completion percentages AND individual prayer statuses for calendar view.
     """
     try:
         # Parse start date
@@ -265,28 +251,69 @@ async def get_week_prayers(
         days_data = {}
         for log in logs:
             if log.prayer_date not in days_data:
-                days_data[log.prayer_date] = {"completed": 0, "total": 0}
-            days_data[log.prayer_date]["total"] += 1
+                days_data[log.prayer_date] = {
+                    "logs": [],
+                    "completed": 0,
+                    "on_time": 0
+                }
+            days_data[log.prayer_date]["logs"].append(log)
             if log.completed:
                 days_data[log.prayer_date]["completed"] += 1
+            if log.on_time:
+                days_data[log.prayer_date]["on_time"] += 1
         
-        # Build response for all 7 days
+        # Build response for all 7 days with prayer details
         days = []
         current_date = start
         today_str = datetime.now().strftime("%Y-%m-%d")
+        prayer_names = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
         
         for _ in range(7):
             date_str = current_date.strftime("%Y-%m-%d")
             
+            # Build prayers object for this day
+            prayers_obj = {}
+            completed_count = 0
+            on_time_count = 0
+            
             if date_str in days_data:
-                data = days_data[date_str]
-                percentage = (data["completed"] / 5) * 100  # Always 5 prayers per day
+                # Create map of existing logs
+                logs_map = {log.prayer_name.lower(): log for log in days_data[date_str]["logs"]}
+                
+                for prayer in prayer_names:
+                    if prayer in logs_map:
+                        log = logs_map[prayer]
+                        prayers_obj[prayer] = {
+                            "completed": log.completed,
+                            "on_time": log.on_time,
+                            "time": log.prayer_time if log.prayer_time else None
+                        }
+                        if log.completed:
+                            completed_count += 1
+                        if log.on_time:
+                            on_time_count += 1
+                    else:
+                        prayers_obj[prayer] = {
+                            "completed": False,
+                            "on_time": False,
+                            "time": None
+                        }
             else:
-                percentage = 0
+                # No logs for this day - all prayers are incomplete
+                for prayer in prayer_names:
+                    prayers_obj[prayer] = {
+                        "completed": False,
+                        "on_time": False,
+                        "time": None
+                    }
+            
+            percentage = (completed_count / 5) * 100
             
             days.append({
                 "date": date_str,
                 "completion_percentage": round(percentage, 1),
+                "on_time_count": on_time_count,
+                "prayers": prayers_obj,
                 "is_today": date_str == today_str
             })
             
@@ -320,15 +347,8 @@ async def get_period_stats(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Get prayer statistics for a time period.
-    
-    - week: Last 7 days
-    - month: Last 30 days
-    - year: Last 365 days
-    """
+    """Get prayer statistics for a time period."""
     try:
-        # Calculate date range
         end_date = datetime.utcnow().date()
         
         if period == "week":
@@ -341,10 +361,8 @@ async def get_period_stats(
             start_date = end_date - timedelta(days=364)
             days = 365
         
-        # Total prayers in period
         total_prayers = days * 5
         
-        # Completed prayers (indexed query)
         completed_count = db.query(func.count(PrayerLog.id)).filter(
             and_(
                 PrayerLog.user_id == current_user.id,
@@ -354,7 +372,6 @@ async def get_period_stats(
             )
         ).scalar() or 0
         
-        # On-time prayers
         on_time_count = db.query(func.count(PrayerLog.id)).filter(
             and_(
                 PrayerLog.user_id == current_user.id,
@@ -365,17 +382,10 @@ async def get_period_stats(
             )
         ).scalar() or 0
         
-        # Calculate streak
         current_streak = calculate_prayer_streak(current_user.id, db)
-        
-        # Best streak (simplified - could be enhanced)
-        best_streak = current_streak  # For now, same as current
-        
-        # Completion rate
+        best_streak = current_streak
         completion_rate = (completed_count / total_prayers * 100) if total_prayers > 0 else 0
         
-        # Most consistent prayer (prayer with highest completion rate)
-        # FIXED: Use case() instead of func.cast() for boolean to int conversion
         prayer_stats = db.query(
             PrayerLog.prayer_name,
             func.count(PrayerLog.id).label('total'),
@@ -429,20 +439,15 @@ async def get_period_stats(
 # HELPER FUNCTIONS
 # ============================================================================
 def calculate_prayer_streak(user_id: int, db: Session) -> int:
-    """
-    Calculate consecutive days of completing all 5 prayers.
-    Optimized with date arithmetic.
-    """
+    """Calculate consecutive days of completing all 5 prayers."""
     try:
         today = datetime.utcnow().date()
         streak = 0
         check_date = today
         
-        # Check last 100 days max
         for _ in range(100):
             date_str = check_date.strftime("%Y-%m-%d")
             
-            # Count completed prayers for this date (indexed)
             completed = db.query(func.count(PrayerLog.id)).filter(
                 and_(
                     PrayerLog.user_id == user_id,
@@ -451,7 +456,6 @@ def calculate_prayer_streak(user_id: int, db: Session) -> int:
                 )
             ).scalar() or 0
             
-            # If all 5 prayers completed, continue streak
             if completed == 5:
                 streak += 1
                 check_date -= timedelta(days=1)

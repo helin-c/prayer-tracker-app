@@ -1,13 +1,10 @@
-// ============================================================================
-// FILE: src/utils/constants.js (FINAL MERGED VERSION WITH DEVICE AWARE BASE_URL)
+ // ============================================================================
+// FILE: src/utils/constants.js
 // ============================================================================
 import Constants from 'expo-constants';
 
 // 💡 Dev ortamında hangi host kullanılacak?
-// - Gerçek cihaz (Expo Go, QR)  → Mac IP (ör: 192.168.1.129)
-// - iOS/Android simülatör       → localhost
-
-const DEV_API_HOST = 'http://192.168.1.128:8000';  
+const DEV_API_HOST = 'http://localhost:8000';
 
 
 //const DEV_API_HOST = Constants.isDevice
@@ -34,9 +31,8 @@ export const STORAGE_KEYS = {
 // -------------------------------------
 export const API_CONFIG = {
   BASE_URL: __DEV__
-    ? DEV_API_HOST                       // 👈 burada artık cihaz tipine göre
-    : (process.env.EXPO_PUBLIC_API_URL   // prod
-        || 'https://your-production-api.com'),
+    ? DEV_API_HOST
+    : (process.env.EXPO_PUBLIC_API_URL || 'https://your-production-api.com'),
   TIMEOUT: 10000,
 };
 
@@ -80,45 +76,135 @@ export const PRAYER_ICONS = {
   Isha: 'moon',
 };
 
+// -------------------------------------
+// CALCULATION METHODS (Aladhan API)
+// -------------------------------------
 export const CALCULATION_METHODS = {
-  MUSLIM_WORLD_LEAGUE: 3,
-  ISLAMIC_SOCIETY_OF_NORTH_AMERICA: 2,
-  EGYPTIAN: 5,
-  UMM_AL_QURA: 4,
-  UNIVERSITY_OF_ISLAMIC_SCIENCES_KARACHI: 1,
-  INSTITUTE_OF_GEOPHYSICS_UNIVERSITY_OF_TEHRAN: 7,
-  TURKISH: 13,
+  SHIA_ITHNA_ANSARI: 0,                              // Indonesia, Malaysia
+  UNIVERSITY_OF_ISLAMIC_SCIENCES_KARACHI: 1,          // Pakistan
+  ISLAMIC_SOCIETY_OF_NORTH_AMERICA: 2,                // USA, Canada (ISNA)
+  MUSLIM_WORLD_LEAGUE: 3,                             // Europe, Middle East (MWL)
+  UMM_AL_QURA: 4,                                     // Saudi Arabia, UAE
+  EGYPTIAN: 5,                                        // Egypt
+  INSTITUTE_OF_GEOPHYSICS_UNIVERSITY_OF_TEHRAN: 7,   // Iran
+  GULF_REGION: 8,                                     // Gulf countries
+  KUWAIT: 9,                                          // Kuwait
+  QATAR: 10,                                          // Qatar
+  MAJLIS_UGAMA_ISLAM_SINGAPURA: 11,                  // Singapore
+  UNION_ORGANIZATION_ISLAMIC_DE_FRANCE: 12,          // France
+  DIYANET_TURKEY: 13,                                 // Turkey
+  SPIRITUAL_ADMINISTRATION_OF_MUSLIMS_OF_RUSSIA: 14, // Russia
+  MOONSIGHTING_COMMITTEE_WORLDWIDE: 15,              // Moonsighting
 };
 
 export const CALCULATION_METHOD_DETAILS = {
+  [CALCULATION_METHODS.SHIA_ITHNA_ANSARI]: {
+    key: 'SHIA_ITHNA_ANSARI',
+    name: 'Shia Ithna-Ansari',
+    region: 'Indonesia, Malaysia',
+    flag: '🇮🇩'
+  },
   [CALCULATION_METHODS.UNIVERSITY_OF_ISLAMIC_SCIENCES_KARACHI]: {
     key: 'UNIVERSITY_OF_ISLAMIC_SCIENCES_KARACHI',
     name: 'University of Islamic Sciences, Karachi',
+    region: 'Pakistan',
+    flag: '🇵🇰'
   },
   [CALCULATION_METHODS.ISLAMIC_SOCIETY_OF_NORTH_AMERICA]: {
     key: 'ISLAMIC_SOCIETY_OF_NORTH_AMERICA',
     name: 'Islamic Society of North America (ISNA)',
+    region: 'North America',
+    flag: '🇺🇸'
   },
   [CALCULATION_METHODS.MUSLIM_WORLD_LEAGUE]: {
     key: 'MUSLIM_WORLD_LEAGUE',
-    name: 'Muslim World League',
+    name: 'Muslim World League (MWL)',
+    region: 'Europe, Middle East',
+    flag: '🌍'
   },
   [CALCULATION_METHODS.UMM_AL_QURA]: {
     key: 'UMM_AL_QURA',
     name: 'Umm Al-Qura University, Makkah',
+    region: 'Saudi Arabia, UAE',
+    flag: '🇸🇦'
   },
   [CALCULATION_METHODS.EGYPTIAN]: {
     key: 'EGYPTIAN',
     name: 'Egyptian General Authority of Survey',
+    region: 'Egypt',
+    flag: '🇪🇬'
   },
   [CALCULATION_METHODS.INSTITUTE_OF_GEOPHYSICS_UNIVERSITY_OF_TEHRAN]: {
     key: 'INSTITUTE_OF_GEOPHYSICS_UNIVERSITY_OF_TEHRAN',
     name: 'Institute of Geophysics, University of Tehran',
+    region: 'Iran',
+    flag: '🇮🇷'
   },
-  [CALCULATION_METHODS.TURKISH]: {
-    key: 'TURKISH',
+  [CALCULATION_METHODS.GULF_REGION]: {
+    key: 'GULF_REGION',
+    name: 'Gulf Region',
+    region: 'Gulf Countries',
+    flag: '🇦🇪'
+  },
+  [CALCULATION_METHODS.KUWAIT]: {
+    key: 'KUWAIT',
+    name: 'Kuwait',
+    region: 'Kuwait',
+    flag: '🇰🇼'
+  },
+  [CALCULATION_METHODS.QATAR]: {
+    key: 'QATAR',
+    name: 'Qatar',
+    region: 'Qatar',
+    flag: '🇶🇦'
+  },
+  [CALCULATION_METHODS.MAJLIS_UGAMA_ISLAM_SINGAPURA]: {
+    key: 'MAJLIS_UGAMA_ISLAM_SINGAPURA',
+    name: 'Majlis Ugama Islam Singapura',
+    region: 'Singapore',
+    flag: '🇸🇬'
+  },
+  [CALCULATION_METHODS.UNION_ORGANIZATION_ISLAMIC_DE_FRANCE]: {
+    key: 'UNION_ORGANIZATION_ISLAMIC_DE_FRANCE',
+    name: 'Union Organization Islamic de France',
+    region: 'France',
+    flag: '🇫🇷'
+  },
+  [CALCULATION_METHODS.DIYANET_TURKEY]: {
+    key: 'DIYANET_TURKEY',
     name: 'Diyanet İşleri Başkanlığı, Turkey',
+    region: 'Turkey',
+    flag: '🇹🇷'
   },
+  [CALCULATION_METHODS.SPIRITUAL_ADMINISTRATION_OF_MUSLIMS_OF_RUSSIA]: {
+    key: 'SPIRITUAL_ADMINISTRATION_OF_MUSLIMS_OF_RUSSIA',
+    name: 'Spiritual Administration of Muslims of Russia',
+    region: 'Russia',
+    flag: '🇷🇺'
+  },
+  [CALCULATION_METHODS.MOONSIGHTING_COMMITTEE_WORLDWIDE]: {
+    key: 'MOONSIGHTING_COMMITTEE_WORLDWIDE',
+    name: 'Moonsighting Committee Worldwide',
+    region: 'Worldwide',
+    flag: '🌙'
+  },
+};
+
+// Auto-detected countries with recommended methods
+export const COUNTRY_METHODS = {
+  'Turkey': CALCULATION_METHODS.DIYANET_TURKEY,
+  'Saudi Arabia': CALCULATION_METHODS.UMM_AL_QURA,
+  'UAE': CALCULATION_METHODS.UMM_AL_QURA,
+  'Egypt': CALCULATION_METHODS.EGYPTIAN,
+  'Pakistan': CALCULATION_METHODS.UNIVERSITY_OF_ISLAMIC_SCIENCES_KARACHI,
+  'Indonesia': CALCULATION_METHODS.SHIA_ITHNA_ANSARI,
+  'Malaysia': CALCULATION_METHODS.SHIA_ITHNA_ANSARI,
+  'Iran': CALCULATION_METHODS.INSTITUTE_OF_GEOPHYSICS_UNIVERSITY_OF_TEHRAN,
+  'Kuwait': CALCULATION_METHODS.KUWAIT,
+  'Qatar': CALCULATION_METHODS.QATAR,
+  'Singapore': CALCULATION_METHODS.MAJLIS_UGAMA_ISLAM_SINGAPURA,
+  'France': CALCULATION_METHODS.UNION_ORGANIZATION_ISLAMIC_DE_FRANCE,
+  'Russia': CALCULATION_METHODS.SPIRITUAL_ADMINISTRATION_OF_MUSLIMS_OF_RUSSIA,
 };
 
 export const ASR_CALCULATION = {
@@ -126,10 +212,23 @@ export const ASR_CALCULATION = {
   HANAFI: { id: 1, name: 'Hanafi' },
 };
 
+// Countries that commonly use Hanafi school
+export const HANAFI_COUNTRIES = [
+  'Turkey',
+  'Pakistan',
+  'Afghanistan',
+  'Bangladesh',
+  'Iraq',
+  'Jordan',
+  'Syria',
+  'Lebanon',
+  'Central Asia',
+];
+
 export const CACHE_DURATION = {
-  PRAYER_TIMES: 24 * 60 * 60 * 1000,
-  PRAYER_TRACKER: 5 * 60 * 1000,
-  STATISTICS: 5 * 60 * 1000,
+  PRAYER_TIMES: 24 * 60 * 60 * 1000,  // 24 hours
+  PRAYER_TRACKER: 5 * 60 * 1000,       // 5 minutes
+  STATISTICS: 5 * 60 * 1000,           // 5 minutes
 };
 
 export const STATS_PERIODS = {
@@ -157,4 +256,14 @@ export const APP_CONFIG = {
 export const KAABA_LOCATION = {
   latitude: 21.4225,
   longitude: 39.8262,
+};
+
+// Helper function to get calculation method for a country
+export const getMethodForCountry = (countryName) => {
+  return COUNTRY_METHODS[countryName] || CALCULATION_METHODS.ISLAMIC_SOCIETY_OF_NORTH_AMERICA;
+};
+
+// Helper function to check if country uses Hanafi
+export const isHanafiCountry = (countryName) => {
+  return HANAFI_COUNTRIES.includes(countryName);
 };

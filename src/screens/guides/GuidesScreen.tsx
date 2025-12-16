@@ -1,8 +1,8 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/guides/GuidesScreen.jsx (UPDATED WITH QURAN)
+// FILE: src/screens/guides/GuidesScreen.jsx (WITH LOADING)
 // ============================================================================
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 2;
@@ -23,9 +25,23 @@ const CARD_WIDTH = (width - 60) / 2;
 export const GuidesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { initialize } = useQuranStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initialize();
+    const initializeScreen = async () => {
+      try {
+        await initialize();
+        // Add small delay to ensure smooth transition
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error('Error initializing:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeScreen();
   }, []);
 
   const guides = [
@@ -136,88 +152,108 @@ export const GuidesScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  if (isLoading) {
+    return (
+      <IslamicLoadingScreen 
+        message={t('guides.loadingGuides')}
+        submessage={t('guides.preparingContent')}
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('guides.title')}</Text>
-          <Text style={styles.subtitle}>{t('guides.subtitle')}</Text>
-        </View>
-
-        {/* Featured Card - Quran */}
-        <TouchableOpacity
-          style={styles.featuredCard}
-          onPress={() => handleGuidePress(guides[0])}
-          activeOpacity={0.9}
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <LinearGradient
-            colors={['#00A86B', '#00D084']}
-            style={styles.featuredGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('guides.title')}</Text>
+            <Text style={styles.subtitle}>{t('guides.subtitle')}</Text>
+          </View>
+
+          {/* Featured Card - Quran */}
+          <TouchableOpacity
+            style={styles.featuredCard}
+            onPress={() => handleGuidePress(guides[0])}
+            activeOpacity={0.9}
           >
-            <View style={styles.featuredContent}>
-              <View style={styles.featuredIcon}>
-                <Ionicons name="book" size={48} color="#FFF" />
-              </View>
-              <View style={styles.featuredText}>
-                <Text style={styles.featuredBadge}>{t('guides.popular')}</Text>
-                <Text style={styles.featuredTitle}>{t('quran.quran')}</Text>
-                <Text style={styles.featuredSubtitle}>
-                  {t('guides.quranDescription')}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name="arrow-forward-circle"
-              size={32}
-              color="#FFF"
-              style={styles.featuredArrow}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Categories */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('guides.browseAll')}</Text>
-          <View style={styles.cardsGrid}>
-            {guides.slice(1).map((guide) => renderGuideCard(guide))}
-          </View>
-        </View>
-
-        {/* Help Section */}
-        <View style={styles.helpSection}>
-          <View style={styles.helpCard}>
-            <Ionicons name="help-circle" size={32} color="#00A86B" />
-            <Text style={styles.helpTitle}>{t('guides.newToIslam')}</Text>
-            <Text style={styles.helpText}>{t('guides.newToIslamText')}</Text>
-            <TouchableOpacity
-              style={styles.helpButton}
-              onPress={() =>
-                navigation.navigate('BasicsGuide', {
-                  guide: guides.find((g) => g.id === 'basics'),
-                })
-              }
+            <LinearGradient
+              colors={['#00A86B', '#00D084']}
+              style={styles.featuredGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.helpButtonText}>{t('guides.getStarted')}</Text>
-              <Ionicons name="arrow-forward" size={16} color="#00A86B" />
-            </TouchableOpacity>
+              <View style={styles.featuredContent}>
+                <View style={styles.featuredIcon}>
+                  <Ionicons name="book" size={48} color="#FFF" />
+                </View>
+                <View style={styles.featuredText}>
+                  <Text style={styles.featuredBadge}>{t('guides.popular')}</Text>
+                  <Text style={styles.featuredTitle}>{t('quran.quran')}</Text>
+                  <Text style={styles.featuredSubtitle}>
+                    {t('guides.quranDescription')}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name="arrow-forward-circle"
+                size={32}
+                color="#FFF"
+                style={styles.featuredArrow}
+              />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Categories */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('guides.browseAll')}</Text>
+            <View style={styles.cardsGrid}>
+              {guides.slice(1).map((guide) => renderGuideCard(guide))}
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* Help Section */}
+          <View style={styles.helpSection}>
+            <View style={styles.helpCard}>
+              <Ionicons name="help-circle" size={32} color="#00A86B" />
+              <Text style={styles.helpTitle}>{t('guides.newToIslam')}</Text>
+              <Text style={styles.helpText}>{t('guides.newToIslamText')}</Text>
+              <TouchableOpacity
+                style={styles.helpButton}
+                onPress={() =>
+                  navigation.navigate('BasicsGuide', {
+                    guide: guides.find((g) => g.id === 'basics'),
+                  })
+                }
+              >
+                <Text style={styles.helpButtonText}>{t('guides.getStarted')}</Text>
+                <Ionicons name="arrow-forward" size={16} color="#00A86B" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,

@@ -1,3 +1,6 @@
+// ============================================================================
+// FILE: src/stores/usePrayerStore.js (WITH AUTO-DETECTION)
+// ============================================================================
 import { create } from 'zustand';
 import { prayersAPI } from '../api/prayers';
 import { locationService } from '../services/location';
@@ -39,7 +42,7 @@ export const usePrayerStore = create((set, get) => ({
             lastUpdated: new Date(cachedTimes.lastFetched),
             fromCache: true,
           });
-          console.log('Loaded prayer times from cache');
+          console.log('✅ Loaded prayer times from cache');
           return;
         } else {
           await storage.removeItem(PRAYER_TIMES_CACHE_KEY);
@@ -55,7 +58,7 @@ export const usePrayerStore = create((set, get) => ({
         );
       }
     } catch (error) {
-      console.error('Prayer store initialization error:', error);
+      console.error('❌ Prayer store initialization error:', error);
     }
   },
 
@@ -63,14 +66,10 @@ export const usePrayerStore = create((set, get) => ({
     // Check cache validity
     if (!forceRefresh && get().fromCache && get().prayerTimes) {
       const cachedDate = get().prayerTimes.date;
-      const today = new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
       if (cachedDate === today) {
-        console.log('Using existing cache');
+        console.log('✅ Using existing cache');
         return { success: true, data: get().prayerTimes, fromCache: true };
       }
     }
@@ -78,11 +77,14 @@ export const usePrayerStore = create((set, get) => ({
     set({ isLoading: true, error: null, fromCache: false });
 
     try {
+      // 🎯 Let backend auto-detect method/school based on location
+      // Don't pass method/school parameters - backend will choose the best one
       const response = await prayersAPI.getPrayerTimes(latitude, longitude);
       const data = response.data;
 
       data.lastFetched = new Date().toISOString();
 
+      // Cache until tomorrow at midnight
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
@@ -97,6 +99,7 @@ export const usePrayerStore = create((set, get) => ({
         fromCache: data.from_cache || false,
       });
 
+      console.log('✅ Prayer times fetched successfully');
       return { success: true, data };
     } catch (error) {
       let errorMessage = 'Failed to fetch prayer times';
@@ -108,7 +111,7 @@ export const usePrayerStore = create((set, get) => ({
         // Try to use cache as fallback
         const cachedTimes = await storage.getItem(PRAYER_TIMES_CACHE_KEY);
         if (cachedTimes) {
-          console.log('Network error, using cached data');
+          console.log('⚠️  Network error, using cached data');
           set({
             prayerTimes: cachedTimes,
             lastUpdated: new Date(cachedTimes.lastFetched),
@@ -124,6 +127,7 @@ export const usePrayerStore = create((set, get) => ({
       }
 
       set({ error: errorMessage, isLoading: false });
+      console.error('❌ Failed to fetch prayer times:', errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -132,7 +136,10 @@ export const usePrayerStore = create((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
+      console.log('📍 Getting current location...');
       const coords = await locationService.getCurrentLocation();
+      
+      console.log('🌍 Getting location info...');
       const locationInfo = await locationService.getCityCountry(
         coords.latitude,
         coords.longitude
@@ -144,6 +151,9 @@ export const usePrayerStore = create((set, get) => ({
       set({ location: fullLocation });
       await storage.setItem(LOCATION_CACHE_KEY, fullLocation);
 
+      console.log(`✅ Location: ${fullLocation.city}, ${fullLocation.country}`);
+
+      // Fetch prayer times (backend will auto-detect method)
       await get().fetchPrayerTimes(
         coords.latitude,
         coords.longitude,
@@ -152,7 +162,7 @@ export const usePrayerStore = create((set, get) => ({
 
       // Save to backend (don't wait, don't fail on error)
       prayersAPI.saveLocation(fullLocation).catch(e => {
-        console.log('Failed to save location to backend (ignored):', e.message);
+        console.log('⚠️  Failed to save location to backend (ignored):', e.message);
       });
 
       return { success: true };
@@ -166,6 +176,7 @@ export const usePrayerStore = create((set, get) => ({
       }
 
       set({ error: errorMessage, isLoading: false });
+      console.error('❌ Location error:', errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -185,10 +196,10 @@ export const usePrayerStore = create((set, get) => ({
           await storage.setItem(LOCATION_CACHE_KEY, response.data);
         }
       } catch (error) {
-        console.log('Could not load location from backend (using cache):', error.message);
+        console.log('⚠️  Could not load location from backend (using cache)');
       }
     } catch (error) {
-      console.log('No saved location:', error.message);
+      console.log('⚠️  No saved location');
     }
   },
 
@@ -202,6 +213,7 @@ export const usePrayerStore = create((set, get) => ({
       lastUpdated: null,
       fromCache: false,
     });
+    console.log('🧹 Cache cleared');
   },
 
   isCacheValid: () => {

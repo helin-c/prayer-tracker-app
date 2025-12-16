@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/profile/EditProfileScreen.jsx (WITH i18n)
+// FILE: src/screens/profile/EditProfileScreen.jsx (WITH Islamic Loading)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -10,12 +10,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
@@ -78,141 +79,153 @@ export const EditProfileScreen = ({ navigation }) => {
     setFormData({ ...formData, preferred_language: langCode });
   };
 
+  if (isLoading || isSaving) {
+    return (
+      <IslamicLoadingScreen 
+        message={t('profile.updatingProfile')}
+        submessage={t('common.pleaseWait')}
+      />
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profile.editProfile')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Full Name */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('auth.fullName')}</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              value={formData.full_name}
-              onChangeText={(text) => setFormData({ ...formData, full_name: text })}
-              placeholder={t('auth.fullNamePlaceholder')}
-              placeholderTextColor="#999"
-            />
-          </View>
+    <ImageBackground
+      source={require('../../assets/images/illustrations/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('profile.editProfile')}</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Phone */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('profile.phoneNumber')}</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              value={formData.phone}
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-              placeholder="+90 5XX XXX XX XX"
-              placeholderTextColor="#999"
-              keyboardType="phone-pad"
-            />
-          </View>
-        </View>
-
-        {/* Location */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('profile.location')}</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              value={formData.location}
-              onChangeText={(text) => setFormData({ ...formData, location: text })}
-              placeholder={t('profile.locationPlaceholder')}
-              placeholderTextColor="#999"
-            />
-          </View>
-        </View>
-
-        {/* Language Selection */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('profile.language')}</Text>
-          <Text style={styles.labelSubtext}>{t('profile.languageDescription')}</Text>
-          
-          <View style={styles.languageList}>
-            {LANGUAGES.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                style={[
-                  styles.languageOption,
-                  formData.preferred_language === lang.code && styles.languageOptionActive,
-                ]}
-                onPress={() => handleLanguageSelect(lang.code)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.languageLeft}>
-                  <Text style={styles.languageFlag}>{lang.flag}</Text>
-                  <View style={styles.languageText}>
-                    <Text style={styles.languageName}>{lang.nativeName}</Text>
-                    <Text style={styles.languageNameEn}>{lang.name}</Text>
-                  </View>
-                </View>
-                
-                {formData.preferred_language === lang.code && (
-                  <Ionicons name="checkmark-circle" size={24} color="#00A86B" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {formData.preferred_language !== i18n.language && (
-            <View style={styles.languageNote}>
-              <Ionicons name="information-circle" size={16} color="#3498DB" />
-              <Text style={styles.languageNoteText}>
-                {t('profile.languageChangeNote')}
-              </Text>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Full Name */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('auth.fullName')}</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={formData.full_name}
+                onChangeText={(text) => setFormData({ ...formData, full_name: text })}
+                placeholder={t('auth.fullNamePlaceholder')}
+                placeholderTextColor="#999"
+              />
             </View>
-          )}
-        </View>
+          </View>
 
-        {/* Save Button */}
-        <TouchableOpacity
-          style={[styles.saveButton, (isLoading || isSaving) && styles.saveButtonDisabled]}
-          onPress={handleSave}
-          disabled={isLoading || isSaving}
-        >
-          {(isLoading || isSaving) ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          {/* Phone */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('profile.phoneNumber')}</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={formData.phone}
+                onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                placeholder="+90 5XX XXX XX XX"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
 
-        {/* Discard Button */}
-        <TouchableOpacity
-          style={styles.discardButton}
-          onPress={() => navigation.goBack()}
-          disabled={isLoading || isSaving}
-        >
-          <Text style={styles.discardButtonText}>{t('common.cancel')}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Location */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('profile.location')}</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={formData.location}
+                onChangeText={(text) => setFormData({ ...formData, location: text })}
+                placeholder={t('profile.locationPlaceholder')}
+                placeholderTextColor="#999"
+              />
+            </View>
+          </View>
+
+          {/* Language Selection */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('profile.language')}</Text>
+            <Text style={styles.labelSubtext}>{t('profile.languageDescription')}</Text>
+            
+            <View style={styles.languageList}>
+              {LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageOption,
+                    formData.preferred_language === lang.code && styles.languageOptionActive,
+                  ]}
+                  onPress={() => handleLanguageSelect(lang.code)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.languageLeft}>
+                    <Text style={styles.languageFlag}>{lang.flag}</Text>
+                    <View style={styles.languageText}>
+                      <Text style={styles.languageName}>{lang.nativeName}</Text>
+                      <Text style={styles.languageNameEn}>{lang.name}</Text>
+                    </View>
+                  </View>
+                  
+                  {formData.preferred_language === lang.code && (
+                    <Ionicons name="checkmark-circle" size={24} color="#00A86B" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {formData.preferred_language !== i18n.language && (
+              <View style={styles.languageNote}>
+                <Ionicons name="information-circle" size={16} color="#3498DB" />
+                <Text style={styles.languageNoteText}>
+                  {t('profile.languageChangeNote')}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Save Button */}
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSave}
+          >
+            <Ionicons name="checkmark-circle" size={20} color="#FFF" />
+            <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+          </TouchableOpacity>
+
+          {/* Discard Button */}
+          <TouchableOpacity
+            style={styles.discardButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.discardButtonText}>{t('common.cancel')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -220,8 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   backButton: {

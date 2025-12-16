@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/api/backend.js
+// FILE: src/api/backend.js 
 // ============================================================================
 import axios from 'axios';
 import { STORAGE_KEYS, API_CONFIG } from '../utils/constants';
@@ -17,6 +17,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
+      // TODO Redis
       const token = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -32,24 +33,46 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Log errors for debugging
+// Response interceptor - Smart error logging
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Check if this is a 401 that will be handled by refresh
+    const is401 = error.response?.status === 401;
+    const willRetry = error.config && !error.config._retry;
+    const isAuthEndpoint = error.config?.url?.includes('/auth/');
+    
+    // Don't log expected 401s that will be auto-fixed by token refresh
+    if (is401 && willRetry && !isAuthEndpoint) {
+      // This is a normal 401 that will be handled by refresh - don't log
+      return Promise.reject(error);
+    }
+    
+    // Log actual errors that matter
     if (error.response) {
-      console.error('API Error Response:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config?.baseURL + error.config?.url,
-      });
+      // Server responded with error status
+      const { status, data } = error.response;
+      const url = error.config?.url;
+      
+      // Only log if it's not a handled 401
+      if (!(is401 && willRetry)) {
+        console.error('API Error:', {
+          status,
+          message: data?.detail || data?.message || 'Unknown error',
+          url,
+        });
+      }
     } else if (error.request) {
-      console.error('API Network Error:', {
+      // Request was made but no response received (network error)
+      console.error('Network Error:', {
         message: error.message,
-        url: error.config?.baseURL + error.config?.url,
+        url: error.config?.url,
       });
     } else {
-      console.error('API Error:', error.message);
+      // Something else happened
+      console.error('Request Error:', error.message);
     }
+    
     return Promise.reject(error);
   }
 );
@@ -69,7 +92,9 @@ export const userAPI = {
   getUsers: (params) => api.get('/users', { params }),
   getUser: (id) => api.get(`/users/${id}`),
   updateProfile: (data) => api.put('/users/me', data),
+  changePassword: (data) => api.post('/users/me/change-password', data),
   deleteAccount: () => api.delete('/users/me'),
+  deactivateAccount: () => api.post('/users/me/deactivate'),
 };
 
 export default api;

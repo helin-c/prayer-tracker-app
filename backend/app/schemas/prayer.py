@@ -1,8 +1,8 @@
 # ============================================================================
-# FILE: backend/app/schemas/prayer.py
+# FILE: backend/app/schemas/prayer.py (COMPLETE FIXED VERSION)
 # ============================================================================
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 import re
 
@@ -179,10 +179,36 @@ class DayPrayerStatus(BaseModel):
         }
 
 
+# ============================================================================
+# PRAYER DETAIL FOR CALENDAR (NEW - FOR WEEK VIEW)
+# ============================================================================
+
+class PrayerDetail(BaseModel):
+    """Individual prayer detail for calendar view"""
+    completed: bool
+    on_time: bool
+    time: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "completed": True,
+                "on_time": True,
+                "time": "05:30"
+            }
+        }
+
+
+# ============================================================================
+# WEEK VIEW SCHEMAS (FIXED - WITH PRAYER DETAILS)
+# ============================================================================
+
 class DayStatus(BaseModel):
-    """Simplified day status for calendar/week view"""
+    """Day status for calendar/week view WITH detailed prayer information"""
     date: str
     completion_percentage: float
+    on_time_count: int = Field(default=0, description="Number of on-time prayers")
+    prayers: Dict[str, PrayerDetail] = Field(..., description="Prayer details keyed by prayer name (lowercase)")
     is_today: bool = False
     
     class Config:
@@ -190,13 +216,21 @@ class DayStatus(BaseModel):
             "example": {
                 "date": "2024-01-15",
                 "completion_percentage": 80.0,
+                "on_time_count": 3,
+                "prayers": {
+                    "fajr": {"completed": True, "on_time": True, "time": "05:30"},
+                    "dhuhr": {"completed": True, "on_time": False, "time": "12:15"},
+                    "asr": {"completed": True, "on_time": True, "time": "15:00"},
+                    "maghrib": {"completed": True, "on_time": True, "time": "17:45"},
+                    "isha": {"completed": False, "on_time": False, "time": None}
+                },
                 "is_today": True
             }
         }
 
 
 class WeekPrayerStatus(BaseModel):
-    """Prayer status for a week (7 days)"""
+    """Prayer status for a week (7 days) with full prayer details"""
     start_date: str
     end_date: str
     days: List[DayStatus]
@@ -207,8 +241,32 @@ class WeekPrayerStatus(BaseModel):
                 "start_date": "2024-01-15",
                 "end_date": "2024-01-21",
                 "days": [
-                    {"date": "2024-01-15", "completion_percentage": 100.0, "is_today": False},
-                    {"date": "2024-01-16", "completion_percentage": 80.0, "is_today": True}
+                    {
+                        "date": "2024-01-15",
+                        "completion_percentage": 100.0,
+                        "on_time_count": 5,
+                        "prayers": {
+                            "fajr": {"completed": True, "on_time": True, "time": "05:30"},
+                            "dhuhr": {"completed": True, "on_time": True, "time": "12:15"},
+                            "asr": {"completed": True, "on_time": True, "time": "15:00"},
+                            "maghrib": {"completed": True, "on_time": True, "time": "17:45"},
+                            "isha": {"completed": True, "on_time": True, "time": "20:00"}
+                        },
+                        "is_today": False
+                    },
+                    {
+                        "date": "2024-01-16",
+                        "completion_percentage": 80.0,
+                        "on_time_count": 3,
+                        "prayers": {
+                            "fajr": {"completed": True, "on_time": True, "time": "05:30"},
+                            "dhuhr": {"completed": True, "on_time": False, "time": "12:30"},
+                            "asr": {"completed": True, "on_time": True, "time": "15:00"},
+                            "maghrib": {"completed": True, "on_time": True, "time": "17:45"},
+                            "isha": {"completed": False, "on_time": False, "time": None}
+                        },
+                        "is_today": True
+                    }
                 ]
             }
         }

@@ -9,6 +9,11 @@ export const useFriendsStore = create((set, get) => ({
   friends: [],
   pendingRequests: [],
   sentRequests: [],
+  friendsCount: {
+    current_count: 0,
+    max_limit: 5,
+    can_add_more: true,
+  },
   isLoading: false,
   error: null,
 
@@ -24,6 +29,10 @@ export const useFriendsStore = create((set, get) => ({
         friends: response.data, 
         isLoading: false 
       });
+      
+      // Also fetch count after getting friends
+      await get().fetchFriendsCount();
+      
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to fetch friends';
@@ -33,6 +42,20 @@ export const useFriendsStore = create((set, get) => ({
         isLoading: false 
       });
       throw error;
+    }
+  },
+
+  // ============================================================================
+  // FETCH FRIENDS COUNT
+  // ============================================================================
+  fetchFriendsCount: async () => {
+    try {
+      const response = await api.get('/friends/count');
+      set({ friendsCount: response.data });
+      return response.data;
+    } catch (error) {
+      console.error('Fetch friends count error:', error);
+      // Don't throw, just log
     }
   },
 
@@ -143,6 +166,31 @@ export const useFriendsStore = create((set, get) => ({
   },
 
   // ============================================================================
+  // CANCEL SENT REQUEST
+  // ============================================================================
+  cancelSentRequest: async (requestId) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await api.delete(`/friends/request/${requestId}/cancel`);
+      
+      // Refresh sent requests
+      await get().fetchSentRequests();
+      
+      set({ isLoading: false });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to cancel request';
+      console.error('Cancel sent request error:', error);
+      set({ 
+        error: errorMessage, 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  // ============================================================================
   // REMOVE FRIEND
   // ============================================================================
   removeFriend: async (friendshipId) => {
@@ -151,7 +199,7 @@ export const useFriendsStore = create((set, get) => ({
     try {
       const response = await api.delete(`/friends/${friendshipId}`);
       
-      // Refresh friends list
+      // Refresh friends list and count
       await get().fetchFriends();
       
       set({ isLoading: false });
@@ -191,6 +239,11 @@ export const useFriendsStore = create((set, get) => ({
     friends: [],
     pendingRequests: [],
     sentRequests: [],
+    friendsCount: {
+      current_count: 0,
+      max_limit: 5,
+      can_add_more: true,
+    },
     isLoading: false,
     error: null,
   }),

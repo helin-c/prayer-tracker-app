@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE: src/screens/quran/QuranSurahListScreen.jsx
 // ============================================================================
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,34 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
+import { useFocusEffect } from '@react-navigation/native';
 
 export const QuranSurahListScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { quranData, lastRead } = useQuranStore();
+  const { quranData, lastRead, bookmarks, initialize, isInitialized, isLoading } = useQuranStore();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Initialize store on mount
+  useEffect(() => {
+    if (!isInitialized) {
+      initialize();
+    }
+  }, []);
+
+  // Refresh data when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isInitialized) {
+        initialize();
+      }
+    }, [isInitialized])
+  );
 
   const filteredSurahs = quranData.surahs.filter((surah) =>
     surah.name_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -62,6 +80,27 @@ export const QuranSurahListScreen = ({ navigation }) => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('quran.quran')}</Text>
+          <View style={styles.bookmarkButton} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00A86B" />
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -77,7 +116,14 @@ export const QuranSurahListScreen = ({ navigation }) => {
           style={styles.bookmarkButton}
           onPress={() => navigation.navigate('QuranBookmarks')}
         >
-          <Ionicons name="bookmark-outline" size={24} color="#00A86B" />
+          <View>
+            <Ionicons name="bookmark-outline" size={24} color="#00A86B" />
+            {bookmarks.length > 0 && (
+              <View style={styles.bookmarkCountBadge}>
+                <Text style={styles.bookmarkCountText}>{bookmarks.length}</Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -102,7 +148,10 @@ export const QuranSurahListScreen = ({ navigation }) => {
       {lastRead && !searchQuery && (
         <TouchableOpacity
           style={styles.continueCard}
-          onPress={() => navigation.navigate('QuranReader', { surahNumber: lastRead.surahNumber })}
+          onPress={() => navigation.navigate('QuranReader', { 
+            surahNumber: lastRead.surahNumber,
+            ayahNumber: lastRead.ayahNumber 
+          })}
         >
           <View style={styles.continueIcon}>
             <Ionicons name="play-circle" size={32} color="#00A86B" />
@@ -124,6 +173,9 @@ export const QuranSurahListScreen = ({ navigation }) => {
         keyExtractor={(item) => item.number.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={20}
+        maxToRenderPerBatch={10}
+        windowSize={10}
       />
     </SafeAreaView>
   );
@@ -133,6 +185,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',
@@ -155,6 +217,23 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  bookmarkCountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#DC3545',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  bookmarkCountText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: 20,

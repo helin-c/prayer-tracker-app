@@ -3,7 +3,7 @@
 # ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func
 from typing import List
 import logging
 
@@ -22,6 +22,42 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# Maximum friends limit
+MAX_FRIENDS_LIMIT = 5
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+def get_accepted_friends_count(db: Session, user_id: int) -> int:
+    """Get count of accepted friends for a user"""
+    count = db.query(func.count(Friendship.id)).filter(
+        and_(
+            or_(
+                Friendship.user_id == user_id,
+                Friendship.friend_id == user_id
+            ),
+            Friendship.status == FriendshipStatus.ACCEPTED
+        )
+    ).scalar()
+    return count or 0
+
+
+def check_friendship_exists(db: Session, user_id: int, friend_id: int) -> Friendship:
+    """Check if friendship exists in either direction"""
+    return db.query(Friendship).filter(
+        or_(
+            and_(
+                Friendship.user_id == user_id,
+                Friendship.friend_id == friend_id
+            ),
+            and_(
+                Friendship.user_id == friend_id,
+                Friendship.friend_id == user_id
+            )
+        )
+    ).first()
 
 
 # ============================================================================
@@ -59,16 +95,45 @@ async def get_friends(
             if friend_user.prayer_streak:
                 friend_dict['current_streak'] = friend_user.prayer_streak.current_streak
                 friend_dict['best_streak'] = friend_user.prayer_streak.best_streak
+            else:
+                friend_dict['current_streak'] = 0
+                friend_dict['best_streak'] = 0
             
             friends.append(friend_dict)
         
         return friends
         
     except Exception as e:
-        logger.error(f"Error getting friends: {str(e)}")
+        logger.error(f"Error getting friends for user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get friends"
+        )
+
+
+# ============================================================================
+# GET FRIENDS COUNT
+# ============================================================================
+@router.get("/count", response_model=dict)
+async def get_friends_count(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get current friends count and maximum limit.
+    """
+    try:
+        count = get_accepted_friends_count(db, current_user.id)
+        return {
+            "current_count": count,
+            "max_limit": MAX_FRIENDS_LIMIT,
+            "can_add_more": count < MAX_FRIENDS_LIMIT
+        }
+    except Exception as e:
+        logger.error(f"Error getting friends count: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get friends count"
         )
 
 
@@ -92,15 +157,16 @@ async def get_pending_requests(
             )
         ).all()
         
-        # Format response with sender info
+        # Format response with sender info (as friend fields for schema compatibility)
         pending = []
         for request in requests:
             req_dict = {
                 "id": request.id,
-                "sender_id": request.user_id,
-                "sender_name": request.user.full_name or request.user.email.split('@')[0],
-                "sender_email": request.user.email,
+                "friend_id": request.user_id,  # sender is the "friend"
+                "friend_name": request.user.full_name or request.user.email.split('@')[0],
+                "friend_email": request.user.email,
                 "status": request.status.value,
+                "is_requester": False,  # Current user is NOT the requester
                 "created_at": request.created_at.isoformat(),
             }
             pending.append(req_dict)
@@ -108,7 +174,7 @@ async def get_pending_requests(
         return pending
         
     except Exception as e:
-        logger.error(f"Error getting pending requests: {str(e)}")
+        logger.error(f"Error getting pending requests for user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get pending requests"
@@ -138,7 +204,7 @@ async def get_sent_requests(
         return [req.to_dict(current_user.id) for req in requests]
         
     except Exception as e:
-        logger.error(f"Error getting sent requests: {str(e)}")
+        logger.error(f"Error getting sent requests for user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get sent requests"
@@ -156,10 +222,20 @@ async def send_friend_request(
 ):
     """
     Send a friend request to another user by email.
+    
+    Enforces 5-friend limit - user cannot send request if they already have 5 accepted friends.
     """
     try:
+        # Check if user has reached friend limit
+        current_friends_count = get_accepted_friends_count(db, current_user.id)
+        if current_friends_count >= MAX_FRIENDS_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"You have reached the maximum limit of {MAX_FRIENDS_LIMIT} friends. Please remove a friend before adding a new one."
+            )
+        
         # Find friend by email
-        friend = db.query(User).filter(User.email == request_data.friend_email).first()
+        friend = db.query(User).filter(User.email == request_data.friend_email.lower()).first()
         
         if not friend:
             raise HTTPException(
@@ -174,19 +250,16 @@ async def send_friend_request(
                 detail="You cannot add yourself as a friend"
             )
         
-        # Check if friendship already exists (either direction)
-        existing = db.query(Friendship).filter(
-            or_(
-                and_(
-                    Friendship.user_id == current_user.id,
-                    Friendship.friend_id == friend.id
-                ),
-                and_(
-                    Friendship.user_id == friend.id,
-                    Friendship.friend_id == current_user.id
-                )
+        # Check if friend has reached their limit
+        friend_count = get_accepted_friends_count(db, friend.id)
+        if friend_count >= MAX_FRIENDS_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"This user has reached their maximum limit of {MAX_FRIENDS_LIMIT} friends"
             )
-        ).first()
+        
+        # Check if friendship already exists (either direction)
+        existing = check_friendship_exists(db, current_user.id, friend.id)
         
         if existing:
             if existing.status == FriendshipStatus.ACCEPTED:
@@ -195,10 +268,17 @@ async def send_friend_request(
                     detail="Already friends with this user"
                 )
             elif existing.status == FriendshipStatus.PENDING:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Friend request already sent"
-                )
+                # Check who sent the request
+                if existing.requester_id == current_user.id:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Friend request already sent to this user"
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This user has already sent you a friend request. Please check your pending requests."
+                    )
         
         # Create new friendship request
         friendship = Friendship(
@@ -218,7 +298,7 @@ async def send_friend_request(
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Error sending friend request: {str(e)}")
+        logger.error(f"Error sending friend request from user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send friend request"
@@ -236,8 +316,18 @@ async def accept_friend_request(
 ):
     """
     Accept a pending friend request.
+    
+    Enforces 5-friend limit - user cannot accept if they have 5 friends already.
     """
     try:
+        # Check if user has reached friend limit
+        current_friends_count = get_accepted_friends_count(db, current_user.id)
+        if current_friends_count >= MAX_FRIENDS_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"You have reached the maximum limit of {MAX_FRIENDS_LIMIT} friends. Please remove a friend before accepting new requests."
+            )
+        
         # Get the request
         friendship = db.query(Friendship).filter(
             and_(
@@ -250,21 +340,29 @@ async def accept_friend_request(
         if not friendship:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Friend request not found"
+                detail="Friend request not found or already processed"
+            )
+        
+        # Check if requester has reached their limit
+        requester_count = get_accepted_friends_count(db, friendship.user_id)
+        if requester_count >= MAX_FRIENDS_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The requester has reached their maximum limit of {MAX_FRIENDS_LIMIT} friends"
             )
         
         # Accept the request
         friendship.status = FriendshipStatus.ACCEPTED
         db.commit()
         
-        logger.info(f"Friend request accepted: {request_id}")
+        logger.info(f"Friend request accepted: {request_id} by user {current_user.id}")
         return MessageResponse(message="Friend request accepted")
         
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Error accepting friend request: {str(e)}")
+        logger.error(f"Error accepting friend request {request_id} by user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to accept friend request"
@@ -296,24 +394,70 @@ async def reject_friend_request(
         if not friendship:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Friend request not found"
+                detail="Friend request not found or already processed"
             )
         
-        # Delete the request (or update status to rejected)
+        # Delete the request
         db.delete(friendship)
         db.commit()
         
-        logger.info(f"Friend request rejected: {request_id}")
+        logger.info(f"Friend request rejected: {request_id} by user {current_user.id}")
         return MessageResponse(message="Friend request rejected")
         
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Error rejecting friend request: {str(e)}")
+        logger.error(f"Error rejecting friend request {request_id} by user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reject friend request"
+        )
+
+
+# ============================================================================
+# CANCEL SENT REQUEST
+# ============================================================================
+@router.delete("/request/{request_id}/cancel", response_model=MessageResponse)
+async def cancel_sent_request(
+    request_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Cancel a friend request that you sent.
+    """
+    try:
+        # Get the request (must be sender and pending)
+        friendship = db.query(Friendship).filter(
+            and_(
+                Friendship.id == request_id,
+                Friendship.user_id == current_user.id,
+                Friendship.status == FriendshipStatus.PENDING
+            )
+        ).first()
+        
+        if not friendship:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Friend request not found or already processed"
+            )
+        
+        # Delete the request
+        db.delete(friendship)
+        db.commit()
+        
+        logger.info(f"Friend request cancelled: {request_id} by user {current_user.id}")
+        return MessageResponse(message="Friend request cancelled")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error cancelling friend request {request_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to cancel friend request"
         )
 
 
@@ -352,14 +496,14 @@ async def remove_friend(
         db.delete(friendship)
         db.commit()
         
-        logger.info(f"Friendship removed: {friendship_id}")
+        logger.info(f"Friendship removed: {friendship_id} by user {current_user.id}")
         return MessageResponse(message="Friend removed successfully")
         
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Error removing friend: {str(e)}")
+        logger.error(f"Error removing friend {friendship_id} by user {current_user.id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to remove friend"
@@ -383,17 +527,9 @@ async def get_friend_week_prayers(
     """
     try:
         # Verify friendship exists and is accepted
-        friendship = db.query(Friendship).filter(
-            and_(
-                or_(
-                    and_(Friendship.user_id == current_user.id, Friendship.friend_id == friend_id),
-                    and_(Friendship.user_id == friend_id, Friendship.friend_id == current_user.id)
-                ),
-                Friendship.status == FriendshipStatus.ACCEPTED
-            )
-        ).first()
+        friendship = check_friendship_exists(db, current_user.id, friend_id)
         
-        if not friendship:
+        if not friendship or friendship.status != FriendshipStatus.ACCEPTED:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only view prayers of accepted friends"
@@ -408,7 +544,14 @@ async def get_friend_week_prayers(
             )
         
         # Parse dates
-        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid date format. Use YYYY-MM-DD"
+            )
+        
         end = start + timedelta(days=6)
         
         # Get prayer logs for the week
@@ -459,13 +602,8 @@ async def get_friend_week_prayers(
         
     except HTTPException:
         raise
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid date format. Use YYYY-MM-DD"
-        )
     except Exception as e:
-        logger.error(f"Error getting friend week prayers: {str(e)}")
+        logger.error(f"Error getting friend week prayers for user {current_user.id}, friend {friend_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get friend's prayer data"

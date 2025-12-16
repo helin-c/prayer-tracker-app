@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/quran/QuranReaderScreen.jsx
+// FILE: src/screens/quran/QuranReaderScreen.jsx (FIXED)
 // ============================================================================
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -12,17 +12,19 @@ import {
   TextInput,
   Dimensions,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
 export const QuranReaderScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { surahNumber: initialSurah = 1 } = route.params || {};
+  const { surahNumber: initialSurah = 1, ayahNumber: initialAyah } = route.params || {};
   
   const {
     getSurah,
@@ -36,6 +38,9 @@ export const QuranReaderScreen = ({ navigation, route }) => {
     updateLastRead,
     isBookmarked,
     getHighlight,
+    getBookmarkBySurahAyah,
+    initialize,
+    isInitialized,
   } = useQuranStore();
 
   const [currentSurah, setCurrentSurah] = useState(getSurah(initialSurah));
@@ -46,26 +51,68 @@ export const QuranReaderScreen = ({ navigation, route }) => {
   
   const scrollViewRef = useRef(null);
 
+  // Initialize store on mount
   useEffect(() => {
-    if (currentSurah && currentSurah.ayahs.length > 0) {
-      updateLastRead(currentSurah.number, 1);
+    if (!isInitialized) {
+      initialize();
     }
-  }, [currentSurah]);
+  }, []);
+
+  // Update current surah when initialized or surah changes
+  useEffect(() => {
+    if (isInitialized) {
+      const surah = getSurah(initialSurah);
+      setCurrentSurah(surah);
+    }
+  }, [isInitialized, initialSurah]);
+
+  // Update last read position
+  useEffect(() => {
+    if (currentSurah && currentSurah.ayahs.length > 0 && isInitialized) {
+      const ayahToTrack = initialAyah || 1;
+      updateLastRead(currentSurah.number, ayahToTrack);
+    }
+  }, [currentSurah, isInitialized]);
+
+  // Refresh bookmarks when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (isInitialized) {
+        // Force re-render to show updated bookmarks
+        setCurrentSurah(getSurah(currentSurah?.number || initialSurah));
+      }
+    }, [isInitialized, currentSurah?.number])
+  );
+
+  // Convert number to Arabic numeral
+  const toArabicNumber = (num) => {
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return num.toString().split('').map(d => arabicNumbers[parseInt(d)]).join('');
+  };
 
   const handleAyahLongPress = (ayah) => {
+    // Get existing bookmark note if any
+    const existingBookmark = getBookmarkBySurahAyah(currentSurah.number, ayah.number_in_surah);
+    setBookmarkNote(existingBookmark?.note || '');
     setSelectedAyah(ayah);
     setShowMenu(true);
   };
 
   const handleAddBookmark = async () => {
     if (selectedAyah) {
-      await addBookmark(
+      const result = await addBookmark(
         currentSurah.number,
         selectedAyah.number_in_surah,
         bookmarkNote
       );
-      setShowMenu(false);
-      setBookmarkNote('');
+      
+      if (result.success) {
+        Alert.alert(t('common.success'), t('quran.bookmarkAdded'));
+        setShowMenu(false);
+        setBookmarkNote('');
+      } else {
+        Alert.alert(t('common.error'), t('quran.bookmarkAddError'));
+      }
     }
   };
 
@@ -77,23 +124,36 @@ export const QuranReaderScreen = ({ navigation, route }) => {
           b.ayahNumber === selectedAyah.number_in_surah
       );
       if (bookmark) {
-        await removeBookmark(bookmark.id);
+        const result = await removeBookmark(bookmark.id);
+        if (result.success) {
+          Alert.alert(t('common.success'), t('quran.bookmarkRemoved'));
+          setShowMenu(false);
+        } else {
+          Alert.alert(t('common.error'), t('quran.bookmarkRemoveError'));
+        }
       }
-      setShowMenu(false);
     }
   };
 
   const handleHighlight = async (color) => {
     if (selectedAyah) {
-      await addHighlight(currentSurah.number, selectedAyah.number_in_surah, color);
-      setShowMenu(false);
+      const result = await addHighlight(currentSurah.number, selectedAyah.number_in_surah, color);
+      if (result.success) {
+        setShowMenu(false);
+      } else {
+        Alert.alert(t('common.error'), t('quran.highlightAddError'));
+      }
     }
   };
 
   const handleRemoveHighlight = async () => {
     if (selectedAyah) {
-      await removeHighlight(currentSurah.number, selectedAyah.number_in_surah);
-      setShowMenu(false);
+      const result = await removeHighlight(currentSurah.number, selectedAyah.number_in_surah);
+      if (result.success) {
+        setShowMenu(false);
+      } else {
+        Alert.alert(t('common.error'), t('quran.highlightRemoveError'));
+      }
     }
   };
 
@@ -101,27 +161,30 @@ export const QuranReaderScreen = ({ navigation, route }) => {
     const themes = {
       light: {
         background: '#FAFAFA',
-        card: '#FFFFFF',
+        page: '#FFFFFF',
         text: '#1A1A1A',
         ayahText: '#2C2C2C',
         border: '#E0E0E0',
         accent: '#00A86B',
+        shadow: 'rgba(0,0,0,0.1)',
       },
       dark: {
         background: '#1A1A1A',
-        card: '#2C2C2C',
+        page: '#2C2C2C',
         text: '#FFFFFF',
         ayahText: '#E0E0E0',
         border: '#404040',
         accent: '#00D084',
+        shadow: 'rgba(255,255,255,0.1)',
       },
       sepia: {
         background: '#F4F1E8',
-        card: '#FBF8F1',
+        page: '#FBF8F1',
         text: '#5C4B37',
         ayahText: '#4A3B2C',
         border: '#D4C4B0',
         accent: '#8B7355',
+        shadow: 'rgba(92,75,55,0.1)',
       },
     };
     return themes[settings.theme] || themes.light;
@@ -129,53 +192,49 @@ export const QuranReaderScreen = ({ navigation, route }) => {
 
   const colors = getThemeColors();
 
-  const renderAyah = (ayah) => {
+  const renderAyah = (ayah, index) => {
     const highlight = getHighlight(currentSurah.number, ayah.number_in_surah);
     const bookmarked = isBookmarked(currentSurah.number, ayah.number_in_surah);
 
     return (
-      <TouchableOpacity
-        key={ayah.global_number}
-        style={[
-          styles.ayahContainer,
-          { 
-            backgroundColor: highlight ? highlight.color : 'transparent',
-            borderColor: colors.border,
-          },
-        ]}
-        onLongPress={() => handleAyahLongPress(ayah)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.ayahContent}>
-          <Text
-            style={[
-              styles.ayahText,
-              {
-                fontSize: settings.fontSize,
-                lineHeight: settings.fontSize * settings.lineHeight,
-                color: colors.ayahText,
-                textAlign: 'right',
-              },
-            ]}
-          >
-            {ayah.text_ar}
+      <Text key={ayah.global_number}>
+        <Text
+          style={[
+            styles.ayahTextInline,
+            highlight && { backgroundColor: highlight.color + '40' },
+          ]}
+          onLongPress={() => handleAyahLongPress(ayah)}
+        >
+          {ayah.text_ar}
+          <Text style={[styles.ayahNumberInline, { color: colors.accent }]}>
+            {' '}۝{toArabicNumber(ayah.number_in_surah)}{' '}
           </Text>
-          
-          <View style={styles.ayahFooter}>
-            <View style={[styles.ayahNumber, { borderColor: colors.accent }]}>
-              <Text style={[styles.ayahNumberText, { color: colors.accent }]}>
-                {ayah.number_in_surah}
-              </Text>
-            </View>
-            
-            {bookmarked && (
-              <Ionicons name="bookmark" size={20} color={colors.accent} />
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
+          {bookmarked && (
+            <Text style={[styles.bookmarkIndicator, { color: colors.accent }]}>
+              ۩
+            </Text>
+          )}
+        </Text>
+      </Text>
     );
   };
+
+  if (!currentSurah) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color="#DC3545" />
+          <Text style={styles.errorText}>{t('quran.surahNotFound')}</Text>
+          <TouchableOpacity 
+            style={styles.backToListButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backToListText}>{t('common.goBack')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView 
@@ -183,7 +242,11 @@ export const QuranReaderScreen = ({ navigation, route }) => {
       edges={['top']}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { 
+        backgroundColor: colors.page, 
+        borderBottomColor: colors.border,
+        shadowColor: colors.shadow,
+      }]}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => navigation.goBack()}
@@ -195,7 +258,7 @@ export const QuranReaderScreen = ({ navigation, route }) => {
           <Text style={[styles.surahName, { color: colors.text }]}>
             {currentSurah.name_ar}
           </Text>
-          <Text style={[styles.surahInfo, { color: colors.text, opacity: 0.6 }]}>
+          <Text style={[styles.surahInfo, { color: colors.text }]}>
             {currentSurah.name_en} • {currentSurah.ayahs.length} {t('quran.ayahs')}
           </Text>
         </View>
@@ -205,7 +268,14 @@ export const QuranReaderScreen = ({ navigation, route }) => {
             style={styles.headerButton}
             onPress={() => navigation.navigate('QuranBookmarks')}
           >
-            <Ionicons name="bookmark-outline" size={24} color={colors.text} />
+            <View>
+              <Ionicons name="bookmark-outline" size={24} color={colors.text} />
+              {bookmarks.length > 0 && (
+                <View style={styles.bookmarkBadge}>
+                  <Text style={styles.bookmarkBadgeText}>{bookmarks.length}</Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -217,23 +287,48 @@ export const QuranReaderScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      {/* Surah Header */}
-      <View style={[styles.surahHeader, { backgroundColor: colors.card }]}>
-        <View style={styles.bismillahContainer}>
-          <Text style={[styles.bismillah, { color: colors.text }]}>
-            بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-          </Text>
+      {/* Surah Header with Bismillah */}
+      {currentSurah.number !== 1 && currentSurah.number !== 9 && (
+        <View style={[styles.surahHeader, { 
+          backgroundColor: colors.page,
+          shadowColor: colors.shadow,
+        }]}>
+          <View style={styles.bismillahContainer}>
+            <Text style={[styles.bismillah, { color: colors.accent }]}>
+              بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
-      {/* Ayahs */}
+      {/* Mushaf Page */}
       <ScrollView
         ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {currentSurah.ayahs.map((ayah) => renderAyah(ayah))}
+        <View style={[styles.pageContainer, { 
+          backgroundColor: colors.page,
+          shadowColor: colors.shadow,
+        }]}>
+          <Text 
+            style={[styles.continuousText, { 
+              fontSize: settings.fontSize,
+              lineHeight: settings.fontSize * settings.lineHeight,
+              color: colors.ayahText,
+            }]}
+          >
+            {currentSurah.ayahs.map((ayah, index) => renderAyah(ayah, index))}
+          </Text>
+          
+          {/* Surah End Decoration */}
+          <View style={styles.surahEnd}>
+            <Text style={[styles.surahEndText, { color: colors.accent }]}>
+              ۝ صَدَقَ ٱللَّهُ ٱلْعَظِيمُ ۝
+            </Text>
+          </View>
+        </View>
         
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -250,14 +345,14 @@ export const QuranReaderScreen = ({ navigation, route }) => {
           activeOpacity={1}
           onPress={() => setShowMenu(false)}
         >
-          <View style={[styles.menuContainer, { backgroundColor: colors.card }]}>
+          <View style={[styles.menuContainer, { backgroundColor: colors.page }]}>
             <Text style={[styles.menuTitle, { color: colors.text }]}>
               {t('quran.ayahOptions')}
             </Text>
             
             {selectedAyah && (
-              <Text style={[styles.menuAyahNumber, { color: colors.text, opacity: 0.6 }]}>
-                {currentSurah.name_en} {selectedAyah.number_in_surah}
+              <Text style={[styles.menuAyahNumber, { color: colors.text }]}>
+                {currentSurah.name_en} {toArabicNumber(selectedAyah.number_in_surah)}
               </Text>
             )}
 
@@ -347,7 +442,7 @@ export const QuranReaderScreen = ({ navigation, route }) => {
         onRequestClose={() => setShowSettings(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.settingsContainer, { backgroundColor: colors.card }]}>
+          <View style={[styles.settingsContainer, { backgroundColor: colors.page }]}>
             <View style={styles.settingsHeader}>
               <Text style={[styles.settingsTitle, { color: colors.text }]}>
                 {t('quran.readingSettings')}
@@ -357,7 +452,6 @@ export const QuranReaderScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
             
-            {/* Settings content will be added in next part */}
             <QuranSettings colors={colors} onClose={() => setShowSettings(false)} />
           </View>
         </View>
@@ -381,7 +475,7 @@ const QuranSettings = ({ colors, onClose }) => {
         <View style={styles.fontSizeControls}>
           <TouchableOpacity
             style={[styles.fontButton, { borderColor: colors.border }]}
-            onPress={() => updateSettings({ fontSize: Math.max(16, settings.fontSize - 2) })}
+            onPress={() => updateSettings({ fontSize: Math.max(18, settings.fontSize - 2) })}
           >
             <Ionicons name="remove" size={20} color={colors.text} />
           </TouchableOpacity>
@@ -391,6 +485,30 @@ const QuranSettings = ({ colors, onClose }) => {
           <TouchableOpacity
             style={[styles.fontButton, { borderColor: colors.border }]}
             onPress={() => updateSettings({ fontSize: Math.min(40, settings.fontSize + 2) })}
+          >
+            <Ionicons name="add" size={20} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Line Height */}
+      <View style={styles.settingItem}>
+        <Text style={[styles.settingLabel, { color: colors.text }]}>
+          {t('quran.lineHeight')}
+        </Text>
+        <View style={styles.fontSizeControls}>
+          <TouchableOpacity
+            style={[styles.fontButton, { borderColor: colors.border }]}
+            onPress={() => updateSettings({ lineHeight: Math.max(1.5, settings.lineHeight - 0.1) })}
+          >
+            <Ionicons name="remove" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.fontSizeValue, { color: colors.text }]}>
+            {settings.lineHeight.toFixed(1)}
+          </Text>
+          <TouchableOpacity
+            style={[styles.fontButton, { borderColor: colors.border }]}
+            onPress={() => updateSettings({ lineHeight: Math.min(2.5, settings.lineHeight + 0.1) })}
           >
             <Ionicons name="add" size={20} color={colors.text} />
           </TouchableOpacity>
@@ -437,6 +555,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  backToListButton: {
+    backgroundColor: '#00A86B',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  backToListText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -444,6 +586,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerButton: {
     width: 40,
@@ -454,6 +600,23 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     gap: 4,
+  },
+  bookmarkBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#DC3545',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  bookmarkBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   headerCenter: {
     flex: 1,
@@ -466,16 +629,21 @@ const styles = StyleSheet.create({
   surahInfo: {
     fontSize: 12,
     marginTop: 2,
+    opacity: 0.7,
   },
   surahHeader: {
-    paddingVertical: 24,
+    paddingVertical: 20,
     alignItems: 'center',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   bismillahContainer: {
     paddingHorizontal: 20,
   },
   bismillah: {
-    fontSize: 28,
+    fontSize: 26,
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -483,36 +651,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-  },
-  ayahContainer: {
-    marginBottom: 16,
-    borderRadius: 12,
+    flexGrow: 1,
     padding: 16,
-    borderWidth: 1,
   },
-  ayahContent: {
-    gap: 12,
+  pageContainer: {
+    borderRadius: 8,
+    padding: 24,
+    paddingTop: 20,
+    marginHorizontal: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  ayahText: {
+  continuousText: {
+    textAlign: 'justify',
+    writingDirection: 'rtl',
     fontFamily: Platform.OS === 'ios' ? 'Arial' : 'sans-serif',
   },
-  ayahFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  ayahTextInline: {
+    // Inline ayah styling
   },
-  ayahNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ayahNumberText: {
-    fontSize: 14,
+  ayahNumberInline: {
+    fontSize: 20,
     fontWeight: 'bold',
+  },
+  bookmarkIndicator: {
+    fontSize: 18,
+    marginLeft: 2,
+  },
+  surahEnd: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  surahEndText: {
+    fontSize: 22,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -533,6 +710,7 @@ const styles = StyleSheet.create({
   menuAyahNumber: {
     fontSize: 14,
     marginBottom: 20,
+    opacity: 0.7,
   },
   noteInput: {
     borderRadius: 12,
@@ -572,7 +750,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFF',
   },
   settingsContainer: {
