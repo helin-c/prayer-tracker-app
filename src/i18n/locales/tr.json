@@ -18,7 +18,8 @@
     "hour": "saat",
     "minute": "dakika",
     "second": "saniye",
-    "pleaseWait":"Lütfen bekleyin..."
+    "pleaseWait":"Lütfen bekleyin...",
+    "viewAll": "Tümünü Gör"
   },
   "auth": {
     "signIn": "Giriş Yap",
@@ -64,6 +65,7 @@
     "goodMorning": "Günaydın",
     "goodAfternoon": "İyi Günler",
     "goodEvening": "İyi Akşamlar",
+    "goodNight": "İyi Geceler",
     "guest": "Misafir",
     "currentLocation": "Mevcut Konum",
     "updateLocation": "Konumu Güncelle",
@@ -95,7 +97,9 @@
     "haveYouPrayed": "Namazını kıldın mı",
     "trackYourPrayers": "Günlük namazlarını takip et",
     "prayersMissed": "bugün kaçırılan namaz",
-    "left":"kaldı"
+    "left":"kaldı",
+    "markPrayersCompleted": "Namazları tamamlandı olarak işaretle",
+    "dailyInspiration": "Günün İlhamı"
   },
   "prayers": {
     "fajr": "Sabah",
@@ -147,7 +151,13 @@
     "prayer1": "Namazı dosdoğru kılın, zekâtı verin ve rükû edenlerle beraber siz de rükû edin",
     "prayer1Ref": "Bakara 2:43",
     "prayer2": "Gerçekten müminler kurtuluşa ermişlerdir; onlar ki namazlarında huşû içindedirler",
-    "prayer2Ref": "Müminun 23:1-2"
+    "prayer2Ref": "Müminun 23:1-2",
+    "dailyInspiration": "Günün İlhamı",
+    "shareQuote": "Sözü Paylaş",
+    "shareText": "Metin Olarak Paylaş",
+    "shareImage": "Resim Olarak Paylaş",
+    "shareError": "Paylaşım sırasında bir hata oluştu.",
+    "sharingNotAvailable": "Bu cihazda paylaşım desteklenmiyor."
   },
   "friends": {
     "friends": "Arkadaşlar",
@@ -187,7 +197,8 @@
       "acceptFailed": "İstek kabul edilemedi",
       "rejectFailed": "İstek reddedilemedi",
       "removeFailed": "Arkadaş kaldırılamadı"
-    }
+    },
+    "myFriends": "Arkadaşlarım"
   },
   "profile": {
     "profile": "Profil",

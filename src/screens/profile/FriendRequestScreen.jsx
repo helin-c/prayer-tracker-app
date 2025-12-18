@@ -1,183 +1,285 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/friends/FriendRequestScreen.jsx
+// FILE: src/screens/friends/FriendRequestScreen.jsx (PRODUCTION READY)
 // ============================================================================
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ImageBackground,
+  ActivityIndicator, // Spinner için eklendi
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
+// COMPONENT IMPORTS
+import {
+  SkeletonLoader,
+  SkeletonLine,
+  SkeletonCircle,
+} from '../../components/loading/SkeletonLoader';
+
+// ============================================================================
+// CUSTOM SKELETON FOR REQUEST SCREEN
+// ============================================================================
+const RequestSkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
+
+  return (
+    <View style={{ padding: 20, alignItems: 'center', paddingTop: 60 }}>
+      {/* Avatar Skeleton */}
+      <SkeletonCircle
+        size={100}
+        style={{ ...skeletonStyle, marginBottom: 24 }}
+      />
+
+      {/* Name & Email Skeleton */}
+      <SkeletonLine
+        width={200}
+        height={28}
+        style={{ ...skeletonStyle, marginBottom: 8 }}
+      />
+      <SkeletonLine
+        width={150}
+        height={16}
+        style={{ ...skeletonStyle, marginBottom: 32 }}
+      />
+
+      {/* Info Card Skeleton */}
+      <SkeletonLoader
+        width="100%"
+        height={140}
+        borderRadius={16}
+        style={{ ...skeletonStyle, marginBottom: 32 }}
+      />
+
+      {/* Buttons Skeleton */}
+      <SkeletonLoader
+        width="100%"
+        height={56}
+        borderRadius={12}
+        style={{ ...skeletonStyle, marginBottom: 12 }}
+      />
+      <SkeletonLoader
+        width="100%"
+        height={56}
+        borderRadius={12}
+        style={{ ...skeletonStyle }}
+      />
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const FriendRequestScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { request } = route.params;
-  const { acceptFriendRequest, rejectFriendRequest, friendsCount, fetchFriendsCount, isLoading } = useFriendsStore();
+  const {
+    acceptFriendRequest,
+    rejectFriendRequest,
+    friendsCount,
+    fetchFriendsCount,
+    isLoading,
+  } = useFriendsStore();
+
+  // İşlem durumları
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [actionType, setActionType] = useState(null); // 'accept' | 'reject'
 
   useEffect(() => {
     fetchFriendsCount();
   }, []);
 
   const handleAccept = async () => {
+    if (isProcessing) return;
+
     // Check friend limit before accepting
     if (!friendsCount.can_add_more) {
       Alert.alert(
         t('friends.limitReached'),
         t('friends.limitReachedMessage', { limit: friendsCount.max_limit }),
-        [
-          { text: t('common.ok'), style: 'default' },
-        ]
+        [{ text: t('common.ok'), style: 'default' }]
       );
       return;
     }
+
+    setIsProcessing(true);
+    setActionType('accept');
 
     try {
       await acceptFriendRequest(request.id);
       Alert.alert(t('common.success'), t('friends.requestAccepted'));
       navigation.goBack();
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || t('friends.errors.acceptFailed');
+      const errorMsg =
+        error.response?.data?.detail || t('friends.errors.acceptFailed');
       Alert.alert(t('common.error'), errorMsg);
+    } finally {
+      setIsProcessing(false);
+      setActionType(null);
     }
   };
 
   const handleReject = async () => {
-    Alert.alert(
-      t('friends.rejectRequest'),
-      t('friends.rejectConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('friends.decline'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await rejectFriendRequest(request.id);
-              navigation.goBack();
-            } catch (error) {
-              Alert.alert(t('common.error'), t('friends.errors.rejectFailed'));
-            }
-          },
+    if (isProcessing) return;
+
+    Alert.alert(t('friends.rejectRequest'), t('friends.rejectConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('friends.decline'),
+        style: 'destructive',
+        onPress: async () => {
+          setIsProcessing(true);
+          setActionType('reject');
+          try {
+            await rejectFriendRequest(request.id);
+            navigation.goBack();
+          } catch (error) {
+            Alert.alert(t('common.error'), t('friends.errors.rejectFailed'));
+          } finally {
+            setIsProcessing(false);
+            setActionType(null);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const getInitials = (name) => {
     if (!name) return '?';
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
   };
 
-  if (isLoading) {
+  // Eğer ilk yükleme ise (arkadaş sayısı vb. çekiliyorsa) ve istek verisi yoksa
+  // Ancak route.params.request genelde sync gelir. friendsCount async gelir.
+  // friendsCount gelene kadar butonları disabled yapabiliriz ya da skeleton gösterebiliriz.
+  // Burada isLoading friendsStore'dan geliyor, friendsCount fetch işlemi için.
+  if (isLoading && !friendsCount) {
     return (
-      <IslamicLoadingScreen 
-        message={t('friends.processingRequest')}
-        submessage={t('common.pleaseWait')}
-      />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <RequestSkeleton />
+      </SafeAreaView>
     );
   }
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('friends.friendRequest')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          disabled={isProcessing}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('friends.friendRequest')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
-        <View style={styles.content}>
-          {/* Avatar */}
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {getInitials(request.sender_name)}
-              </Text>
-            </View>
-          </View>
-
-          {/* User Info */}
-          <Text style={styles.name}>{request.sender_name}</Text>
-          <Text style={styles.email}>{request.sender_email}</Text>
-
-          {/* Friends Limit Warning */}
-          {!friendsCount.can_add_more && (
-            <View style={styles.warningCard}>
-              <Ionicons name="warning" size={24} color="#FF6B35" />
-              <Text style={styles.warningText}>
-                {t('friends.limitReachedMessage', { limit: friendsCount.max_limit })}
-              </Text>
-            </View>
-          )}
-
-          {/* Request Info */}
-          <View style={styles.infoCard}>
-            <Ionicons name="mail-outline" size={48} color="#00A86B" />
-            <Text style={styles.infoTitle}>{t('friends.friendRequest')}</Text>
-            <Text style={styles.infoText}>
-              {t('friends.requestFrom', { name: request.sender_name })}
+      <View style={styles.content}>
+        {/* Avatar */}
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {getInitials(request.sender_name)}
             </Text>
           </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[
-                styles.button, 
-                styles.acceptButton,
-                !friendsCount.can_add_more && styles.buttonDisabled
-              ]}
-              onPress={handleAccept}
-              disabled={!friendsCount.can_add_more}
-            >
-              <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-              <Text style={styles.acceptButtonText}>
-                {friendsCount.can_add_more ? t('friends.accept') : t('friends.limitReached')}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, styles.rejectButton]}
-              onPress={handleReject}
-            >
-              <Ionicons name="close-circle-outline" size={20} color="#DC3545" />
-              <Text style={styles.rejectButtonText}>{t('friends.decline')}</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </SafeAreaView>
-    </ImageBackground>
+
+        {/* User Info */}
+        <Text style={styles.name}>{request.sender_name}</Text>
+        <Text style={styles.email}>{request.sender_email}</Text>
+
+        {/* Friends Limit Warning */}
+        {!friendsCount.can_add_more && (
+          <View style={styles.warningCard}>
+            <Ionicons name="warning" size={24} color="#FF6B35" />
+            <Text style={styles.warningText}>
+              {t('friends.limitReachedMessage', {
+                limit: friendsCount.max_limit,
+              })}
+            </Text>
+          </View>
+        )}
+
+        {/* Request Info */}
+        <View style={styles.infoCard}>
+          <Ionicons name="mail-outline" size={48} color="#00A86B" />
+          <Text style={styles.infoTitle}>{t('friends.friendRequest')}</Text>
+          <Text style={styles.infoText}>
+            {t('friends.requestFrom', { name: request.sender_name })}
+          </Text>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              styles.acceptButton,
+              (!friendsCount.can_add_more || isProcessing) &&
+                styles.buttonDisabled,
+            ]}
+            onPress={handleAccept}
+            disabled={!friendsCount.can_add_more || isProcessing}
+          >
+            {actionType === 'accept' ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#FFF" />
+                <Text style={styles.acceptButtonText}>
+                  {friendsCount.can_add_more
+                    ? t('friends.accept')
+                    : t('friends.limitReached')}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.button,
+              styles.rejectButton,
+              isProcessing && styles.buttonDisabled,
+            ]}
+            onPress={handleReject}
+            disabled={isProcessing}
+          >
+            {actionType === 'reject' ? (
+              <ActivityIndicator size="small" color="#DC3545" />
+            ) : (
+              <>
+                <Ionicons
+                  name="close-circle-outline"
+                  size={20}
+                  color="#DC3545"
+                />
+                <Text style={styles.rejectButtonText}>
+                  {t('friends.decline')}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -284,6 +386,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     gap: 8,
+    height: 56, // Fixed height
   },
   buttonDisabled: {
     opacity: 0.5,

@@ -2,7 +2,7 @@
 // FILE: src/navigation/TrackerNavigator.jsx (UPDATED)
 // ============================================================================
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { PrayerTrackerScreen } from '../screens/tracker/PrayerTrackerScreen';
 import { TasbihScreen } from '../screens/tracker/TasbihScreen';
 import { ZikrHistoryScreen } from '../screens/tracker/ZikrHistoryScreen';
@@ -15,6 +15,12 @@ export const TrackerNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        cardStyle: { backgroundColor: 'transparent' }, // Şeffaflık
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter, // Fade
+        transitionSpec: {
+          open: { animation: 'timing', config: { duration: 200 } },
+          close: { animation: 'timing', config: { duration: 200 } },
+        },
       }}
     >
       <Stack.Screen name="TrackerMain" component={PrayerTrackerScreen} />

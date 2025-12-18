@@ -1,8 +1,8 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/home/HomeScreen.jsx (REDESIGNED - PROFESSIONAL & AESTHETIC)
+// FILE: src/screens/home/HomeScreen.jsx (SKELETON LOADING ADDED)
 // ============================================================================
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,8 @@ import {
   Dimensions,
   Platform,
   Linking,
-  ImageBackground,
   FlatList,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,11 +27,120 @@ import { usePrayerStore } from '../../store/prayerStore';
 import { useFriendsStore } from '../../store/friendsStore';
 import { CircularPrayerCard } from '../../components/prayers/CircularPrayerCard';
 import { formatIslamicDate } from '../../utils/timeUtils';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 import { DailyQuoteCard } from '../../components/quotes/DailyQuoteCard';
 
 const { width } = Dimensions.get('window');
 
+// ============================================================================
+// PRODUCTION-READY SKELETON COMPONENT
+// ============================================================================
+const SkeletonItem = ({ style }) => {
+  const opacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.7,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        {
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          borderRadius: 12,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+const HomeSkeleton = () => {
+  return (
+    <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+      {/* Greeting Skeleton */}
+      <SkeletonItem
+        style={{
+          height: 60,
+          width: '100%',
+          borderRadius: 20,
+          marginBottom: 12,
+        }}
+      />
+
+      {/* Chips Skeleton */}
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+        <SkeletonItem style={{ height: 40, flex: 1, borderRadius: 18 }} />
+        <SkeletonItem style={{ height: 40, flex: 1, borderRadius: 18 }} />
+      </View>
+
+      {/* Main Prayer Card Skeleton */}
+      <View style={{ alignItems: 'center', marginBottom: 24 }}>
+        <SkeletonItem
+          style={{
+            width: width - 80,
+            height: width - 80,
+            borderRadius: (width - 80) / 2,
+          }}
+        />
+      </View>
+
+      {/* Tracker Notification Skeleton */}
+      <SkeletonItem
+        style={{
+          height: 90,
+          width: '100%',
+          borderRadius: 24,
+          marginBottom: 28,
+        }}
+      />
+
+      {/* Friends Section Skeleton */}
+      <View style={{ marginBottom: 20 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}
+        >
+          <SkeletonItem style={{ width: 120, height: 24 }} />
+          <SkeletonItem style={{ width: 60, height: 24 }} />
+        </View>
+        {[1, 2, 3].map((key) => (
+          <SkeletonItem
+            key={key}
+            style={{
+              height: 80,
+              width: '100%',
+              borderRadius: 20,
+              marginBottom: 12,
+            }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const HomeScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
@@ -49,6 +158,7 @@ export const HomeScreen = ({ navigation }) => {
   const { friends, fetchFriends } = useFriendsStore();
 
   const [refreshing, setRefreshing] = useState(false);
+  // retryCount can still be used for logic, even if we don't show the old loading screen
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
@@ -132,6 +242,14 @@ export const HomeScreen = ({ navigation }) => {
     ]);
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('home.goodMorning');
+    if (hour < 17) return t('home.goodAfternoon');
+    if (hour < 21) return t('home.goodEvening');
+    return t('home.goodNight');
+  };
+
   const getInitials = (name) => {
     if (!name) return '?';
     return name
@@ -146,18 +264,20 @@ export const HomeScreen = ({ navigation }) => {
     <TouchableOpacity
       style={styles.friendCard}
       activeOpacity={0.9}
-      onPress={() => navigation.navigate('Profile', {
-        screen: 'FriendProfile',
-        params: { friend: item }
-      })}
+      onPress={() =>
+        navigation.navigate('Profile', {
+          screen: 'FriendProfile',
+          params: { friend: item },
+        })
+      }
     >
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
+        colors={['rgba(240, 255, 244, 0.95)', 'rgba(240, 255, 244, 0.95)']}
         style={styles.friendCardGradient}
       >
         <View style={styles.friendAvatar}>
           <LinearGradient
-            colors={['#6F9C8C', '#4F6F64']}
+            colors={['#5BA895', '#4A9B87']}
             style={styles.friendAvatarGradient}
           >
             <Text style={styles.friendAvatarText}>
@@ -165,39 +285,29 @@ export const HomeScreen = ({ navigation }) => {
             </Text>
           </LinearGradient>
         </View>
-        <Text style={styles.friendName} numberOfLines={1}>
-          {item.friend_name}
-        </Text>
-        <View style={styles.friendStats}>
-          <Ionicons name="flame" size={14} color="#FFB84D" />
-          <Text style={styles.friendStreakText}>{item.current_streak || 0}</Text>
+        <View style={styles.friendInfo}>
+          <Text style={styles.friendName} numberOfLines={1}>
+            {item.friend_name}
+          </Text>
+          <View style={styles.friendStats}>
+            <Ionicons name="flame" size={14} color="#FF8C42" />
+            <Text style={styles.friendStreakText}>
+              {item.current_streak || 0}{' '}
+            </Text>
+          </View>
         </View>
+        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
       </LinearGradient>
     </TouchableOpacity>
   );
 
-  if (isLoading && !prayerTimes) {
-    return (
-      <IslamicLoadingScreen
-        message={
-          retryCount > 0 ? t('home.retrying') : t('home.fetchingPrayerTimes')
-        }
-        submessage={
-          retryCount > 0
-            ? `${t('home.attempt')} ${retryCount + 1}`
-            : t('home.gettingLocation')
-        }
-      />
-    );
-  }
-
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background4.jpeg')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {isLoading && !prayerTimes ? (
+        // SKELETON LOADING STATE
+        <HomeSkeleton />
+      ) : (
+        // ACTUAL CONTENT
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -205,27 +315,44 @@ export const HomeScreen = ({ navigation }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#FFFFFF"
+              tintColor="#5BA895"
             />
           }
           showsVerticalScrollIndicator={false}
         >
-          {/* Symmetric Top Header Bar - Location & Islamic Date */}
-          <View style={styles.topBar}>
-            <TouchableOpacity
-              style={styles.headerItemOuter}
-              onPress={handleLocationPress}
-              activeOpacity={0.7}
-            >
+          {/* Greeting, Location & Islamic Date Combined */}
+          <View style={styles.topSection}>
+            {/* Greeting Section */}
+            <View style={styles.greetingCard}>
               <LinearGradient
-                colors={['#6F9C8C', '#4F6F64']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.headerGradientBorder}
+                colors={[
+                  'rgba(240, 255, 244, 0.95)',
+                  'rgba(240, 255, 244, 0.95)',
+                ]}
+                style={styles.greetingGradient}
               >
-                <View style={styles.headerItemInner}>
+                <Text style={styles.greetingText}>
+                  {getGreeting()},{' '}
+                  <Text style={styles.userName}>
+                    {user?.full_name || user?.username || t('home.guest')}
+                  </Text>
+                </Text>
+              </LinearGradient>
+            </View>
+
+            {/* Location & Islamic Date Row */}
+            <View style={styles.topBar}>
+              <TouchableOpacity
+                style={styles.headerItemOuter}
+                onPress={handleLocationPress}
+                activeOpacity={0.7}
+              >
+                <LinearGradient
+                  colors={['transparent', 'transparent']}
+                  style={styles.headerGradientBorder}
+                >
                   <View style={styles.locationIconWrapper}>
-                    <Ionicons name="location-sharp" size={13} color="#FFFFFF" />
+                    <Ionicons name="location-sharp" size={14} color="#1A1A1A" />
                   </View>
                   <Text
                     style={styles.headerText}
@@ -234,28 +361,20 @@ export const HomeScreen = ({ navigation }) => {
                   >
                     {location?.city || t('home.unknownLocation')}
                   </Text>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                </LinearGradient>
+              </TouchableOpacity>
 
-            <View style={styles.headerItemOuter}>
-              <LinearGradient
-                colors={['#6F9C8C', '#4F6F64']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.headerGradientBorder}
-              >
-                <View style={styles.headerItemInner}>
-                  <Ionicons
-                    name="calendar-outline"
-                    size={13}
-                    color="rgba(255, 255, 255, 0.9)"
-                  />
+              <View style={styles.headerItemOuter}>
+                <LinearGradient
+                  colors={['transparent', 'transparent']}
+                  style={styles.headerGradientBorder}
+                >
+                  <Ionicons name="calendar-outline" size={14} color="#1A1A1A" />
                   <Text style={styles.headerText}>
                     {formatIslamicDate(new Date(), i18n.language)}
                   </Text>
-                </View>
-              </LinearGradient>
+                </LinearGradient>
+              </View>
             </View>
           </View>
 
@@ -274,40 +393,40 @@ export const HomeScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('PrayerTracker')}
             >
               <LinearGradient
-                colors={['#6F9C8C', '#4F6F64']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.headerGradientBorder}
+                colors={[
+                  'rgba(240, 255, 244, 0.95)',
+                  'rgba(240, 255, 244, 0.95)',
+                ]}
+                style={styles.notificationGradient}
               >
-                <View style={styles.notificationInner}>
-                  <View style={styles.notificationContent}>
-                    <View style={styles.notificationLeft}>
-                      <View style={styles.notificationIconCircle}>
+                <View style={styles.notificationContent}>
+                  <View style={styles.notificationLeft}>
+                    <View style={styles.notificationIconCircle}>
+                      <LinearGradient
+                        colors={['#5BA895', '#4A9B87']}
+                        style={styles.notificationIconGradient}
+                      >
                         <Ionicons name="checkbox" size={28} color="#FFFFFF" />
-                      </View>
-
-                      <View style={styles.notificationTextContainer}>
-                        <Text style={styles.notificationTitle}>
-                          {t('home.trackYourPrayers')}
-                        </Text>
-                        <Text style={styles.notificationSubtitle}>
-                          {t('home.markPrayersCompleted')}
-                        </Text>
-                      </View>
+                      </LinearGradient>
                     </View>
 
-                    <View style={styles.notificationArrow}>
-                      <Ionicons
-                        name="arrow-forward"
-                        size={20}
-                        color="rgba(255, 255, 255, 0.9)"
-                      />
+                    <View style={styles.notificationTextContainer}>
+                      <Text style={styles.notificationTitle}>
+                        {t('home.trackYourPrayers')}
+                      </Text>
+                      <Text style={styles.notificationSubtitle}>
+                        {t('home.markPrayersCompleted')}
+                      </Text>
                     </View>
                   </View>
 
-                  <View style={styles.decorCircle1} />
-                  <View style={styles.decorCircle2} />
+                  <View style={styles.notificationArrow}>
+                    <Ionicons name="arrow-forward" size={20} color="#1A1A1A" />
+                  </View>
                 </View>
+
+                <View style={styles.decorCircle1} />
+                <View style={styles.decorCircle2} />
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -318,32 +437,26 @@ export const HomeScreen = ({ navigation }) => {
               <View style={styles.sectionHeaderContainer}>
                 <View style={styles.sectionHeaderOuter}>
                   <LinearGradient
-                    colors={['#6F9C8C', '#4F6F64']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
+                    colors={['transparent', 'transparent']}
                     style={styles.sectionHeaderBorder}
                   >
-                    <View style={styles.sectionHeaderInner}>
-                      <Ionicons name="people" size={18} color="#FFFFFF" />
-                      <Text style={styles.sectionTitle}>
-                        {t('friends.myFriends')}
-                      </Text>
-                    </View>
+                    <Ionicons name="people" size={18} color="#1A1A1A" />
+                    <Text style={styles.sectionTitle}>
+                      {t('friends.myFriends')}
+                    </Text>
                   </LinearGradient>
                 </View>
 
                 <TouchableOpacity
                   style={styles.viewAllButton}
-                  onPress={() => navigation.navigate('Profile', {
-                    screen: 'ProfileMain'
-                  })}
+                  onPress={() =>
+                    navigation.navigate('Profile', {
+                      screen: 'ProfileMain',
+                    })
+                  }
                 >
                   <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={14}
-                    color="rgba(255, 255, 255, 0.9)"
-                  />
+                  <Ionicons name="arrow-forward" size={14} color="#1A1A1A" />
                 </TouchableOpacity>
               </View>
 
@@ -351,28 +464,23 @@ export const HomeScreen = ({ navigation }) => {
                 data={friends.slice(0, 5)}
                 renderItem={renderFriendItem}
                 keyExtractor={(item) => item.id.toString()}
-                horizontal
-                showsHorizontalScrollIndicator={false}
+                scrollEnabled={false}
                 contentContainerStyle={styles.friendsList}
               />
             </View>
           )}
 
-          {/* Daily Inspiration Quote Card - Shareable */}
+          {/* Daily Inspiration Quote Card */}
           <View style={styles.quoteSection}>
             <View style={styles.quoteSectionHeaderOuter}>
               <LinearGradient
-                colors={['#6F9C8C', '#4F6F64']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                colors={['transparent', 'transparent']}
                 style={styles.quoteSectionBorder}
               >
-                <View style={styles.quoteSectionHeaderInner}>
-                  <Ionicons name="sparkles" size={18} color="#FFFFFF" />
-                  <Text style={styles.quoteSectionTitle}>
-                    {t('home.dailyInspiration')}
-                  </Text>
-                </View>
+                <Ionicons name="sparkles" size={18} color="#1A1A1A" />
+                <Text style={styles.quoteSectionTitle}>
+                  {t('home.dailyInspiration')}
+                </Text>
               </LinearGradient>
             </View>
             <DailyQuoteCard />
@@ -382,7 +490,7 @@ export const HomeScreen = ({ navigation }) => {
           {error && (
             <View style={styles.errorBanner}>
               <LinearGradient
-                colors={['rgba(239, 68, 68, 0.15)', 'rgba(220, 38, 38, 0.15)']}
+                colors={['rgba(239, 68, 68, 0.2)', 'rgba(220, 38, 38, 0.15)']}
                 style={styles.errorGradient}
               >
                 <Ionicons name="alert-circle" size={20} color="#DC2626" />
@@ -401,18 +509,12 @@ export const HomeScreen = ({ navigation }) => {
           {!prayerTimes && !isLoading && (
             <View style={styles.emptyState}>
               <LinearGradient
-                colors={[
-                  'rgba(255, 255, 255, 0.12)',
-                  'rgba(255, 255, 255, 0.08)',
-                ]}
+                colors={['#F0FFF4', '#F0FFF4']}
                 style={styles.emptyStateGradient}
               >
                 <View style={styles.emptyIconContainer}>
                   <LinearGradient
-                    colors={[
-                      'rgba(255, 255, 255, 0.25)',
-                      'rgba(255, 255, 255, 0.15)',
-                    ]}
+                    colors={['#5BA895', '#4A9B87']}
                     style={styles.emptyIconGradient}
                   >
                     <Ionicons name="location" size={56} color="#FFFFFF" />
@@ -428,10 +530,10 @@ export const HomeScreen = ({ navigation }) => {
                   activeOpacity={0.9}
                 >
                   <LinearGradient
-                    colors={['#FFFFFF', '#F8FAFC']}
+                    colors={['#5BA895', '#4A9B87']}
                     style={styles.buttonGradient}
                   >
-                    <Ionicons name="location" size={20} color="#10B981" />
+                    <Ionicons name="location" size={20} color="#FFFFFF" />
                     <Text style={styles.enableLocationText}>
                       {t('home.enableLocation')}
                     </Text>
@@ -443,17 +545,12 @@ export const HomeScreen = ({ navigation }) => {
 
           <View style={styles.bottomSpacing} />
         </ScrollView>
-      </SafeAreaView>
-    </ImageBackground>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -466,49 +563,79 @@ const styles = StyleSheet.create({
   },
 
   // ============================================================================
-  // SYMMETRIC TOP BAR - Location & Islamic Date
+  // TOP SECTION - GREETING, LOCATION & DATE COMBINED
+  // ============================================================================
+  topSection: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+    gap: 12,
+  },
+  greetingCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  greetingGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  greetingText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    letterSpacing: 0.3,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    letterSpacing: 0.5,
+  },
+
+  // ============================================================================
+  // LOCATION & DATE ROW
   // ============================================================================
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
+    gap: 12,
   },
   headerItemOuter: {
-    shadowColor: '#4F6F64',
+    flex: 1,
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 3,
   },
   headerGradientBorder: {
-    borderRadius: 20,
-    padding: 1.5,
-  },
-  headerItemInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 18.5,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
   },
   locationIconWrapper: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(91, 168, 149, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#1A1A1A',
+    fontWeight: '700',
     letterSpacing: 0.3,
+    flex: 1,
   },
 
   // ============================================================================
@@ -526,17 +653,14 @@ const styles = StyleSheet.create({
     marginTop: 24,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#4F6F64',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  notificationInner: {
-    borderRadius: 22.5,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingVertical: 9,
-    paddingHorizontal: 9,
+  notificationGradient: {
+    position: 'relative',
     overflow: 'hidden',
   },
   notificationContent: {
@@ -553,15 +677,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   notificationIconCircle: {
-    width: 52,
-    height: 52,
     borderRadius: 26,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    overflow: 'hidden',
+    marginRight: 16,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  notificationIconGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   notificationTextContainer: {
     flex: 1,
@@ -569,21 +699,21 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     marginBottom: 4,
     letterSpacing: 0.3,
   },
   notificationSubtitle: {
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#1A1A1A',
     fontWeight: '600',
     letterSpacing: 0.2,
   },
   notificationArrow: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(91, 168, 149, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
@@ -593,7 +723,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(91, 168, 149, 0.08)',
     top: -40,
     right: -20,
   },
@@ -602,13 +732,13 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(91, 168, 149, 0.06)',
     bottom: -20,
     left: 40,
   },
 
   // ============================================================================
-  // FRIENDS SECTION
+  // FRIENDS SECTION - VERTICAL LIST
   // ============================================================================
   friendsSection: {
     marginTop: 28,
@@ -623,68 +753,70 @@ const styles = StyleSheet.create({
   },
   sectionHeaderOuter: {
     alignSelf: 'flex-start',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionHeaderBorder: {
-    borderRadius: 16,
-    padding: 1.5,
-  },
-  sectionHeaderInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     gap: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 14.5,
+    borderRadius: 18,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     letterSpacing: 0.5,
   },
   viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+    borderRadius: 14,
   },
   viewAllText: {
     fontSize: 13,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#1A1A1A',
   },
   friendsList: {
     paddingHorizontal: 20,
     gap: 12,
   },
   friendCard: {
-    width: 100,
-    marginRight: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#4F6F64',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 6,
+    marginBottom: 12,
   },
   friendCardGradient: {
-    padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
+    padding: 16,
+    gap: 16,
   },
   friendAvatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    marginBottom: 10,
     overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   friendAvatarGradient: {
     width: '100%',
@@ -697,26 +829,24 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#FFFFFF',
   },
+  friendInfo: {
+    flex: 1,
+  },
   friendName: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 6,
+    color: '#1A1A1A',
+    marginBottom: 4,
   },
   friendStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255, 184, 77, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    gap: 6,
   },
   friendStreakText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FFB84D',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FF8C42',
   },
 
   // ============================================================================
@@ -729,24 +859,24 @@ const styles = StyleSheet.create({
   quoteSectionHeaderOuter: {
     marginBottom: 16,
     alignSelf: 'flex-start',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   quoteSectionBorder: {
-    borderRadius: 16,
-    padding: 1.5,
-  },
-  quoteSectionHeaderInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     gap: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 14.5,
+    borderRadius: 18,
   },
   quoteSectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     letterSpacing: 0.5,
   },
 
@@ -756,8 +886,13 @@ const styles = StyleSheet.create({
   errorBanner: {
     marginHorizontal: 20,
     marginTop: 16,
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   errorGradient: {
     flexDirection: 'row',
@@ -783,17 +918,26 @@ const styles = StyleSheet.create({
     marginTop: 40,
     borderRadius: 28,
     overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
   emptyStateGradient: {
     alignItems: 'center',
     paddingVertical: 60,
     paddingHorizontal: 32,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 28,
   },
   emptyIconContainer: {
     marginBottom: 24,
+    borderRadius: 60,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
   emptyIconGradient: {
     width: 120,
@@ -805,25 +949,25 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1A4D3E',
     marginBottom: 12,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
   emptyText: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#2D6856',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 23,
     fontWeight: '500',
   },
   enableLocationButton: {
-    borderRadius: 14,
+    borderRadius: 18,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 8,
   },
@@ -835,7 +979,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   enableLocationText: {
-    color: '#10B981',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.5,

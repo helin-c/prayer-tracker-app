@@ -2,7 +2,7 @@
 // FILE: src/navigation/GuidesNavigator.jsx (UPDATED)
 // ============================================================================
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { GuidesScreen } from '../screens/guides/GuidesScreen';
 import { GuideDetailScreen } from '../screens/guides/GuideDetailScreen';
 import { QuranSurahListScreen } from '../screens/quran/QuranSurahListScreen';
@@ -17,6 +17,12 @@ export const GuidesNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        cardStyle: { backgroundColor: 'transparent' }, // Şeffaflık
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter, // Fade
+        transitionSpec: {
+          open: { animation: 'timing', config: { duration: 200 } },
+          close: { animation: 'timing', config: { duration: 200 } },
+        },
       }}
     >
       <Stack.Screen name="GuidesList" component={GuidesScreen} />

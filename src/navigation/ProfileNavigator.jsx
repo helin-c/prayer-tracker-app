@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { SettingsScreen } from '../screens/profile/SettingsScreen';
@@ -14,6 +14,12 @@ export const ProfileNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        cardStyle: { backgroundColor: 'transparent' }, 
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter, 
+        transitionSpec: {
+          open: { animation: 'timing', config: { duration: 200 } },
+          close: { animation: 'timing', config: { duration: 200 } },
+        },
       }}
     >
       <Stack.Screen name="ProfileMain" component={ProfileScreen} />

@@ -1,5 +1,6 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/quran/QuranBookmarksScreen.jsx
+// FILE: src/screens/quran/QuranBookmarksScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useEffect } from 'react';
 import {
@@ -9,7 +10,6 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,16 +17,96 @@ import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
 
+// COMPONENT IMPORTS
+import {
+  SkeletonLoader,
+  SkeletonLine,
+  SkeletonCircle,
+} from '../../components/loading/SkeletonLoader';
+
+// ============================================================================
+// CUSTOM SKELETON FOR BOOKMARKS SCREEN
+// ============================================================================
+const BookmarksSkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
+
+  return (
+    <View style={{ padding: 20 }}>
+      {/* List Items Skeleton */}
+      {[1, 2, 3, 4].map((i) => (
+        <View
+          key={i}
+          style={{
+            padding: 16,
+            marginBottom: 16,
+            backgroundColor: 'rgba(255, 255, 255, 0.4)',
+            borderRadius: 16,
+          }}
+        >
+          {/* Header (Title + Delete Icon) */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            <View>
+              <SkeletonLine
+                width={120}
+                height={18}
+                style={{ ...skeletonStyle, marginBottom: 6 }}
+              />
+              <SkeletonLine width={60} height={14} style={skeletonStyle} />
+            </View>
+            <SkeletonCircle size={36} style={skeletonStyle} />
+          </View>
+
+          {/* Ayah Text Placeholder */}
+          <View style={{ alignItems: 'flex-end', marginBottom: 12 }}>
+            <SkeletonLine
+              width="100%"
+              height={16}
+              style={{ ...skeletonStyle, marginBottom: 6 }}
+            />
+            <SkeletonLine
+              width="80%"
+              height={16}
+              style={{ ...skeletonStyle, marginBottom: 6 }}
+            />
+            <SkeletonLine width="60%" height={16} style={skeletonStyle} />
+          </View>
+
+          {/* Footer (Date + Button) */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: 8,
+            }}
+          >
+            <SkeletonLine width={80} height={12} style={skeletonStyle} />
+            <SkeletonLine width={100} height={14} style={skeletonStyle} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const QuranBookmarksScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { 
-    bookmarks, 
-    removeBookmark, 
-    getSurah, 
-    getAyah, 
+  const {
+    bookmarks,
+    removeBookmark,
+    getSurah,
+    getAyah,
     initialize,
     isLoading,
-    isInitialized 
+    isInitialized,
   } = useQuranStore();
 
   // Initialize store when screen is focused
@@ -39,23 +119,19 @@ export const QuranBookmarksScreen = ({ navigation }) => {
   );
 
   const handleDeleteBookmark = (bookmarkId) => {
-    Alert.alert(
-      t('quran.deleteBookmark'),
-      t('quran.deleteBookmarkConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            const result = await removeBookmark(bookmarkId);
-            if (!result.success) {
-              Alert.alert(t('common.error'), t('quran.deleteBookmarkError'));
-            }
-          },
+    Alert.alert(t('quran.deleteBookmark'), t('quran.deleteBookmarkConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          const result = await removeBookmark(bookmarkId);
+          if (!result.success) {
+            Alert.alert(t('common.error'), t('quran.deleteBookmarkError'));
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleGoToAyah = (bookmark) => {
@@ -70,7 +146,7 @@ export const QuranBookmarksScreen = ({ navigation }) => {
     const ayah = getAyah(bookmark.surahNumber, bookmark.ayahNumber);
 
     if (!surah || !ayah) {
-      console.warn('Missing surah or ayah for bookmark:', bookmark);
+      // console.warn('Missing surah or ayah for bookmark:', bookmark);
       return null;
     }
 
@@ -124,11 +200,11 @@ export const QuranBookmarksScreen = ({ navigation }) => {
   const renderEmpty = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIcon}>
-        <Ionicons name="bookmark-outline" size={64} color="#CCC" />
+        <Ionicons name="bookmark-outline" size={64} color="#1A1A1A" />
       </View>
       <Text style={styles.emptyTitle}>{t('quran.noBookmarks')}</Text>
       <Text style={styles.emptyText}>{t('quran.noBookmarksDescription')}</Text>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.startReadingButton}
         onPress={() => navigation.navigate('QuranSurahList')}
       >
@@ -137,31 +213,12 @@ export const QuranBookmarksScreen = ({ navigation }) => {
     </View>
   );
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('quran.bookmarks')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00A86B" />
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // Sort bookmarks by timestamp (newest first)
-  const sortedBookmarks = [...bookmarks].sort((a, b) => 
-    new Date(b.timestamp) - new Date(a.timestamp)
-  );
+  const sortedBookmarks = bookmarks
+    ? [...bookmarks].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      )
+    : [];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -174,28 +231,38 @@ export const QuranBookmarksScreen = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {t('quran.bookmarks')} ({bookmarks.length})
+          {t('quran.bookmarks')} {bookmarks ? `(${bookmarks.length})` : ''}
         </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Bookmarks List */}
-      <FlatList
-        data={sortedBookmarks}
-        renderItem={renderBookmark}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={renderEmpty}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        // SKELETON LOADING STATE
+        <BookmarksSkeleton />
+      ) : (
+        /* Bookmarks List */
+        <FlatList
+          data={sortedBookmarks}
+          renderItem={renderBookmark}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={renderEmpty}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -203,9 +270,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 40,
@@ -217,16 +282,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1A1A1A',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
   },
   listContent: {
     padding: 20,
@@ -310,7 +365,7 @@ const styles = StyleSheet.create({
   goToText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00A86B',
+    color: '#1A1A1A',
   },
   emptyState: {
     flex: 1,
@@ -335,7 +390,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#1A1A1A',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -346,7 +401,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   startReadingText: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
   },

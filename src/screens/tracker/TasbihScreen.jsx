@@ -1,5 +1,6 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/TasbihScreen.jsx (UPDATED)
+// FILE: src/screens/tracker/TasbihScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -12,11 +13,11 @@ import {
   Alert,
   ScrollView,
   Vibration,
-  ImageBackground,
   KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
-  Platform
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +43,10 @@ export const TasbihScreen = ({ navigation }) => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [tempName, setTempName] = useState('');
   const [tempTarget, setTempTarget] = useState('');
+
+  // YENİ: Kaydetme işlemi sırasında loading durumu
+  const [isSaving, setIsSaving] = useState(false);
+
   const [toast, setToast] = useState({ visible: false, text: '' });
 
   const showToast = (text) => {
@@ -151,16 +156,25 @@ export const TasbihScreen = ({ navigation }) => {
     );
   };
 
-  // Save session
+  // Save session with Loading State
   const handleSave = async () => {
+    if (isSaving) return; // Çift tıklamayı önle
+
+    setIsSaving(true);
     try {
       await saveSession();
+      // Başarılı olduğunda
       showToast(
-        sessionId ? t('tasbih.alerts.progressUpdated') : t('tasbih.alerts.zikrSaved')
+        sessionId
+          ? t('tasbih.alerts.progressUpdated')
+          : t('tasbih.alerts.zikrSaved')
       );
       setShowSaveModal(false);
     } catch (error) {
+      console.error(error);
       showToast(t('tasbih.alerts.error'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -190,349 +204,342 @@ export const TasbihScreen = ({ navigation }) => {
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('tasbih.title')}</Text>
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => navigation.navigate('ZikrHistory')}
-          >
-            <Ionicons name="time-outline" size={24} color="#00A86B" />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('tasbih.title')}</Text>
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => navigation.navigate('ZikrHistory')}
+        >
+          <Ionicons name="time-outline" size={24} color="#00A86B" />
+        </TouchableOpacity>
+      </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Current Zikr Info */}
-          <TouchableOpacity
-            style={styles.zikrInfoCard}
-            onPress={handleOpenSettings}
-            activeOpacity={0.7}
-          >
-            <View style={styles.zikrInfoLeft}>
-              {zikrName ? (
-                <>
-                  <Text style={styles.zikrNameText}>{zikrName}</Text>
-                  {hasTarget && (
-                    <Text style={styles.zikrTargetText}>
-                      {t('tasbih.target')}: {targetCount}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Current Zikr Info */}
+        <TouchableOpacity
+          style={styles.zikrInfoCard}
+          onPress={handleOpenSettings}
+          activeOpacity={0.7}
+        >
+          <View style={styles.zikrInfoLeft}>
+            {zikrName ? (
+              <>
+                <Text style={styles.zikrNameText}>{zikrName}</Text>
+                {hasTarget && (
+                  <Text style={styles.zikrTargetText}>
+                    {t('tasbih.target')}: {targetCount}
+                  </Text>
+                )}
+                {sessionId && (
+                  <View style={styles.continuingBadge}>
+                    <Ionicons name="sync" size={12} color="#3498DB" />
+                    <Text style={styles.continuingText}>
+                      {t('tasbih.continuingSession')}
                     </Text>
-                  )}
-                  {sessionId && (
-                    <View style={styles.continuingBadge}>
-                      <Ionicons name="sync" size={12} color="#3498DB" />
-                      <Text style={styles.continuingText}>
-                        {t('tasbih.continuingSession')}
-                      </Text>
-                    </View>
-                  )}
-                </>
-              ) : (
-                <Text style={styles.zikrPlaceholder}>
-                  {t('tasbih.setNameTarget')}
-                </Text>
-              )}
-            </View>
-            <Ionicons name="settings-outline" size={20} color="#666" />
-          </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            ) : (
+              <Text style={styles.zikrPlaceholder}>
+                {t('tasbih.setNameTarget')}
+              </Text>
+            )}
+          </View>
+          <Ionicons name="settings-outline" size={20} color="#666" />
+        </TouchableOpacity>
 
-          {/* Main Counter */}
-          <View style={styles.counterSection}>
-            <View
-              style={[
-                styles.counterCircle,
-                isTargetReached && styles.counterCircleComplete,
-              ]}
-            >
-              <Text style={styles.counterText}>{currentCount}</Text>
-              {hasTarget && (
-                <Text style={styles.targetText}>/ {targetCount}</Text>
-              )}
-
-              {isTargetReached && (
-                <View style={styles.completeBadge}>
-                  <Ionicons name="checkmark-circle" size={32} color="#00A86B" />
-                </View>
-              )}
-            </View>
-
-            {/* Progress Bar */}
+        {/* Main Counter */}
+        <View style={styles.counterSection}>
+          <View
+            style={[
+              styles.counterCircle,
+              isTargetReached && styles.counterCircleComplete,
+            ]}
+          >
+            <Text style={styles.counterText}>{currentCount}</Text>
             {hasTarget && (
-              <View style={styles.progressSection}>
-                <View style={styles.progressBarContainer}>
-                  <View
-                    style={[styles.progressBar, { width: `${progress}%` }]}
-                  />
-                </View>
-                <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+              <Text style={styles.targetText}>/ {targetCount}</Text>
+            )}
+
+            {isTargetReached && (
+              <View style={styles.completeBadge}>
+                <Ionicons name="checkmark-circle" size={32} color="#00A86B" />
               </View>
             )}
           </View>
 
-          {/* Main Action - Counter Button */}
+          {/* Progress Bar */}
+          {hasTarget && (
+            <View style={styles.progressSection}>
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, { width: `${progress}%` }]} />
+              </View>
+              <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Main Action - Counter Button */}
+        <TouchableOpacity
+          style={styles.incrementButton}
+          onPress={handleIncrement}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add" size={64} color="#FFF" />
+        </TouchableOpacity>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
           <TouchableOpacity
-            style={styles.incrementButton}
-            onPress={handleIncrement}
-            activeOpacity={0.7}
+            style={[styles.actionButton, styles.saveButton]}
+            onPress={handleOpenSaveModal}
           >
-            <Ionicons name="add" size={64} color="#FFF" />
+            <Ionicons name="bookmark" size={20} color="#00A86B" />
+            <Text style={[styles.actionButtonText, { color: '#00A86B' }]}>
+              {t('tasbih.save')}
+            </Text>
           </TouchableOpacity>
 
-          {/* Action Buttons */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.saveButton]}
-              onPress={handleOpenSaveModal}
-            >
-              <Ionicons name="bookmark" size={20} color="#00A86B" />
-              <Text style={[styles.actionButtonText, { color: '#00A86B' }]}>
-                {t('tasbih.save')}
-              </Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.resetButton]}
+            onPress={handleReset}
+          >
+            <Ionicons name="refresh" size={20} color="#F39C12" />
+            <Text style={[styles.actionButtonText, { color: '#F39C12' }]}>
+              {t('tasbih.reset')}
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, styles.resetButton]}
-              onPress={handleReset}
-            >
-              <Ionicons name="refresh" size={20} color="#F39C12" />
-              <Text style={[styles.actionButtonText, { color: '#F39C12' }]}>
-                {t('tasbih.reset')}
-              </Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.clearButton]}
+            onPress={handleCompleteReset}
+          >
+            <Ionicons name="close-circle" size={20} color="#DC3545" />
+            <Text style={[styles.actionButtonText, { color: '#DC3545' }]}>
+              {t('tasbih.clear')}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
+        {/* Quick Presets */}
+        <View style={styles.presetsSection}>
+          <Text style={styles.sectionTitle}>{t('tasbih.quickStart')}</Text>
+          <Text style={styles.sectionSubtitle}>
+            {t('tasbih.quickStartSubtitle')}
+          </Text>
+
+          {PRESETS.map((preset, index) => (
             <TouchableOpacity
-              style={[styles.actionButton, styles.clearButton]}
-              onPress={handleCompleteReset}
+              key={index}
+              style={styles.presetCard}
+              onPress={() => handlePresetSelect(preset)}
+              activeOpacity={0.7}
             >
-              <Ionicons name="close-circle" size={20} color="#DC3545" />
-              <Text style={[styles.actionButtonText, { color: '#DC3545' }]}>
-                {t('tasbih.clear')}
-              </Text>
+              <View style={styles.presetLeft}>
+                <Text style={styles.presetArabic}>{preset.name}</Text>
+                <Text style={styles.presetTranslation}>
+                  {preset.translation}
+                </Text>
+              </View>
+              <View style={styles.presetRight}>
+                <View style={styles.presetTargetBadge}>
+                  <Text style={styles.presetTargetText}>×{preset.target}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#CCC" />
+              </View>
             </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* Settings Modal */}
+      <Modal
+        visible={showSettingsModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowSettingsModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+            >
+              <View style={styles.modalContent}>
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>
+                      {t('tasbih.settings')}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowSettingsModal(false)}
+                    >
+                      <Ionicons name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={styles.inputLabel}>{t('tasbih.name')}</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={tempName}
+                    onChangeText={setTempName}
+                    placeholder={t('tasbih.namePlaceholder')}
+                    placeholderTextColor="#999"
+                    returnKeyType="next"
+                  />
+
+                  <Text style={styles.inputLabel}>
+                    {t('tasbih.targetOptional')}
+                  </Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={tempTarget}
+                    onChangeText={setTempTarget}
+                    placeholder={t('tasbih.targetPlaceholder')}
+                    placeholderTextColor="#999"
+                    keyboardType="number-pad"
+                    returnKeyType="done"
+                  />
+
+                  <View style={styles.quickTargets}>
+                    {[33, 99, 100, 500, 1000].map((num) => (
+                      <TouchableOpacity
+                        key={num}
+                        style={styles.quickTargetButton}
+                        onPress={() => setTempTarget(num.toString())}
+                      >
+                        <Text style={styles.quickTargetText}>{num}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.modalApplyButton}
+                    onPress={handleApplySettings}
+                  >
+                    <Text style={styles.modalApplyButtonText}>
+                      {t('tasbih.apply')}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <View style={{ height: 16 }} />
+                </ScrollView>
+              </View>
+            </KeyboardAvoidingView>
           </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
-          {/* Quick Presets */}
-          <View style={styles.presetsSection}>
-            <Text style={styles.sectionTitle}>{t('tasbih.quickStart')}</Text>
-            <Text style={styles.sectionSubtitle}>
-              {t('tasbih.quickStartSubtitle')}
+      {/* Save Confirmation Modal - GÜNCELLENDİ (Spinner Eklendi) */}
+      <Modal
+        visible={showSaveModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !isSaving && setShowSaveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Ionicons
+              name="bookmark"
+              size={48}
+              color="#00A86B"
+              style={{ alignSelf: 'center', marginBottom: 16 }}
+            />
+
+            <Text style={styles.modalTitle}>
+              {sessionId
+                ? t('tasbih.saveModal.updateSession')
+                : t('tasbih.saveModal.saveSession')}
             </Text>
 
-            {PRESETS.map((preset, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.presetCard}
-                onPress={() => handlePresetSelect(preset)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.presetLeft}>
-                  <Text style={styles.presetArabic}>{preset.name}</Text>
-                  <Text style={styles.presetTranslation}>
-                    {preset.translation}
-                  </Text>
-                </View>
-                <View style={styles.presetRight}>
-                  <View style={styles.presetTargetBadge}>
-                    <Text style={styles.presetTargetText}>
-                      ×{preset.target}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#CCC" />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-
-        {/* Settings Modal */}
-        <Modal
-          visible={showSettingsModal}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowSettingsModal(false)}
-        >
-          <TouchableWithoutFeedback
-            onPress={Keyboard.dismiss}
-            accessible={false}
-          >
-            <View style={styles.modalOverlay}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
-              >
-                <View style={styles.modalContent}>
-                  <ScrollView
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                  >
-                    {/* --- senin mevcut modal içeriğin --- */}
-                    <View style={styles.modalHeader}>
-                      <Text style={styles.modalTitle}>
-                        {t('tasbih.settings')}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setShowSettingsModal(false)}
-                      >
-                        <Ionicons name="close" size={24} color="#666" />
-                      </TouchableOpacity>
-                    </View>
-
-                    <Text style={styles.inputLabel}>{t('tasbih.name')}</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={tempName}
-                      onChangeText={setTempName}
-                      placeholder={t('tasbih.namePlaceholder')}
-                      placeholderTextColor="#999"
-                      returnKeyType="next"
-                    />
-
-                    <Text style={styles.inputLabel}>
-                      {t('tasbih.targetOptional')}
-                    </Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={tempTarget}
-                      onChangeText={setTempTarget}
-                      placeholder={t('tasbih.targetPlaceholder')}
-                      placeholderTextColor="#999"
-                      keyboardType="number-pad"
-                      returnKeyType="done"
-                    />
-
-                    <View style={styles.quickTargets}>
-                      {[33, 99, 100, 500, 1000].map((num) => (
-                        <TouchableOpacity
-                          key={num}
-                          style={styles.quickTargetButton}
-                          onPress={() => setTempTarget(num.toString())}
-                        >
-                          <Text style={styles.quickTargetText}>{num}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.modalApplyButton}
-                      onPress={handleApplySettings}
-                    >
-                      <Text style={styles.modalApplyButtonText}>
-                        {t('tasbih.apply')}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {/* iOS’ta altta biraz boşluk iyi olur */}
-                    <View style={{ height: 16 }} />
-                  </ScrollView>
-                </View>
-              </KeyboardAvoidingView>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-
-        {/* Save Confirmation Modal */}
-        <Modal
-          visible={showSaveModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowSaveModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Ionicons
-                name="bookmark"
-                size={48}
-                color="#00A86B"
-                style={{ alignSelf: 'center', marginBottom: 16 }}
-              />
-
-              <Text style={styles.modalTitle}>
-                {sessionId
-                  ? t('tasbih.saveModal.updateSession')
-                  : t('tasbih.saveModal.saveSession')}
-              </Text>
-
-              <View style={styles.saveInfoCard}>
-                <View style={styles.saveInfoRow}>
-                  <Text style={styles.saveInfoLabel}>
-                    {t('tasbih.saveModal.zikr')}
-                  </Text>
-                  <Text style={styles.saveInfoValue}>{zikrName}</Text>
-                </View>
-                <View style={styles.saveInfoRow}>
-                  <Text style={styles.saveInfoLabel}>
-                    {t('tasbih.saveModal.count')}
-                  </Text>
-                  <Text style={styles.saveInfoValue}>{currentCount}</Text>
-                </View>
-                {hasTarget && (
-                  <View style={styles.saveInfoRow}>
-                    <Text style={styles.saveInfoLabel}>
-                      {t('tasbih.saveModal.target')}
-                    </Text>
-                    <Text style={styles.saveInfoValue}>{targetCount}</Text>
-                  </View>
-                )}
+            <View style={styles.saveInfoCard}>
+              <View style={styles.saveInfoRow}>
+                <Text style={styles.saveInfoLabel}>
+                  {t('tasbih.saveModal.zikr')}
+                </Text>
+                <Text style={styles.saveInfoValue}>{zikrName}</Text>
               </View>
-
-              <Text style={styles.modalSubtitle}>
-                {sessionId
-                  ? t('tasbih.saveModal.updateMessage')
-                  : t('tasbih.saveModal.saveMessage')}
-              </Text>
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonCancel]}
-                  onPress={() => setShowSaveModal(false)}
-                >
-                  <Text style={styles.modalButtonTextCancel}>
-                    {t('tasbih.saveModal.cancel')}
+              <View style={styles.saveInfoRow}>
+                <Text style={styles.saveInfoLabel}>
+                  {t('tasbih.saveModal.count')}
+                </Text>
+                <Text style={styles.saveInfoValue}>{currentCount}</Text>
+              </View>
+              {hasTarget && (
+                <View style={styles.saveInfoRow}>
+                  <Text style={styles.saveInfoLabel}>
+                    {t('tasbih.saveModal.target')}
                   </Text>
-                </TouchableOpacity>
+                  <Text style={styles.saveInfoValue}>{targetCount}</Text>
+                </View>
+              )}
+            </View>
 
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonSave]}
-                  onPress={handleSave}
-                >
+            <Text style={styles.modalSubtitle}>
+              {sessionId
+                ? t('tasbih.saveModal.updateMessage')
+                : t('tasbih.saveModal.saveMessage')}
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.modalButtonCancel,
+                  isSaving && { opacity: 0.5 }, // Kayıt sırasında soluklaştır
+                ]}
+                onPress={() => setShowSaveModal(false)}
+                disabled={isSaving} // Kayıt sırasında disable et
+              >
+                <Text style={styles.modalButtonTextCancel}>
+                  {t('tasbih.saveModal.cancel')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSave]}
+                onPress={handleSave}
+                disabled={isSaving} // Çift tıklamayı engelle
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
                   <Text style={styles.modalButtonTextSave}>
                     {sessionId
                       ? t('tasbih.saveModal.update')
                       : t('tasbih.saveModal.save')}
                   </Text>
-                </TouchableOpacity>
-              </View>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-        {toast.visible && (
-          <View style={styles.toastWrap} pointerEvents="none">
-            <View style={styles.toast}>
-              <Ionicons name="checkmark-circle" size={18} color="#4F6F64" />
-              <Text style={styles.toastText}>{toast.text}</Text>
-            </View>
+        </View>
+      </Modal>
+
+      {toast.visible && (
+        <View style={styles.toastWrap} pointerEvents="none">
+          <View style={styles.toast}>
+            <Ionicons name="checkmark-circle" size={18} color="#4F6F64" />
+            <Text style={styles.toastText}>{toast.text}</Text>
           </View>
-        )}
-      </SafeAreaView>
-    </ImageBackground>
+        </View>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -893,6 +900,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
+    height: 52, // Sabit yükseklik, spinner geldiğinde zıplamayı önler
+    justifyContent: 'center',
   },
   modalButtonCancel: {
     backgroundColor: '#F8F9FA',
@@ -914,12 +923,11 @@ const styles = StyleSheet.create({
   },
   toastWrap: {
     position: 'absolute',
-    top: 90,          // ⬅️ header’ın altı, güvenli alan
+    top: 90,
     left: 0,
     right: 0,
     alignItems: 'center',
   },
-    
   toast: {
     flexDirection: 'row',
     alignItems: 'center',

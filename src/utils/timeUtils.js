@@ -1,30 +1,32 @@
 // ============================================================================
-// FILE: src/utils/timeUtils.js
+// FILE: src/utils/timeUtils.js (UPDATED)
 // ============================================================================
-
 /**
  * Format time based on language/locale preference
  * @param {string} time24 - Time in 24-hour format (e.g., "13:45")
  * @param {string} language - Language code ('en', 'tr', 'ar')
- * @returns {string} Formatted time
+ * @param {boolean} returnObject - If true, returns {time, period} for custom styling
+ * @returns {string|object} Formatted time or object with time and period
  */
-export const formatTime = (time24, language = 'en') => {
-  if (!time24) return '';
-
+export const formatTime = (time24, language = 'en', returnObject = false) => {
+  if (!time24) return returnObject ? { time: '', period: '' } : '';
+  
   const [hours, minutes] = time24.split(':').map(Number);
-
+  
   // Turkish and Arabic use 24-hour format
   if (language === 'tr' || language === 'ar') {
-    return `${hours.toString().padStart(2, '0')}:${minutes
+    const formatted = `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}`;
+    return returnObject ? { time: formatted, period: '' } : formatted;
   }
-
+  
   // English uses 12-hour format with AM/PM
   const period = hours >= 12 ? 'PM' : 'AM';
   const hours12 = hours % 12 || 12; // Convert to 12-hour (0 becomes 12)
-
-  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  const time = `${hours12}:${minutes.toString().padStart(2, '0')}`;
+  
+  return returnObject ? { time, period } : `${time} ${period}`;
 };
 
 /**
@@ -40,15 +42,14 @@ export const formatGregorianDate = (date, language = 'en') => {
     month: 'long',
     day: 'numeric',
   };
-
+  
   const localeMap = {
     en: 'en-US',
     tr: 'tr-TR',
     ar: 'ar-SA',
   };
-
+  
   const locale = localeMap[language] || 'en-US';
-
   return date.toLocaleDateString(locale, options);
 };
 
@@ -80,18 +81,15 @@ export const formatIslamicDate = (date, language = 'tr') => {
         year: 'numeric',
       }
     );
-
     return islamicFormatter.format(date);
   } catch (error) {
     console.error('Error formatting Islamic date:', error);
-
     // Fallback: Return a simple format (Turkish, Islamic calendar)
     const islamicFormatter = new Intl.DateTimeFormat('tr-u-ca-islamic', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
-
     return islamicFormatter.format(date);
   }
 };

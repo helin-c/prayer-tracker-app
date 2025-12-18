@@ -18,7 +18,8 @@
     "hour": "hour",
     "minute": "minute",
     "second": "second",
-    "pleaseWait" :"Please wait..."
+    "pleaseWait" :"Please wait...",
+    "viewAll": "View All"
   },
   "auth": {
     "signIn": "Sign In",
@@ -64,6 +65,7 @@
     "goodMorning": "Good Morning",
     "goodAfternoon": "Good Afternoon",
     "goodEvening": "Good Evening",
+    "home.goodNight": "Good Night",
     "guest": "Guest",
     "currentLocation": "Current Location",
     "updateLocation": "Update Location",
@@ -95,7 +97,9 @@
     "haveYouPrayed": "Have you prayed",
     "trackYourPrayers": "Track your daily prayers",
     "prayersMissed": "prayers missed today",
-    "left": "left"
+    "left": "left",
+    "markPrayersCompleted": "Mark prayers as completed",
+    "dailyInspiration": "Daily Inspiration"
   },
   "prayers": {
     "fajr": "Fajr",
@@ -130,6 +134,7 @@
     "distance": "Distance",
     "direction": "Direction",
     "accuracy": "Accuracy",
+    "rotateDevice": "Rotate your device",
     "instructions": {
       "step1": "Hold your device flat",
       "step2": "Rotate until Kaaba icon points up",
@@ -140,14 +145,19 @@
       "locationFailed": "Could not get your location. Please check your GPS settings.",
       "magnetometerUnavailable": "Compass sensor not available on this device.",
       "networkError": "Network error. Please check your connection."
-    },
-    "rotateDecive": "Rotate your device"
+    }
   },
   "quotes": {
     "prayer1": "And establish prayer and give zakah and bow with those who bow",
     "prayer1Ref": "Quran 2:43",
     "prayer2": "Successful indeed are the believers who are humble in their prayers",
-    "prayer2Ref": "Quran 23:1-2"
+    "prayer2Ref": "Quran 23:1-2",
+    "dailyInspiration": "Daily Inspiration",
+    "shareQuote": "Share Quote",
+    "shareText": "Share as Text",
+    "shareImage": "Share as Image",
+    "shareError": "An error occurred while sharing.",
+    "sharingNotAvailable": "Sharing is not available on this device."
   },
   "friends": {
     "friends": "Friends",
@@ -187,7 +197,8 @@
       "acceptFailed": "Failed to accept request",
       "rejectFailed": "Failed to reject request",
       "removeFailed": "Failed to remove friend"
-    }
+    },
+    "myFriends": "My Friends"
   },
   "profile": {
     "profile": "Profile",

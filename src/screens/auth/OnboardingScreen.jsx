@@ -1,3 +1,7 @@
+// @ts-nocheck
+// ============================================================================
+// FILE: src/screens/onboarding/OnboardingScreen.jsx (PRODUCTION READY)
+// ============================================================================
 import React, { useRef, useState } from 'react';
 import {
   View,
@@ -9,6 +13,7 @@ import {
   Animated,
   Platform,
   ImageBackground,
+  ActivityIndicator, // Spinner için eklendi
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -75,10 +80,14 @@ const slides = [
 
 export const OnboardingScreen = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false); // Loading state for final button
+  
   const flatListRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
   const handleNext = () => {
+    if (isLoading) return;
+
     if (currentIndex < slides.length - 1) {
       flatListRef.current?.scrollToIndex({
         index: currentIndex + 1,
@@ -90,16 +99,23 @@ export const OnboardingScreen = ({ navigation }) => {
   };
 
   const handleSkip = () => {
+    if (isLoading) return;
     handleGetStarted();
   };
 
   const handleGetStarted = async () => {
+    setIsLoading(true);
     try {
       await storage.setItem('@onboarding_completed', JSON.stringify(true));
-      navigation.replace('Login');
+      // Simulate minimal delay for smoother transition if storage is too fast
+      setTimeout(() => {
+        navigation.replace('Login');
+      }, 300);
     } catch (error) {
       console.error('Error saving onboarding status:', error);
       navigation.replace('Login');
+    } finally {
+      // No need to setIsLoading(false) if we navigate away/replace screen
     }
   };
 
@@ -263,8 +279,6 @@ export const OnboardingScreen = ({ navigation }) => {
       style={styles.backgroundImage}
       resizeMode="cover"
     >
-      {/* No Overlay - Full Background Image Visible */}
-
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         {/* Skip Button */}
         {currentIndex < slides.length - 1 && (
@@ -272,6 +286,7 @@ export const OnboardingScreen = ({ navigation }) => {
             style={styles.skipButton}
             onPress={handleSkip}
             activeOpacity={0.7}
+            disabled={isLoading}
           >
             <View style={styles.skipButtonInner}>
               <Text style={styles.skipText}>Skip</Text>
@@ -321,6 +336,7 @@ export const OnboardingScreen = ({ navigation }) => {
               style={styles.nextButtonWrapper}
               onPress={handleNext}
               activeOpacity={0.9}
+              disabled={isLoading}
             >
               <LinearGradient
                 colors={currentSlide.gradient}
@@ -328,16 +344,22 @@ export const OnboardingScreen = ({ navigation }) => {
                 end={{ x: 1, y: 0 }}
                 style={styles.nextButton}
               >
-                <Text style={styles.nextButtonText}>
-                  {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
-                </Text>
-                <View style={[styles.nextButtonIcon, { backgroundColor: currentSlide.accentColor + '33' }]}>
-                  <Ionicons 
-                    name={currentIndex === slides.length - 1 ? "checkmark" : "arrow-forward"} 
-                    size={18} 
-                    color="#FFFFFF" 
-                  />
-                </View>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Text style={styles.nextButtonText}>
+                      {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
+                    </Text>
+                    <View style={[styles.nextButtonIcon, { backgroundColor: currentSlide.accentColor + '33' }]}>
+                      <Ionicons 
+                        name={currentIndex === slides.length - 1 ? "checkmark" : "arrow-forward"} 
+                        size={18} 
+                        color="#FFFFFF" 
+                      />
+                    </View>
+                  </>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -590,6 +612,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 16,
     paddingHorizontal: 24,
+    height: 56, // Fixed height for consistent layout with spinner
   },
   nextButtonText: {
     color: '#FFFFFF',

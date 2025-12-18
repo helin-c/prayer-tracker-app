@@ -1,5 +1,6 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (UPDATED)
+// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,27 +10,112 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  ImageBackground,
+  ActivityIndicator, // Spinner için eklendi
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useTasbihStore } from '../../store/tasbihStore';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, tr } from 'date-fns/locale';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
+// STORE IMPORTS
+import { useTasbihStore } from '../../store/tasbihStore';
+
+// COMPONENT IMPORTS
+import {
+  SkeletonLoader,
+  SkeletonLine,
+  SkeletonCircle,
+} from '../../components/loading/SkeletonLoader';
+
+// ============================================================================
+// CUSTOM SKELETON FOR HISTORY SCREEN
+// ============================================================================
+const HistorySkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+
+  return (
+    <View style={{ padding: 16 }}>
+      {/* Stats Cards Skeleton */}
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+        {[1, 2, 3].map((i) => (
+          <SkeletonLoader
+            key={i}
+            width="30%"
+            height={80}
+            borderRadius={12}
+            style={{ flex: 1, ...skeletonStyle }}
+          />
+        ))}
+      </View>
+
+      {/* List Items Skeleton */}
+      {[1, 2, 3, 4, 5].map((i) => (
+        <View
+          key={i}
+          style={{
+            marginBottom: 12,
+            padding: 16,
+            borderRadius: 16,
+            backgroundColor: 'rgba(255, 255, 255, 0.4)',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          {/* Icon Skeleton */}
+          <SkeletonCircle
+            size={56}
+            style={{
+              marginRight: 16,
+              backgroundColor: 'rgba(255,255,255,0.5)',
+            }}
+          />
+
+          {/* Text Content Skeleton */}
+          <View style={{ flex: 1 }}>
+            <SkeletonLine
+              width="60%"
+              height={20}
+              style={{
+                marginBottom: 10,
+                backgroundColor: 'rgba(255,255,255,0.5)',
+              }}
+            />
+            <SkeletonLine
+              width="40%"
+              height={14}
+              style={{
+                marginBottom: 10,
+                backgroundColor: 'rgba(255,255,255,0.5)',
+              }}
+            />
+            <SkeletonLine
+              width="30%"
+              height={12}
+              style={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
+            />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const ZikrHistoryScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
-  const { 
-    sessions, 
-    deleteSession, 
+  const {
+    sessions,
+    deleteSession,
     clearAllSessions,
     continueSession,
-    loadSessions 
+    loadSessions,
   } = useTasbihStore();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isClearing, setIsClearing] = useState(false); // Silme işlemi loading state'i
 
   useEffect(() => {
     loadData();
@@ -65,6 +151,8 @@ export const ZikrHistoryScreen = ({ navigation }) => {
   };
 
   const handleClearAll = () => {
+    if (isClearing) return;
+
     Alert.alert(
       t('zikrHistory.clearAllHistory'),
       t('zikrHistory.clearAllConfirm'),
@@ -73,15 +161,28 @@ export const ZikrHistoryScreen = ({ navigation }) => {
         {
           text: t('zikrHistory.clearAll'),
           style: 'destructive',
-          onPress: clearAllSessions,
+          onPress: performClearAll,
         },
       ]
     );
   };
 
+  // Async clearing function with Loading State
+  const performClearAll = async () => {
+    setIsClearing(true);
+    try {
+      // UX için küçük bir gecikme ekleyebiliriz veya veritabanı işlemi zaten sürer
+      await clearAllSessions();
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   const renderSession = ({ item }) => {
     const hasTarget = item.target > 0;
-    const progress = hasTarget ? Math.min((item.count / item.target) * 100, 100) : null;
+    const progress = hasTarget
+      ? Math.min((item.count / item.target) * 100, 100)
+      : null;
     const isComplete = hasTarget && item.count >= item.target;
 
     return (
@@ -92,21 +193,23 @@ export const ZikrHistoryScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           {/* Session Icon */}
-          <View style={[
-            styles.sessionIcon,
-            isComplete && styles.sessionIconComplete,
-          ]}>
-            <Ionicons 
-              name={isComplete ? "checkmark-circle" : "infinite"} 
-              size={28} 
-              color={isComplete ? "#00A86B" : "#3498DB"} 
+          <View
+            style={[
+              styles.sessionIcon,
+              isComplete && styles.sessionIconComplete,
+            ]}
+          >
+            <Ionicons
+              name={isComplete ? 'checkmark-circle' : 'infinite'}
+              size={28}
+              color={isComplete ? '#00A86B' : '#3498DB'}
             />
           </View>
 
           {/* Session Info */}
           <View style={styles.sessionInfo}>
             <Text style={styles.sessionName}>{item.name}</Text>
-            
+
             <View style={styles.sessionStats}>
               <View style={styles.statItem}>
                 <Ionicons name="radio-button-on" size={14} color="#00A86B" />
@@ -114,7 +217,7 @@ export const ZikrHistoryScreen = ({ navigation }) => {
                   {item.count} {t('zikrHistory.counts')}
                 </Text>
               </View>
-              
+
               {hasTarget && (
                 <View style={styles.statItem}>
                   <Ionicons name="flag" size={14} color="#3498DB" />
@@ -129,27 +232,29 @@ export const ZikrHistoryScreen = ({ navigation }) => {
             {hasTarget && (
               <View style={styles.miniProgressContainer}>
                 <View style={styles.miniProgressBar}>
-                  <View 
+                  <View
                     style={[
                       styles.miniProgressFill,
                       { width: `${progress}%` },
                       isComplete && styles.miniProgressFillComplete,
-                    ]} 
+                    ]}
                   />
                 </View>
-                <Text style={[
-                  styles.miniProgressText,
-                  isComplete && styles.miniProgressTextComplete,
-                ]}>
+                <Text
+                  style={[
+                    styles.miniProgressText,
+                    isComplete && styles.miniProgressTextComplete,
+                  ]}
+                >
                   {Math.round(progress)}%
                 </Text>
               </View>
             )}
 
             <Text style={styles.sessionDate}>
-              {formatDistanceToNow(new Date(item.lastUpdated), { 
+              {formatDistanceToNow(new Date(item.lastUpdated), {
                 addSuffix: true,
-                locale: getDateFnsLocale()
+                locale: getDateFnsLocale(),
               })}
             </Text>
           </View>
@@ -177,104 +282,110 @@ export const ZikrHistoryScreen = ({ navigation }) => {
   // Calculate total stats
   const totalSessions = sessions.length;
   const totalCounts = sessions.reduce((sum, s) => sum + s.count, 0);
-  const completedSessions = sessions.filter(s => 
-    s.target > 0 && s.count >= s.target
+  const completedSessions = sessions.filter(
+    (s) => s.target > 0 && s.count >= s.target
   ).length;
 
-  if (isLoading) {
-    return (
-      <IslamicLoadingScreen 
-        message={t('zikrHistory.loading')} 
-        submessage={t('zikrHistory.loadingSubtitle')}
-      />
-    );
-  }
-
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('zikrHistory.title')}</Text>
-          {totalSessions > 0 && (
-            <TouchableOpacity onPress={handleClearAll}>
-              <Text style={styles.clearAllText}>{t('zikrHistory.clearAll')}</Text>
-            </TouchableOpacity>
-          )}
-          {totalSessions === 0 && <View style={{ width: 70 }} />}
-        </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('zikrHistory.title')}</Text>
 
-        {/* Stats Summary */}
-        {totalSessions > 0 && (
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Ionicons name="bookmark" size={20} color="#00A86B" />
-              <Text style={styles.statValue}>{totalSessions}</Text>
-              <Text style={styles.statLabel}>{t('zikrHistory.sessions')}</Text>
-            </View>
-            
-            <View style={styles.statCard}>
-              <Ionicons name="infinite" size={20} color="#3498DB" />
-              <Text style={styles.statValue}>{totalCounts}</Text>
-              <Text style={styles.statLabel}>{t('zikrHistory.totalCounts')}</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Ionicons name="checkmark-circle" size={20} color="#9B59B6" />
-              <Text style={styles.statValue}>{completedSessions}</Text>
-              <Text style={styles.statLabel}>{t('zikrHistory.completed')}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Sessions List */}
+        {/* Header Action Button (Clear All) with Spinner */}
         {totalSessions > 0 ? (
-          <FlatList
-            data={sessions}
-            renderItem={renderSession}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-              <Ionicons name="bookmark-outline" size={64} color="#CCC" />
-            </View>
-            <Text style={styles.emptyTitle}>{t('zikrHistory.empty.title')}</Text>
-            <Text style={styles.emptyText}>
-              {t('zikrHistory.empty.message')}
-            </Text>
-            <TouchableOpacity
-              style={styles.startButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="add-circle" size={20} color="#FFF" />
-              <Text style={styles.startButtonText}>
-                {t('zikrHistory.empty.startButton')}
+          <TouchableOpacity onPress={handleClearAll} disabled={isClearing}>
+            {isClearing ? (
+              <ActivityIndicator size="small" color="#DC3545" />
+            ) : (
+              <Text style={styles.clearAllText}>
+                {t('zikrHistory.clearAll')}
               </Text>
-            </TouchableOpacity>
-          </View>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 70 }} />
         )}
-      </SafeAreaView>
-    </ImageBackground>
+      </View>
+
+      {isLoading ? (
+        // SKELETON LOADING STATE
+        <HistorySkeleton />
+      ) : (
+        <>
+          {/* Stats Summary */}
+          {totalSessions > 0 && (
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Ionicons name="bookmark" size={20} color="#00A86B" />
+                <Text style={styles.statValue}>{totalSessions}</Text>
+                <Text style={styles.statLabel}>
+                  {t('zikrHistory.sessions')}
+                </Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Ionicons name="infinite" size={20} color="#3498DB" />
+                <Text style={styles.statValue}>{totalCounts}</Text>
+                <Text style={styles.statLabel}>
+                  {t('zikrHistory.totalCounts')}
+                </Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Ionicons name="checkmark-circle" size={20} color="#9B59B6" />
+                <Text style={styles.statValue}>{completedSessions}</Text>
+                <Text style={styles.statLabel}>
+                  {t('zikrHistory.completed')}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Sessions List */}
+          {totalSessions > 0 ? (
+            <FlatList
+              data={sessions}
+              renderItem={renderSession}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIconContainer}>
+                <Ionicons name="bookmark-outline" size={64} color="#CCC" />
+              </View>
+              <Text style={styles.emptyTitle}>
+                {t('zikrHistory.empty.title')}
+              </Text>
+              <Text style={styles.emptyText}>
+                {t('zikrHistory.empty.message')}
+              </Text>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Ionicons name="add-circle" size={20} color="#FFF" />
+                <Text style={styles.startButtonText}>
+                  {t('zikrHistory.empty.startButton')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',

@@ -7,29 +7,26 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-
     "plugins": [
       [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Prayer Tracker to use your location for accurate prayer times."
         }
-      ]
+      ],
+      "expo-asset"
     ],
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to show accurate prayer times."
       }
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -43,7 +40,6 @@
         "ACCESS_FINE_LOCATION"
       ]
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
     }

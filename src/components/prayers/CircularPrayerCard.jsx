@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/prayers/CircularPrayerCard.jsx (UPDATED DESIGN)
+// FILE: src/components/prayers/CircularPrayerCard.jsx (FIXED AM/PM STYLING)
 // ============================================================================
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
@@ -188,7 +188,14 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
   if (!prayerTimes || !currentNextPrayer) return null;
 
   const nextPrayer = prayerTimes[currentNextPrayer];
-  const nextTimeStr = formatTime(nextPrayer?.time, i18n.language) || '00:00';
+  
+  // Use returnObject parameter to get time and period separately
+  const { time: nextTimeStr, period: nextPeriod } = formatTime(
+    nextPrayer?.time, 
+    i18n.language, 
+    true
+  );
+  
   const [hh, mm] = nextTimeStr.split(':');
 
   const allPrayers = getAllPrayerTimes();
@@ -208,11 +215,11 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
   return (
     <View style={styles.container}>
       <ExpoLinearGradient
-        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
+        colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
         style={styles.cardWrapper}
       >
         <View style={styles.circleContainer}>
-          {/* Prayer Name Label - Transparent with Gradient Border */}
+          {/* Prayer Name Label */}
           <View style={styles.arcTopLabelOuter}>
             <View style={styles.pillBorder}>
               <View style={styles.pillInner}>
@@ -220,13 +227,13 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                   <MaterialCommunityIcons
                     name={nextPrayerIcon.icon}
                     size={16}
-                    color="#FFFFFF"
+                    color="#1A1A1A"
                   />
                 ) : (
                   <Ionicons
                     name={nextPrayerIcon.icon}
                     size={16}
-                    color="#FFFFFF"
+                    color="#1A1A1A"
                   />
                 )}
                 <Text style={styles.upcomingText}>{t('home.upcoming')}</Text>
@@ -237,7 +244,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
             </View>
           </View>
 
-          {/* SVG Arc with Matching Gradient */}
+          {/* SVG Arc with Gradient */}
           <Svg
             height="170"
             width="260"
@@ -253,8 +260,8 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                 x2={centerX * 2 - 15}
                 y2={centerY}
               >
-                <Stop offset="0%" stopColor="#5F8D7E" stopOpacity="1" />
-                <Stop offset="100%" stopColor="#4F6F64" stopOpacity="1" />
+                <Stop offset="0%" stopColor="#F0FFF4" stopOpacity="1" />
+                <Stop offset="100%" stopColor="#F0FFF4" stopOpacity="1" />
               </LinearGradient>
 
               <LinearGradient
@@ -265,8 +272,8 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                 x2={centerX * 2 - 15}
                 y2={centerY}
               >
-                <Stop offset="0%" stopColor="#6F9C8C" stopOpacity="0.28" />
-                <Stop offset="100%" stopColor="#4F6F64" stopOpacity="0.28" />
+                <Stop offset="0%" stopColor="#F0FFF4" stopOpacity="0.4" />
+                <Stop offset="100%" stopColor="#F0FFF4" stopOpacity="0.4" />
               </LinearGradient>
             </Defs>
 
@@ -279,45 +286,61 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
               strokeLinecap="round"
               strokeDasharray={arcLength}
               strokeDashoffset={dashOffset}
-              opacity="0.25"
+              opacity="0.3"
             />
 
             {/* Background arc */}
             <Path
               d={`M 15 ${centerY} A ${radius} ${radius} 0 0 1 ${centerX * 2 - 15} ${centerY}`}
               fill="none"
-              stroke="rgba(255,255,255,0.18)"
+              stroke="rgba(91, 168, 149, 0.2)"
               strokeWidth={strokeWidth}
               strokeLinecap="round"
             />
 
-            {/* Progress arc with gradient */}
+            {/* Progress arc (SOLID) */}
             <Path
               d={`M 15 ${centerY} A ${radius} ${radius} 0 0 1 ${centerX * 2 - 15} ${centerY}`}
               fill="none"
-              stroke="url(#progressGradient)" // ✅ HOME ile AYNI
+              stroke="#F0FFF4"
               strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={arcLength}
+              strokeDashoffset={dashOffset}
+            />
+            {/* Progress outline (helps visibility on light background) */}
+            <Path
+              d={`M 15 ${centerY} A ${radius} ${radius} 0 0 1 ${centerX * 2 - 15} ${centerY}`}
+              fill="none"
+              stroke="rgba(16, 185, 129, 0.35)" // subtle green edge
+              strokeWidth={strokeWidth + 2}
               strokeLinecap="round"
               strokeDasharray={arcLength}
               strokeDashoffset={dashOffset}
             />
           </Svg>
 
-          {/* Center Time Display - Transparent with Gradient Border */}
+          {/* Center Time Display */}
           <View style={styles.centerContentOuter}>
             <View style={styles.timeBorder}>
               <View style={styles.timeInner}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <View style={styles.timeDisplayRow}>
                   <Text style={styles.timeHour}>{hh}</Text>
                   <Text style={styles.timeColon}>:</Text>
                   <Text style={styles.timeMinute}>{mm}</Text>
+                  {/* Tiny AM/PM badge */}
+                  {nextPeriod && (
+                    <View style={styles.periodBadge}>
+                      <Text style={styles.periodText}>{nextPeriod}</Text>
+                    </View>
+                  )}
                 </View>
 
                 <View style={styles.remainingContainer}>
                   <Ionicons
                     name="hourglass-outline"
                     size={12}
-                    color="rgba(255,255,255,0.95)"
+                    color="#1A1A1A"
                   />
                   <Text style={styles.remainingText}>
                     {timeRemaining.hours > 0 && `${timeRemaining.hours}h `}
@@ -330,10 +353,16 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
           </View>
         </View>
 
-        {/* Bottom Prayer Times Row - Clean, only highlight active */}
+        {/* Bottom Prayer Times Row */}
         <View style={styles.prayerTimesRow}>
           {allPrayers.map((prayer) => {
             const isNext = prayer.key === currentNextPrayer;
+            const { time: prayerTime, period: prayerPeriod } = formatTime(
+              prayer.time, 
+              i18n.language, 
+              true
+            );
+            
             return (
               <View key={prayer.key} style={styles.prayerTimeItem}>
                 <View
@@ -346,13 +375,13 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                     <MaterialCommunityIcons
                       name={prayer.icon}
                       size={isNext ? 22 : 18}
-                      color={isNext ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)'}
+                      color={isNext ? '#5BA895' : '#1A1A1A'}
                     />
                   ) : (
                     <Ionicons
                       name={prayer.icon}
                       size={isNext ? 20 : 16}
-                      color={isNext ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)'}
+                      color={isNext ? '#5BA895' : '#1A1A1A'}
                     />
                   )}
                 </View>
@@ -364,14 +393,19 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                 >
                   {getPrayerName(prayer.key)}
                 </Text>
-                <Text
-                  style={[
-                    styles.prayerTimeText,
-                    isNext && styles.prayerTimeActive,
-                  ]}
-                >
-                  {formatTime(prayer.time, i18n.language)}
-                </Text>
+                <View style={styles.prayerTimeContainer}>
+                  <Text
+                    style={[
+                      styles.prayerTimeText,
+                      isNext && styles.prayerTimeActive,
+                    ]}
+                  >
+                    {prayerTime}
+                  </Text>
+                  {prayerPeriod && (
+                    <Text style={styles.prayerPeriodText}>{prayerPeriod}</Text>
+                  )}
+                </View>
               </View>
             );
           })}
@@ -392,13 +426,11 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     paddingVertical: 24,
     paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: '#000',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.18,
     shadowRadius: 20,
-    elevation: 8,
+    elevation: 10,
   },
   circleContainer: {
     width: '100%',
@@ -413,53 +445,108 @@ const styles = StyleSheet.create({
     top: 30,
   },
 
-  // Transparent label with gradient border
+  // Label with border
   arcTopLabelOuter: {
     position: 'absolute',
     top: 0,
     zIndex: 10,
-    shadowColor: '#4F6F64',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 5,
   },
-  labelGradientBorder: {
+  pillBorder: {
     borderRadius: 20,
-    padding: 2,
+    borderWidth: 2,
+    borderColor: '#5BA895',
+    backgroundColor: '#F0FFF4',
   },
-  labelInner: {
+  pillInner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 7,
     gap: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'transparent',
     borderRadius: 18,
   },
   upcomingText: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#1A1A1A',
     fontWeight: '600',
   },
   prayerNameText: {
     fontSize: 12,
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     fontWeight: '800',
     textTransform: 'capitalize',
   },
 
-  // Transparent time display with gradient border
+  // Time display with border - UPDATED
   centerContentOuter: {
     position: 'absolute',
     top: 95,
     alignItems: 'center',
     zIndex: 5,
-    shadowColor: '#4F6F64',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 8,
+  },
+  timeBorder: {
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#5BA895',
+    backgroundColor: '#F0FFF4',
+  },
+  timeInner: {
+    paddingHorizontal: 26,
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderRadius: 22,
+  },
+  timeDisplayRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    position: 'relative',
+  },
+  timeHour: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  timeColon: {
+    fontSize: 36,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginHorizontal: 2,
+    marginBottom: 4,
+  },
+  timeMinute: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  // NEW: Tiny AM/PM badge
+  periodBadge: {
+    position: 'absolute',
+    right: -26,
+    top: 0,
+    backgroundColor: 'rgba(91, 168, 149, 0.15)',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(91, 168, 149, 0.3)',
+  },
+  periodText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    letterSpacing: 0.3,
   },
   remainingContainer: {
     flexDirection: 'row',
@@ -468,26 +555,26 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(91, 168, 149, 0.12)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(91, 168, 149, 0.25)',
   },
   remainingText: {
     fontSize: 11,
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     fontWeight: '700',
   },
 
-  // Clean bottom row - only highlight active
+  // Bottom prayer times - UPDATED
   prayerTimesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 4,
     paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(91, 168, 149, 0.2)',
   },
   prayerTimeItem: {
     alignItems: 'center',
@@ -499,81 +586,49 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(107, 114, 128, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
   },
   prayerIconWrapperActive: {
-    borderColor: 'rgba(255,255,255,0.55)',
+    borderColor: '#5BA895',
+    borderWidth: 2,
+    backgroundColor: 'rgba(91, 168, 149, 0.08)',
     transform: [{ scale: 1.08 }],
   },
-
   prayerLabel: {
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#1A1A1A',
     fontWeight: '600',
     marginBottom: 2,
   },
   prayerLabelActive: {
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     fontSize: 10,
     fontWeight: '800',
   },
+  // NEW: Container for time + period
+  prayerTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 2,
+  },
   prayerTimeText: {
     fontSize: 11,
-    color: 'rgba(255,255,255,0.55)',
+    color: '#1A1A1A',
     fontWeight: '700',
   },
   prayerTimeActive: {
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     fontSize: 12,
     fontWeight: '900',
   },
-  timeHour: {
-    fontSize: 44,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  timeColon: {
-    fontSize: 36,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginHorizontal: 2,
-    marginBottom: 4,
-  },
-  timeMinute: {
-    fontSize: 44,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  pillBorder: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    backgroundColor: 'transparent',
-  },
-  pillInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    gap: 6,
-    backgroundColor: 'transparent',
-    borderRadius: 20,
-  },
-
-  timeBorder: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    backgroundColor: 'transparent',
-  },
-  timeInner: {
-    paddingHorizontal: 26,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderRadius: 24,
+  // NEW: Tiny period text for bottom times
+  prayerPeriodText: {
+    fontSize: 7,
+    color: '#1A1A1A',
+    fontWeight: '700',
+    opacity: 0.8,
   },
 });

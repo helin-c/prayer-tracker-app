@@ -14,7 +14,8 @@
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "language": "اللغة",
-    "pleaseWait":"يرجى الانتظار..."
+    "pleaseWait":"يرجى الانتظار...",
+    "viewAll": "عرض الكل"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -60,6 +61,7 @@
     "goodMorning": "صباح الخير",
     "goodAfternoon": "مساء الخير",
     "goodEvening": "مساء الخير",
+    "goodNight": "طاب مساؤك",
     "guest": "ضيف",
     "currentLocation": "الموقع الحالي",
     "updateLocation": "تحديث الموقع",
@@ -86,7 +88,11 @@
     "justNow": "الآن",
     "minutesAgo": "منذ {{minutes}} دقيقة",
     "hoursAgo": "منذ {{hours}} ساعة",
-    "left": "يبقى"
+    "left": "يبقى",
+    "markPrayersCompleted": "وضع علامة على الصلوات كمكتملة",
+    "dailyInspiration": "إلهام اليوم",
+    "trackYourPrayers": "تابع صلواتك",
+    "upcoming": "القادم"
   },
   "prayers": {
     "fajr": "الفجر",
@@ -121,6 +127,7 @@
     "distance": "المسافة",
     "direction": "الاتجاه",
     "accuracy": "الدقة",
+    "rotateDevice": "دوّر جهازك",
     "instructions": {
       "step1": "أمسك جهازك بشكل مستوٍ",
       "step2": "استدر حتى يشير رمز الكعبة لأعلى",
@@ -138,7 +145,13 @@
     "prayer1": "وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ وَارْكَعُوا مَعَ الرَّاكِعِينَ",
     "prayer1Ref": "البقرة 2:43",
     "prayer2": "قَدْ أَفْلَحَ الْمُؤْمِنُونَ ۝ الَّذِينَ هُمْ فِي صَلَاتِهِمْ خَاشِعُونَ",
-    "prayer2Ref": "المؤمنون 23:1-2"
+    "prayer2Ref": "المؤمنون 23:1-2",
+    "dailyInspiration": "إلهام اليوم",
+    "shareQuote": "مشاركة الاقتباس",
+    "shareText": "مشاركة كنص",
+    "shareImage": "مشاركة كصورة",
+    "shareError": "حدث خطأ أثناء المشاركة.",
+    "sharingNotAvailable": "المشاركة غير متاحة على هذا الجهاز."
   },
   "friends": {
     "friends": "الأصدقاء",
@@ -178,7 +191,8 @@
       "acceptFailed": "فشل قبول الطلب",
       "rejectFailed": "فشل رفض الطلب",
       "removeFailed": "فشل إزالة الصديق"
-    }
+    },
+    "myFriends": "أصدقائي"
   },
   "profile": {
     "profile": "الملف الشخصي",

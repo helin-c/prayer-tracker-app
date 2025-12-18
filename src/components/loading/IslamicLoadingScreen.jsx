@@ -1,9 +1,11 @@
 // ============================================================================
 // FILE: src/components/loading/IslamicLoadingScreen.jsx
 // ============================================================================
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+const BACKGROUND_IMAGE = require('../../assets/images/illustrations/background.png');
 
 export const IslamicLoadingScreen = ({ message, submessage }) => {
   // Create multiple animated values for falling crescents
@@ -20,6 +22,8 @@ export const IslamicLoadingScreen = ({ message, submessage }) => {
   const rotate3 = useRef(new Animated.Value(0)).current;
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const backgroundSource = useMemo(() => BACKGROUND_IMAGE, []);
 
   useEffect(() => {
     // Pulse animation for the center icon
@@ -212,9 +216,12 @@ export const IslamicLoadingScreen = ({ message, submessage }) => {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
+      source={backgroundSource}
       style={styles.container}
       resizeMode="cover"
+      // EKSTRA OPTİMİZASYONLAR:
+      defaultSource={backgroundSource} // iOS için
+      loadingIndicatorSource={{ uri: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' }}
     >
       {/* Falling Crescents */}
       <Animated.View
@@ -336,7 +343,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#C5DDD0', 
   },
   crescentContainer: {
     position: 'absolute',

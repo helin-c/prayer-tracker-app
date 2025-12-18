@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+// @ts-nocheck
+// ============================================================================
+// FILE: src/screens/guides/GuideDetailScreen.jsx (PRODUCTION READY)
+// ============================================================================
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// COMPONENT IMPORTS
+import { SkeletonLoader, SkeletonLine, SkeletonCircle } from '../../components/loading/SkeletonLoader';
 
 // Sample guide content structure
 const guideContent = {
@@ -122,9 +128,48 @@ const guideContent = {
   // Add more guide content here
 };
 
+// ============================================================================
+// CUSTOM SKELETON FOR GUIDE DETAIL SCREEN
+// ============================================================================
+const GuideDetailSkeleton = ({ color }) => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
+  
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Header Skeleton */}
+      <View style={{ padding: 20, paddingBottom: 32, backgroundColor: color || '#CCC', opacity: 0.8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+           <SkeletonCircle size={40} style={skeletonStyle} />
+           <SkeletonCircle size={56} style={skeletonStyle} />
+        </View>
+        <SkeletonLine width={200} height={32} style={{ ...skeletonStyle, marginBottom: 8 }} />
+        <SkeletonLine width={280} height={16} style={skeletonStyle} />
+      </View>
+
+      {/* Content Skeleton */}
+      <View style={{ padding: 20 }}>
+        {[1, 2, 3].map((i) => (
+          <View key={i} style={{ marginBottom: 16, backgroundColor: '#FFF', borderRadius: 16, padding: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <SkeletonCircle size={40} style={{ backgroundColor: '#F0F0F0', marginRight: 12 }} />
+              <SkeletonLine width={150} height={20} style={{ backgroundColor: '#F0F0F0' }} />
+            </View>
+            <SkeletonLine width="100%" height={14} style={{ backgroundColor: '#F0F0F0', marginBottom: 8 }} />
+            <SkeletonLine width="80%" height={14} style={{ backgroundColor: '#F0F0F0' }} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const GuideDetailScreen = ({ route, navigation }) => {
   const { guide } = route.params;
   const [expandedSection, setExpandedSection] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const content = guideContent[guide.id] || {
     title: guide.title,
@@ -132,9 +177,25 @@ export const GuideDetailScreen = ({ route, navigation }) => {
     sections: [],
   };
 
+  useEffect(() => {
+    // Simulate loading delay for smooth transition
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
   const toggleSection = (sectionId) => {
     setExpandedSection(expandedSection === sectionId ? null : sectionId);
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <GuideDetailSkeleton color={guide.color} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

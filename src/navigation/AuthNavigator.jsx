@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack'; // Import eklendi
 import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
@@ -12,7 +12,14 @@ export const AuthNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#0B1F18' },
+        // 👇 GLOBAL BACKGROUND İÇİN KRİTİK AYAR:
+        cardStyle: { backgroundColor: 'transparent' },
+        // 👇 Fade animasyonu (Native Driver destekli):
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter,
+        transitionSpec: {
+          open: { animation: 'timing', config: { duration: 200 } },
+          close: { animation: 'timing', config: { duration: 200 } },
+        },
       }}
     >
       <Stack.Screen name={ROUTES.ONBOARDING} component={OnboardingScreen} />

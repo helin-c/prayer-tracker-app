@@ -32,10 +32,11 @@ const ASSET_OFFSET = 0; // Adjust if seccade image orientation is off
 
 export const QiblaScreen = () => {
   const { t } = useTranslation();
-  
+
   // 🎯 Use location from prayer store instead of fetching again
-  const { location: storeLocation, fetchWithCurrentLocation } = usePrayerStore();
-  
+  const { location: storeLocation, fetchWithCurrentLocation } =
+    usePrayerStore();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [qiblaDirection, setQiblaDirection] = useState(0);
@@ -75,7 +76,8 @@ export const QiblaScreen = () => {
     const Δλ = ((KAABA_LOCATION.longitude - userLon) * Math.PI) / 180;
 
     const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    const x =
+      Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
 
     const θ = Math.atan2(y, x);
     const bearing = ((θ * 180) / Math.PI + 360) % 360;
@@ -96,7 +98,7 @@ export const QiblaScreen = () => {
           latitude: storeLocation.latitude,
           longitude: storeLocation.longitude,
         });
-        
+
         const qibla = calculateQiblaDirection(
           storeLocation.latitude,
           storeLocation.longitude
@@ -112,22 +114,37 @@ export const QiblaScreen = () => {
       setPermissionStatus('requesting');
 
       const result = await fetchWithCurrentLocation();
-      
+
       if (!result.success) {
         throw new Error(result.error || t('qibla.errors.locationFailed'));
       }
 
       // After fetching, try again with updated store location
-      if (storeLocation?.latitude && storeLocation?.longitude) {
+      // Note: fetchWithCurrentLocation updates the store, so we can use the result directly or check store again.
+      // Since store updates might be async in React state, better use result data if available,
+      // but fetchWithCurrentLocation returns success boolean usually. Let's assume store updates.
+      // Or we can rely on re-render if store changes. But to be safe, let's re-check store or fetch fresh.
+
+      // Re-fetching strictly for coordinates just in case
+      let finalLat, finalLon;
+
+      if (storeLocation?.latitude) {
+        finalLat = storeLocation.latitude;
+        finalLon = storeLocation.longitude;
+      } else {
+        // Fallback if store update is slow
+        const loc = await Location.getCurrentPositionAsync({});
+        finalLat = loc.coords.latitude;
+        finalLon = loc.coords.longitude;
+      }
+
+      if (finalLat && finalLon) {
         setUserLocation({
-          latitude: storeLocation.latitude,
-          longitude: storeLocation.longitude,
+          latitude: finalLat,
+          longitude: finalLon,
         });
-        
-        const qibla = calculateQiblaDirection(
-          storeLocation.latitude,
-          storeLocation.longitude
-        );
+
+        const qibla = calculateQiblaDirection(finalLat, finalLon);
         setQiblaDirection(qibla);
         setPermissionStatus('granted');
       } else {
@@ -137,16 +154,19 @@ export const QiblaScreen = () => {
       setLoading(false);
     } catch (err) {
       console.error('Location initialization error:', err);
-      
+
       let errorMessage = t('qibla.errors.locationFailed');
-      
-      if (err.message?.includes('denied') || err.message?.includes('permission')) {
+
+      if (
+        err.message?.includes('denied') ||
+        err.message?.includes('permission')
+      ) {
         errorMessage = t('qibla.errors.permissionDenied');
         setPermissionStatus('denied');
       } else {
         setPermissionStatus('error');
       }
-      
+
       setError(errorMessage);
       setLoading(false);
     }
@@ -157,25 +177,27 @@ export const QiblaScreen = () => {
     try {
       const hasLocation = await Location.hasServicesEnabledAsync();
       if (!hasLocation) {
-        setError(t('qibla.errors.locationFailed'));
-        return;
+        // Even if GPS off, heading might work, but let's warn
+        // Actually for compass only magnetometer is needed usually
       }
 
       headingSub.current = await Location.watchHeadingAsync((headingData) => {
-        const rawHeading = (headingData.trueHeading !== undefined && headingData.trueHeading >= 0) 
-          ? headingData.trueHeading 
-          : headingData.magHeading;
+        const rawHeading =
+          headingData.trueHeading !== undefined && headingData.trueHeading >= 0
+            ? headingData.trueHeading
+            : headingData.magHeading;
 
         // Apply low-pass filter for smooth rotation
         const alpha = 0.85;
-        const smoothHeading = alpha * rawHeading + (1 - alpha) * lastValidReading.current;
+        const smoothHeading =
+          alpha * rawHeading + (1 - alpha) * lastValidReading.current;
         lastValidReading.current = smoothHeading;
 
         setCurrentHeading(smoothHeading);
 
         // Calculate difference between Qibla direction and current device heading
         let diff = qiblaDirection - smoothHeading + ASSET_OFFSET;
-        
+
         // Normalize to -180 to 180 range for shortest rotation path
         while (diff > 180) diff -= 360;
         while (diff < -180) diff += 360;
@@ -201,7 +223,7 @@ export const QiblaScreen = () => {
   // Initialize location on mount
   useEffect(() => {
     initializeLocation();
-    
+
     return () => {
       if (headingSub.current) {
         headingSub.current.remove();
@@ -214,7 +236,7 @@ export const QiblaScreen = () => {
     if (!loading && !error && userLocation && qiblaDirection > 0) {
       subscribeHeading();
     }
-    
+
     return () => {
       if (headingSub.current) {
         headingSub.current.remove();
@@ -238,7 +260,7 @@ export const QiblaScreen = () => {
     }
   };
 
-  // Loading state
+  // Loading state (Inline - Not Blocking Entire Screen if possible, but for initial setup it blocks center)
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -246,14 +268,18 @@ export const QiblaScreen = () => {
           <View style={styles.loadingCircle}>
             <Ionicons name="compass-outline" size={48} color="#00A86B" />
           </View>
-          <ActivityIndicator size="large" color="#00A86B" style={{ marginTop: 20 }} />
+          <ActivityIndicator
+            size="large"
+            color="#00A86B"
+            style={{ marginTop: 20 }}
+          />
           <Text style={styles.loadingText}>{t('qibla.findingLocation')}</Text>
           <Text style={styles.loadingSubtext}>
-            {permissionStatus === 'requesting' 
+            {permissionStatus === 'requesting'
               ? t('qibla.requestingPermission')
               : permissionStatus === 'checking'
-              ? t('qibla.checkingStoredLocation')
-              : t('qibla.gettingCoordinates')}
+                ? t('qibla.checkingStoredLocation')
+                : t('qibla.gettingCoordinates')}
           </Text>
         </View>
       </SafeAreaView>
@@ -270,7 +296,7 @@ export const QiblaScreen = () => {
           </View>
           <Text style={styles.errorTitle}>{t('qibla.notFound')}</Text>
           <Text style={styles.errorText}>{error}</Text>
-          
+
           <View style={styles.errorActions}>
             <TouchableOpacity
               style={styles.retryButton}
@@ -288,7 +314,9 @@ export const QiblaScreen = () => {
                 activeOpacity={0.8}
               >
                 <Ionicons name="settings-outline" size={20} color="#00A86B" />
-                <Text style={styles.settingsButtonText}>{t('home.openSettings')}</Text>
+                <Text style={styles.settingsButtonText}>
+                  {t('home.openSettings')}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -313,7 +341,9 @@ export const QiblaScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t('qibla.qiblaDirection')}</Text>
-          <Text style={styles.headerSubtitle}>{t('qibla.faceTowardsKaaba')}</Text>
+          <Text style={styles.headerSubtitle}>
+            {t('qibla.faceTowardsKaaba')}
+          </Text>
           {storeLocation?.city && (
             <View style={styles.locationBadge}>
               <Ionicons name="location" size={14} color="#00A86B" />
@@ -329,20 +359,24 @@ export const QiblaScreen = () => {
           {/* Compass Background Circle */}
           <View style={styles.compassBackground}>
             {/* Degree Markers */}
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((degree) => (
-              <View
-                key={degree}
-                style={[
-                  styles.degreeMarker,
-                  { transform: [{ rotate: `${degree}deg` }] }
-                ]}
-              >
-                <View style={[
-                  styles.degreeTick,
-                  degree % 90 === 0 && styles.degreeTickMajor
-                ]} />
-              </View>
-            ))}
+            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
+              (degree) => (
+                <View
+                  key={degree}
+                  style={[
+                    styles.degreeMarker,
+                    { transform: [{ rotate: `${degree}deg` }] },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.degreeTick,
+                      degree % 90 === 0 && styles.degreeTickMajor,
+                    ]}
+                  />
+                </View>
+              )
+            )}
 
             {/* Rotating Seccade Container */}
             <Animated.View
@@ -351,9 +385,9 @@ export const QiblaScreen = () => {
                 {
                   transform: [
                     { rotate: interpolatedRotation },
-                    { scale: isAligned ? pulseAnim : 1 }
-                  ]
-                }
+                    { scale: isAligned ? pulseAnim : 1 },
+                  ],
+                },
               ]}
             >
               <Image
@@ -369,19 +403,27 @@ export const QiblaScreen = () => {
           </View>
 
           {/* Status Badge */}
-          <View style={[
-            styles.statusBadge,
-            isAligned ? styles.statusBadgeAligned : styles.statusBadgeNotAligned
-          ]}>
-            <Ionicons 
-              name={isAligned ? "checkmark-circle" : "sync-outline"} 
-              size={24} 
-              color={isAligned ? "#00A86B" : "#DC3545"} 
+          <View
+            style={[
+              styles.statusBadge,
+              isAligned
+                ? styles.statusBadgeAligned
+                : styles.statusBadgeNotAligned,
+            ]}
+          >
+            <Ionicons
+              name={isAligned ? 'checkmark-circle' : 'sync-outline'}
+              size={24}
+              color={isAligned ? '#00A86B' : '#DC3545'}
             />
-            <Text style={[
-              styles.statusText,
-              isAligned ? styles.statusTextAligned : styles.statusTextNotAligned
-            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                isAligned
+                  ? styles.statusTextAligned
+                  : styles.statusTextNotAligned,
+              ]}
+            >
               {isAligned ? t('qibla.aligned') : t('qibla.rotateDevice')}
             </Text>
           </View>
@@ -422,7 +464,7 @@ export const QiblaScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'transparent',
   },
   content: {
     flex: 1,

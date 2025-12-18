@@ -1,5 +1,6 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/auth/RegisterScreen.jsx (WITH BACKGROUND & LOADING)
+// FILE: src/screens/auth/RegisterScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -11,14 +12,12 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
-  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -37,6 +36,7 @@ export const RegisterScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
 
+  // Use isLoading for button spinner only
   const { register, isLoading } = useAuthStore();
 
   const updateField = (field, value) => {
@@ -76,7 +76,7 @@ export const RegisterScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     const { confirmPassword, ...registerData } = formData;
-    
+
     const cleanData = {
       ...registerData,
       email: registerData.email.toLowerCase().trim(),
@@ -92,154 +92,160 @@ export const RegisterScreen = ({ navigation }) => {
     }
   };
 
-  // Show loading screen when registering
-  if (isLoading) {
-    return (
-      <IslamicLoadingScreen
-        message={t('auth.creatingAccount')}
-        submessage={t('auth.pleaseWait')}
-      />
-    );
-  }
-
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Card Container */}
-            <View style={styles.card}>
-              {/* Back Button */}
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-              >
-                <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-              </TouchableOpacity>
+          {/* Card Container */}
+          <View style={styles.card}>
+            {/* Back Button */}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              disabled={isLoading}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+            </TouchableOpacity>
 
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Ionicons name="person-add" size={50} color="#00A86B" />
-                </View>
-                <Text style={styles.title}>{t('auth.createAccount')}</Text>
-                <Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Ionicons name="person-add" size={50} color="#00A86B" />
               </View>
+              <Text style={styles.title}>{t('auth.createAccount')}</Text>
+              <Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
+            </View>
 
-              {/* Language Selection */}
-              <View style={styles.languageSection}>
-                <Text style={styles.languageLabel}>{t('auth.selectLanguage')}</Text>
-                <View style={styles.languageButtons}>
-                  {LANGUAGES.map((lang) => (
-                    <TouchableOpacity
-                      key={lang.code}
+            {/* Language Selection */}
+            <View style={styles.languageSection}>
+              <Text style={styles.languageLabel}>
+                {t('auth.selectLanguage')}
+              </Text>
+              <View style={styles.languageButtons}>
+                {LANGUAGES.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[
+                      styles.languageButton,
+                      formData.preferred_language === lang.code &&
+                        styles.languageButtonActive,
+                    ]}
+                    onPress={() =>
+                      !isLoading && handleLanguageSelect(lang.code)
+                    }
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.languageFlag}>{lang.flag}</Text>
+                    <Text
                       style={[
-                        styles.languageButton,
-                        formData.preferred_language === lang.code && styles.languageButtonActive,
+                        styles.languageName,
+                        formData.preferred_language === lang.code &&
+                          styles.languageNameActive,
                       ]}
-                      onPress={() => handleLanguageSelect(lang.code)}
                     >
-                      <Text style={styles.languageFlag}>{lang.flag}</Text>
-                      <Text
-                        style={[
-                          styles.languageName,
-                          formData.preferred_language === lang.code && styles.languageNameActive,
-                        ]}
-                      >
-                        {lang.name}
-                      </Text>
-                      {formData.preferred_language === lang.code && (
-                        <Ionicons name="checkmark-circle" size={20} color="#00A86B" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              {/* Form */}
-              <View style={styles.form}>
-                <Input
-                  label={t('auth.emailAddress')}
-                  value={formData.email}
-                  onChangeText={(text) => updateField('email', text)}
-                  placeholder={t('auth.emailPlaceholder')}
-                  keyboardType="email-address"
-                  leftIcon="mail-outline"
-                  error={errors.email}
-                />
-
-                <Input
-                  label={t('auth.fullNameOptional')}
-                  value={formData.full_name}
-                  onChangeText={(text) => updateField('full_name', text)}
-                  placeholder={t('auth.fullNamePlaceholder')}
-                  leftIcon="person-outline"
-                  autoCapitalize="words"
-                />
-
-                <Input
-                  label={t('auth.password')}
-                  value={formData.password}
-                  onChangeText={(text) => updateField('password', text)}
-                  placeholder={t('auth.passwordPlaceholder')}
-                  secureTextEntry
-                  leftIcon="lock-closed-outline"
-                  error={errors.password}
-                />
-
-                <Input
-                  label={t('auth.confirmPassword')}
-                  value={formData.confirmPassword}
-                  onChangeText={(text) => updateField('confirmPassword', text)}
-                  placeholder={t('auth.confirmPasswordPlaceholder')}
-                  secureTextEntry
-                  leftIcon="lock-closed-outline"
-                  error={errors.confirmPassword}
-                />
-
-                <Button
-                  title={t('auth.createAccount')}
-                  onPress={handleRegister}
-                  loading={isLoading}
-                  style={styles.registerButton}
-                />
-
-                <View style={styles.loginContainer}>
-                  <Text style={styles.loginText}>{t('auth.alreadyHaveAccount')} </Text>
-                  <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
+                      {lang.name}
+                    </Text>
+                    {formData.preferred_language === lang.code && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color="#00A86B"
+                      />
+                    )}
                   </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Footer Quote */}
-              <View style={styles.footerQuote}>
-                <Text style={styles.quoteText}>{t('quotes.prayer1')}</Text>
-                <Text style={styles.quoteReference}>{t('quotes.prayer1Ref')}</Text>
+                ))}
               </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ImageBackground>
+
+            {/* Form */}
+            <View style={styles.form}>
+              <Input
+                label={t('auth.emailAddress')}
+                value={formData.email}
+                onChangeText={(text) => updateField('email', text)}
+                placeholder={t('auth.emailPlaceholder')}
+                keyboardType="email-address"
+                leftIcon="mail-outline"
+                error={errors.email}
+                editable={!isLoading}
+              />
+
+              <Input
+                label={t('auth.fullNameOptional')}
+                value={formData.full_name}
+                onChangeText={(text) => updateField('full_name', text)}
+                placeholder={t('auth.fullNamePlaceholder')}
+                leftIcon="person-outline"
+                autoCapitalize="words"
+                editable={!isLoading}
+              />
+
+              <Input
+                label={t('auth.password')}
+                value={formData.password}
+                onChangeText={(text) => updateField('password', text)}
+                placeholder={t('auth.passwordPlaceholder')}
+                secureTextEntry
+                leftIcon="lock-closed-outline"
+                error={errors.password}
+                editable={!isLoading}
+              />
+
+              <Input
+                label={t('auth.confirmPassword')}
+                value={formData.confirmPassword}
+                onChangeText={(text) => updateField('confirmPassword', text)}
+                placeholder={t('auth.confirmPasswordPlaceholder')}
+                secureTextEntry
+                leftIcon="lock-closed-outline"
+                error={errors.confirmPassword}
+                editable={!isLoading}
+              />
+
+              {/* Create Account Button with Spinner */}
+              <Button
+                title={t('auth.createAccount')}
+                onPress={handleRegister}
+                loading={isLoading} // Uses internal ActivityIndicator
+                disabled={isLoading}
+                style={styles.registerButton}
+              />
+
+              <View style={styles.loginContainer}>
+                <Text style={styles.loginText}>
+                  {t('auth.alreadyHaveAccount')}{' '}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Login')}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Footer Quote */}
+            <View style={styles.footerQuote}>
+              <Text style={styles.quoteText}>{t('quotes.prayer1')}</Text>
+              <Text style={styles.quoteReference}>
+                {t('quotes.prayer1Ref')}
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',

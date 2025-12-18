@@ -4,11 +4,11 @@
 import Constants from 'expo-constants';
 
 // 💡 Dev ortamında hangi host kullanılacak?
-const DEV_API_HOST = 'http://localhost:8000';
+const DEV_API_HOST = 'http://192.168.1.128:8000';
 
 
 //const DEV_API_HOST = Constants.isDevice
-//  ? 'http://192.168.1.129:8000'   // GERÇEK TELEFON
+//  ? 'http://192.168.1.128:8000'   // GERÇEK TELEFON
 //  : 'http://localhost:8000';      // SİMÜLATÖR
 
 // -------------------------------------

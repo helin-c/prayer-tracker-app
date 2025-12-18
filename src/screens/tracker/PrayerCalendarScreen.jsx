@@ -1,5 +1,6 @@
+// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/PrayerCalendarScreen.jsx
+// FILE: src/screens/tracker/PrayerCalendarScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,13 +18,113 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// STORE IMPORTS
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 import { useAuthStore } from '../../store/authStore';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
+
+// COMPONENT IMPORTS
+import {
+  SkeletonLoader,
+  SkeletonLine,
+  SkeletonCircle,
+} from '../../components/loading/SkeletonLoader';
 
 const { width } = Dimensions.get('window');
 const CIRCLE_SIZE = (width - 80) / 7;
 
+// ============================================================================
+// CUSTOM SKELETON FOR CALENDAR SCREEN
+// ============================================================================
+const CalendarSkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+
+  return (
+    <View style={{ padding: 20 }}>
+      {/* Month Selector Skeleton */}
+      <SkeletonLoader
+        width="100%"
+        height={72}
+        borderRadius={16}
+        style={{ ...skeletonStyle, marginBottom: 20 }}
+      />
+
+      {/* Calendar Grid Skeleton */}
+      <View
+        style={{
+          borderRadius: 20,
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          padding: 16,
+          marginBottom: 24,
+        }}
+      >
+        {/* Weekday Headers */}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+          }}
+        >
+          {[...Array(7)].map((_, i) => (
+            <SkeletonLine
+              key={i}
+              width={30}
+              height={12}
+              style={skeletonStyle}
+            />
+          ))}
+        </View>
+
+        {/* Days Grid (5 rows) */}
+        {[...Array(5)].map((row, rIndex) => (
+          <View
+            key={rIndex}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            {[...Array(7)].map((col, cIndex) => (
+              <SkeletonCircle
+                key={cIndex}
+                size={CIRCLE_SIZE - 4}
+                style={skeletonStyle}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
+
+      {/* Stats Skeleton (2 Rows of 2 Cards) */}
+      {[1, 2].map((row) => (
+        <View
+          key={row}
+          style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}
+        >
+          <SkeletonLoader
+            width="48%"
+            height={100}
+            borderRadius={16}
+            style={skeletonStyle}
+          />
+          <SkeletonLoader
+            width="48%"
+            height={100}
+            borderRadius={16}
+            style={skeletonStyle}
+          />
+        </View>
+      ))}
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const PrayerCalendarScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
@@ -34,6 +135,8 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
+
+  // Stats State
   const [totalStats, setTotalStats] = useState({
     totalDays: 0,
     completedDays: 0,
@@ -48,6 +151,8 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   }, [selectedMonth]);
 
   const loadMonthData = async () => {
+    // If it's not the first load, we don't want to show the full skeleton,
+    // but we let the grid handle the loading spinner.
     try {
       const firstDay = new Date(
         selectedMonth.getFullYear(),
@@ -197,6 +302,8 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   };
 
   const changeMonth = (direction) => {
+    if (isLoading) return; // Prevent spamming while loading
+
     const newMonth = new Date(selectedMonth);
     newMonth.setMonth(newMonth.getMonth() + direction);
 
@@ -291,7 +398,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              stroke="#00A86B"
+              stroke="#5BA895"
               strokeWidth={strokeWidth}
               fill="none"
               strokeDasharray={circumference}
@@ -307,7 +414,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
             {date.getDate()}
           </Text>
           {percentage === 100 && (
-            <Ionicons name="checkmark-circle" size={14} color="#00A86B" />
+            <Ionicons name="checkmark-circle" size={14} color="#5BA895" />
           )}
         </View>
         {isToday && <View style={styles.todayDot} />}
@@ -393,7 +500,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                           <Ionicons
                             name="checkmark"
                             size={20}
-                            color={isOnTime ? '#00A86B' : '#F39C12'}
+                            color={isOnTime ? '#5BA895' : '#F39C12'}
                           />
                         ) : (
                           <Ionicons name="close" size={20} color="#E74C3C" />
@@ -403,13 +510,12 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                         <Text style={styles.prayerName}>
                           {prayerTranslations[index]}
                         </Text>
-                        
                       </View>
                     </View>
                     <View style={styles.prayerStatusBadge}>
                       {isOnTime && (
                         <View style={[styles.statusBadge, styles.onTimeBadge]}>
-                          <Ionicons name="time" size={12} color="#00A86B" />
+                          <Ionicons name="time" size={12} color="#5BA895" />
                           <Text style={styles.onTimeText}>
                             {t('calendar.onTime')}
                           </Text>
@@ -447,7 +553,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 
             <View style={styles.modalSummary}>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={20} color="#00A86B" />
+                <Ionicons name="checkmark-circle" size={20} color="#5BA895" />
                 <Text style={styles.summaryText}>
                   {selectedDay.on_time_count || 0} {t('calendar.onTimePrayers')}
                 </Text>
@@ -467,10 +573,9 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 
   if (initialLoading) {
     return (
-      <IslamicLoadingScreen
-        message={t('calendar.loading')}
-        submessage={t('calendar.loadingSubtitle')}
-      />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <CalendarSkeleton />
+      </SafeAreaView>
     );
   }
 
@@ -485,32 +590,33 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   ];
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('calendar.title')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
-
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-          <View style={styles.monthSelector}>
+          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('calendar.title')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Month Selector */}
+        <View style={styles.monthSelectorWrapper}>
+          <LinearGradient
+            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            style={styles.monthSelector}
+          >
             <TouchableOpacity
-              style={styles.monthButton}
+              style={[styles.monthButton, isLoading && { opacity: 0.5 }]}
               onPress={() => changeMonth(-1)}
+              disabled={isLoading}
             >
               <Ionicons name="chevron-back" size={24} color="#1A1A1A" />
             </TouchableOpacity>
@@ -518,11 +624,12 @@ export const PrayerCalendarScreen = ({ navigation }) => {
             <Text style={styles.monthText}>{getMonthYearText()}</Text>
 
             <TouchableOpacity
-              style={styles.monthButton}
+              style={[styles.monthButton, isLoading && { opacity: 0.5 }]}
               onPress={() => changeMonth(1)}
               disabled={
-                selectedMonth.getMonth() === new Date().getMonth() &&
-                selectedMonth.getFullYear() === new Date().getFullYear()
+                isLoading ||
+                (selectedMonth.getMonth() === new Date().getMonth() &&
+                  selectedMonth.getFullYear() === new Date().getFullYear())
               }
             >
               <Ionicons
@@ -536,9 +643,15 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                 }
               />
             </TouchableOpacity>
-          </View>
+          </LinearGradient>
+        </View>
 
-          <View style={styles.calendarContainer}>
+        {/* Calendar Grid */}
+        <View style={styles.calendarContainerWrapper}>
+          <LinearGradient
+            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            style={styles.calendarContainer}
+          >
             <View style={styles.weekDayHeader}>
               {weekDayLabels.map((label, index) => (
                 <Text key={index} style={styles.weekDayLabel}>
@@ -549,7 +662,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 
             {isLoading ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#00A86B" />
+                <ActivityIndicator size="large" color="#5BA895" />
               </View>
             ) : (
               calendarData.map((week, weekIndex) => (
@@ -560,35 +673,79 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                 </View>
               ))
             )}
-          </View>
+          </LinearGradient>
+        </View>
 
-          <View style={styles.statsSection}>
-            <View style={styles.statRow}>
-              <View style={styles.statCard}>
+        {/* Quick Stats from Calendar */}
+        <View style={styles.quickStatsSection}>
+          <View style={styles.statRow}>
+            <View style={styles.statCardWrapper}>
+              <LinearGradient
+                colors={[
+                  'rgba(255, 255, 255, 0.95)',
+                  'rgba(255, 255, 255, 0.95)',
+                ]}
+                style={styles.statCard}
+              >
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="flame" size={24} color="#F39C12" />
+                  <LinearGradient
+                    colors={['#FF8C42', '#FF6B35']}
+                    style={styles.statIconGradient}
+                  >
+                    <Ionicons name="flame" size={24} color="#FFFFFF" />
+                  </LinearGradient>
                 </View>
                 <Text style={styles.statValue}>{totalStats.currentStreak}</Text>
                 <Text style={styles.statLabel}>
                   {t('calendar.currentStreak')}
                 </Text>
-              </View>
+              </LinearGradient>
+            </View>
 
-              <View style={styles.statCard}>
+            <View style={styles.statCardWrapper}>
+              <LinearGradient
+                colors={[
+                  'rgba(255, 255, 255, 0.95)',
+                  'rgba(255, 255, 255, 0.95)',
+                ]}
+                style={styles.statCard}
+              >
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="trophy" size={24} color="#00A86B" />
+                  <LinearGradient
+                    colors={['#5BA895', '#4A9B87']}
+                    style={styles.statIconGradient}
+                  >
+                    <Ionicons name="trophy" size={24} color="#FFFFFF" />
+                  </LinearGradient>
                 </View>
                 <Text style={styles.statValue}>{totalStats.longestStreak}</Text>
                 <Text style={styles.statLabel}>
                   {t('calendar.longestStreak')}
                 </Text>
-              </View>
+              </LinearGradient>
             </View>
+          </View>
 
-            <View style={styles.statRow}>
-              <View style={styles.statCard}>
+          <View style={styles.statRow}>
+            <View style={styles.statCardWrapper}>
+              <LinearGradient
+                colors={[
+                  'rgba(255, 255, 255, 0.95)',
+                  'rgba(255, 255, 255, 0.95)',
+                ]}
+                style={styles.statCard}
+              >
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="checkmark-circle" size={24} color="#00A86B" />
+                  <LinearGradient
+                    colors={['#5BA895', '#4A9B87']}
+                    style={styles.statIconGradient}
+                  >
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={24}
+                      color="#FFFFFF"
+                    />
+                  </LinearGradient>
                 </View>
                 <Text style={styles.statValue}>
                   {totalStats.completedDays}/{totalStats.totalDays}
@@ -596,11 +753,24 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                 <Text style={styles.statLabel}>
                   {t('calendar.perfectDays')}
                 </Text>
-              </View>
+              </LinearGradient>
+            </View>
 
-              <View style={styles.statCard}>
+            <View style={styles.statCardWrapper}>
+              <LinearGradient
+                colors={[
+                  'rgba(255, 255, 255, 0.95)',
+                  'rgba(255, 255, 255, 0.95)',
+                ]}
+                style={styles.statCard}
+              >
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="time" size={24} color="#00A86B" />
+                  <LinearGradient
+                    colors={['#5BA895', '#4A9B87']}
+                    style={styles.statIconGradient}
+                  >
+                    <Ionicons name="time" size={24} color="#FFFFFF" />
+                  </LinearGradient>
                 </View>
                 <Text style={styles.statValue}>
                   {totalStats.totalPrayers > 0
@@ -612,19 +782,18 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                   %
                 </Text>
                 <Text style={styles.statLabel}>{t('calendar.onTimeRate')}</Text>
-              </View>
+              </LinearGradient>
             </View>
           </View>
-        </ScrollView>
+        </View>
+      </ScrollView>
 
-        <DayDetailModal />
-      </SafeAreaView>
-    </ImageBackground>
+      <DayDetailModal />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: { flex: 1 },
   container: { flex: 1, backgroundColor: 'transparent' },
   header: {
     flexDirection: 'row',
@@ -632,7 +801,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomColor: '#F0F0F0',
   },
   backButton: {
     width: 40,
@@ -642,48 +810,24 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1A1A1A' },
   scrollView: { flex: 1 },
-  scrollContent: { padding: 20 },
-  statsSection: { marginBottom: 24 },
-  statRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  scrollContent: { padding: 20, paddingBottom: 40 },
+
+  // Month Selector with Gradient
+  monthSelectorWrapper: {
     borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
+    marginBottom: 20,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
   },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F8F9FA',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 4,
-  },
-  statLabel: { fontSize: 12, color: '#666', textAlign: 'center' },
   monthSelector: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   monthButton: {
     width: 40,
@@ -692,29 +836,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   monthText: { fontSize: 20, fontWeight: 'bold', color: '#1A1A1A' },
-  calendarContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+
+  // Calendar with Gradient
+  calendarContainerWrapper: {
     borderRadius: 20,
-    padding: 16,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+    minHeight: 300, // Ensure height for spinner
+  },
+  calendarContainer: {
+    padding: 16,
+    flex: 1,
   },
   weekDayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 16,
     paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(91, 168, 149, 0.2)',
   },
   weekDayLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '700',
+    color: '#1A1A1A',
     width: CIRCLE_SIZE,
     textAlign: 'center',
   },
@@ -734,25 +884,78 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayNumber: { fontSize: 14, fontWeight: '600', color: '#1A1A1A' },
-  todayNumber: { color: '#00A86B', fontWeight: 'bold' },
+  todayNumber: { color: '#5BA895', fontWeight: 'bold' },
   todayDot: {
     position: 'absolute',
     bottom: 4,
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#00A86B',
+    backgroundColor: '#5BA895',
   },
   futureDayCircle: {
     width: '80%',
     height: '80%',
     borderRadius: 100,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'rgba(91, 168, 149, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  futureDayText: { fontSize: 12, color: '#CCC' },
-  loadingContainer: { padding: 40, alignItems: 'center' },
+  futureDayText: { fontSize: 12, color: '#CCC', fontWeight: '600' },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+
+  // Quick Stats Section
+  quickStatsSection: { marginBottom: 24 },
+  statRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+  statCardWrapper: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  statCard: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  statIconContainer: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 8,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  statIconGradient: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#1A1A1A',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+
+  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -782,7 +985,7 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 4,
   },
-  modalCompletion: { fontSize: 14, color: '#666' },
+  modalCompletion: { fontSize: 14, color: '#666', fontWeight: '600' },
   closeButton: {
     width: 40,
     height: 40,
@@ -803,7 +1006,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'rgba(91, 168, 149, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -817,7 +1020,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 2,
   },
-  prayerTime: { fontSize: 13, color: '#666' },
   prayerStatusBadge: { marginLeft: 8 },
   statusBadge: {
     flexDirection: 'row',
@@ -828,7 +1030,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   onTimeBadge: { backgroundColor: '#E8F5E9' },
-  onTimeText: { fontSize: 11, fontWeight: '600', color: '#00A86B' },
+  onTimeText: { fontSize: 11, fontWeight: '600', color: '#5BA895' },
   lateBadge: { backgroundColor: '#FFF3E0' },
   lateText: { fontSize: 11, fontWeight: '600', color: '#F39C12' },
   missedBadge: { backgroundColor: '#FFEBEE' },
@@ -843,5 +1045,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   summaryItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  summaryText: { fontSize: 14, color: '#666', fontWeight: '500' },
+  summaryText: { fontSize: 14, color: '#666', fontWeight: '600' },
 });

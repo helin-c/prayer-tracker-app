@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/quotes/DailyQuoteCard.jsx (ENHANCED WITH SOCIAL SHARING)
+// FILE: src/components/quotes/DailyQuoteCard.jsx (WITH PROPER IMAGE SHARING)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -11,6 +11,7 @@ import {
   Alert,
   Platform,
   ImageBackground,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -133,80 +134,105 @@ export const DailyQuoteCard = () => {
 
   return (
     <View style={styles.container}>
+      {/* Shareable Image Content - Only this part gets captured */}
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
-          style={styles.cardGradient}
-        >
-          {/* Decorative Islamic Pattern Overlay */}
-          <View style={styles.patternOverlay}>
-            <View style={styles.decorativeCircle1} />
-            <View style={styles.decorativeCircle2} />
-            <View style={styles.decorativeCircle3} />
-          </View>
-
-          {/* Quote Icon */}
-          <View style={styles.quoteIconContainer}>
+        <View style={styles.shareableContent}>
+          <ImageBackground
+            source={require('../../assets/images/illustrations/background4.jpeg')}
+            style={styles.backgroundImage}
+            imageStyle={styles.backgroundImageStyle}
+            resizeMode="cover"
+          >
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.25)', 'rgba(255, 255, 255, 0.15)']}
-              style={styles.quoteIconGradient}
+              colors={['rgba(91, 168, 149, 0.92)', 'rgba(74, 155, 135, 0.88)']}
+              style={styles.shareableGradient}
             >
-              <Ionicons name="chatbubble-ellipses" size={28} color="#FFFFFF" />
+              {/* Decorative Pattern Overlay */}
+              <View style={styles.patternOverlay}>
+                <View style={styles.decorativeCircle1} />
+                <View style={styles.decorativeCircle2} />
+                <View style={styles.decorativeCircle3} />
+              </View>
+
+              {/* Quote Text */}
+              <View style={styles.quoteContentArea}>
+                <Text style={styles.quoteText}>"{dailyQuote.text}"</Text>
+
+                {/* Author & Source */}
+                <View style={styles.authorContainer}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.authorText}>{dailyQuote.author}</Text>
+                  <Text style={styles.sourceText}>{dailyQuote.source}</Text>
+                </View>
+              </View>
+
+              {/* App Branding - Bottom Left */}
+              <View style={styles.brandingContainer}>
+                <View style={styles.brandingContent}>
+                  <View style={styles.logoContainer}>
+                    <View style={styles.logoCircle}>
+                      <Image
+                        source={require('../../assets/images/illustrations/icon.png')}
+                        style={styles.logoImage}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.appNameContainer}>
+                    <Text style={styles.appName}>Salah Tracker</Text>
+                    <Text style={styles.appTagline}>Track Your Journey</Text>
+                  </View>
+                </View>
+              </View>
             </LinearGradient>
-          </View>
+          </ImageBackground>
+        </View>
+      </ViewShot>
 
-          {/* Quote Text */}
-          <Text style={styles.quoteText}>"{dailyQuote.text}"</Text>
-
-          {/* Author & Source */}
-          <View style={styles.authorContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.authorText}>{dailyQuote.author}</Text>
-            <Text style={styles.sourceText}>{dailyQuote.source}</Text>
-          </View>
-
-          {/* Share Actions */}
-          <View style={styles.shareActions}>
-            <TouchableOpacity
-              style={styles.shareButton}
-              onPress={handleShare}
-              activeOpacity={0.8}
-              disabled={isSharing}
+      {/* Interactive Buttons - Outside ViewShot so they won't appear in shared image */}
+      <View style={styles.interactiveSection}>
+        <View style={styles.shareActions}>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={handleShare}
+            activeOpacity={0.8}
+            disabled={isSharing}
+          >
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              style={styles.shareButtonGradient}
             >
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.25)', 'rgba(255, 255, 255, 0.15)']}
-                style={styles.shareButtonGradient}
-              >
+              <View style={styles.shareButtonInner}>
                 <Ionicons
                   name={isSharing ? 'hourglass' : 'share-social'}
                   size={20}
-                  color="#FFFFFF"
+                  color="#5BA895"
                 />
                 <Text style={styles.shareButtonText}>
                   {t('quotes.shareText')}
                 </Text>
-              </LinearGradient>
-            </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.shareImageButton}
-              onPress={handleShareImage}
-              activeOpacity={0.8}
-              disabled={isSharing}
+          <TouchableOpacity
+            style={styles.shareImageButton}
+            onPress={handleShareImage}
+            activeOpacity={0.8}
+            disabled={isSharing}
+          >
+            <LinearGradient
+              colors={['#5BA895', '#4A9B87']}
+              style={styles.shareImageGradient}
             >
-              <LinearGradient
-                colors={['#6F9C8C', '#4F6F64']}
-                style={styles.shareImageGradient}
-              >
-                <Ionicons name="image" size={20} color="#FFFFFF" />
-                <Text style={styles.shareImageButtonText}>
-                  {t('quotes.shareImage')}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </ViewShot>
+              <Ionicons name="image" size={20} color="#FFFFFF" />
+              <Text style={styles.shareImageButtonText}>
+                {t('quotes.shareImage')}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };
@@ -215,18 +241,31 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
-  cardGradient: {
+  
+  // ============================================================================
+  // SHAREABLE CONTENT (Gets captured in image)
+  // ============================================================================
+  shareableContent: {
     borderRadius: 28,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: '#4F6F64',
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 20,
     elevation: 10,
-    overflow: 'hidden',
+  },
+  backgroundImage: {
+    width: '100%',
+  },
+  backgroundImageStyle: {
+    borderRadius: 28,
+  },
+  shareableGradient: {
+    padding: 24,
+    paddingBottom: 28,
     position: 'relative',
+    minHeight: 320,
+    justifyContent: 'space-between',
   },
   patternOverlay: {
     position: 'absolute',
@@ -241,7 +280,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     top: -50,
     right: -30,
   },
@@ -250,7 +289,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     bottom: -20,
     left: -20,
   },
@@ -259,92 +298,167 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    top: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    top: '40%',
     right: 20,
   },
-  quoteIconContainer: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-  },
-  quoteIconGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
+  quoteContentArea: {
+    flex: 1,
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 20,
   },
   quoteText: {
-    fontSize: 18,
-    lineHeight: 28,
+    fontSize: 19,
+    lineHeight: 30,
     fontWeight: '600',
     color: '#FFFFFF',
-    textAlign: 'left',
+    textAlign: 'center',
     marginBottom: 24,
     letterSpacing: 0.3,
     fontStyle: 'italic',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    paddingHorizontal: 8,
   },
   authorContainer: {
-    marginBottom: 20,
+    alignItems: 'center',
   },
   dividerLine: {
     width: 60,
     height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 1.5,
     marginBottom: 12,
+    opacity: 0.9,
   },
   authorText: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: 4,
     letterSpacing: 0.5,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   sourceText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.9)',
     letterSpacing: 0.3,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  
+  // ============================================================================
+  // APP BRANDING (Appears in shared image - Bottom Left)
+  // ============================================================================
+  brandingContainer: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+  },
+  brandingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+  },
+  logoContainer: {
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  logoCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  appNameContainer: {
+    alignItems: 'flex-start',
+  },
+  appName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  appTagline: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+    letterSpacing: 0.3,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  
+  // ============================================================================
+  // INTERACTIVE SECTION (NOT in shared image)
+  // ============================================================================
+  interactiveSection: {
+    marginTop: 16,
   },
   shareActions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 8,
   },
   shareButton: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   shareButtonGradient: {
+    borderRadius: 16,
+  },
+  shareButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 20,
     gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 16,
   },
   shareButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#5BA895',
     letterSpacing: 0.3,
   },
   shareImageButton: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#4F6F64',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   shareImageGradient: {
     flexDirection: 'row',

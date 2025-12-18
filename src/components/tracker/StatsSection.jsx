@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/tracker/StatsSection.jsx (i18n INTEGRATED)
+// FILE: src/components/tracker/StatsSection.jsx (WITH GRADIENTS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
 
 export const StatsSection = () => {
@@ -32,17 +33,25 @@ export const StatsSection = () => {
     setSelectedPeriod(period);
   };
 
-  const StatCard = ({ icon, label, value, color = '#00A86B', suffix = '' }) => (
-    <View style={styles.statCard}>
-      <View style={styles.statCardInner}>
-        <View style={[styles.statIcon, { backgroundColor: `${color}15` }]}>
-          <Ionicons name={icon} size={24} color={color} />
+  const StatCard = ({ icon, label, value, color = '#5BA895', suffix = '' }) => (
+    <View style={styles.statCardWrapper}>
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+        style={styles.statCard}
+      >
+        <View style={styles.statIconContainer}>
+          <LinearGradient
+            colors={[color, color]}
+            style={styles.statIconGradient}
+          >
+            <Ionicons name={icon} size={24} color="#FFFFFF" />
+          </LinearGradient>
         </View>
         <Text style={styles.statValue}>
           {value !== undefined && value !== null ? value : 0}{suffix}
         </Text>
         <Text style={styles.statLabel}>{label}</Text>
-      </View>
+      </LinearGradient>
     </View>
   );
 
@@ -79,7 +88,7 @@ export const StatsSection = () => {
   if (isLoading && !periodStats) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00A86B" />
+        <ActivityIndicator size="large" color="#5BA895" />
         <Text style={styles.loadingText}>{t('prayerTracker.stats.loading')}</Text>
       </View>
     );
@@ -91,27 +100,38 @@ export const StatsSection = () => {
         <Text style={styles.title}>{t('prayerTracker.statistics')}</Text>
         
         {/* Period Selector */}
-        <View style={styles.periodSelector}>
-          {PERIODS.map((period) => (
-            <TouchableOpacity
-              key={period.key}
-              style={[
-                styles.periodButton,
-                selectedPeriod === period.key && styles.periodButtonActive,
-              ]}
-              onPress={() => handlePeriodChange(period.key)}
-              activeOpacity={0.7}
-            >
-              <Text
+        <View style={styles.periodSelectorWrapper}>
+          <LinearGradient
+            colors={['rgba(240, 255, 244, 0.5)', 'rgba(240, 255, 244, 0.4)']}
+            style={styles.periodSelector}
+          >
+            {PERIODS.map((period) => (
+              <TouchableOpacity
+                key={period.key}
                 style={[
-                  styles.periodButtonText,
-                  selectedPeriod === period.key && styles.periodButtonTextActive,
+                  styles.periodButton,
+                  selectedPeriod === period.key && styles.periodButtonActive,
                 ]}
+                onPress={() => handlePeriodChange(period.key)}
+                activeOpacity={0.7}
               >
-                {period.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                {selectedPeriod === period.key ? (
+                  <LinearGradient
+                    colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                    style={styles.periodButtonGradient}
+                  >
+                    <Text style={styles.periodButtonTextActive}>
+                      {period.label}
+                    </Text>
+                  </LinearGradient>
+                ) : (
+                  <Text style={styles.periodButtonText}>
+                    {period.label}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </LinearGradient>
         </View>
       </View>
 
@@ -124,14 +144,14 @@ export const StatsSection = () => {
               label={t('prayerTracker.stats.completionRate')}
               value={periodStats.completion_rate}
               suffix="%"
-              color="#00A86B"
+              color="#5BA895"
             />
             <StatCard
               icon="flame"
               label={t('prayerTracker.stats.currentStreak')}
               value={periodStats.current_streak}
               suffix={` ${t('prayerTracker.stats.days')}`}
-              color="#FF6B35"
+              color="#FF8C42"
             />
             <StatCard
               icon="time"
@@ -149,47 +169,52 @@ export const StatsSection = () => {
           </View>
 
           {/* Summary Card */}
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>
-                {t('prayerTracker.stats.totalPrayers')}
-              </Text>
-              <Text style={styles.summaryValue}>{periodStats.total_prayers}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>
-                {t('prayerTracker.stats.completed')}
-              </Text>
-              <Text style={[styles.summaryValue, { color: '#00A86B' }]}>
-                {periodStats.completed_prayers}
-              </Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>
-                {t('prayerTracker.stats.missed')}
-              </Text>
-              <Text style={[styles.summaryValue, { color: '#DC3545' }]}>
-                {periodStats.missed_prayers}
-              </Text>
-            </View>
-            
-            {periodStats.most_consistent_prayer && (
-              <>
-                <View style={styles.summaryDivider} />
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>
-                    {t('prayerTracker.stats.mostConsistent')}
-                  </Text>
-                  <Text style={[styles.summaryValue, { color: '#F39C12' }]}>
-                    {getPrayerName(periodStats.most_consistent_prayer)}
-                  </Text>
-                </View>
-              </>
-            )}
+          <View style={styles.summaryCardWrapper}>
+            <LinearGradient
+              colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+              style={styles.summaryCard}
+            >
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>
+                  {t('prayerTracker.stats.totalPrayers')}
+                </Text>
+                <Text style={styles.summaryValue}>{periodStats.total_prayers}</Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>
+                  {t('prayerTracker.stats.completed')}
+                </Text>
+                <Text style={[styles.summaryValue, { color: '#5BA895' }]}>
+                  {periodStats.completed_prayers}
+                </Text>
+              </View>
+              <View style={styles.summaryDivider} />
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>
+                  {t('prayerTracker.stats.missed')}
+                </Text>
+                <Text style={[styles.summaryValue, { color: '#DC3545' }]}>
+                  {periodStats.missed_prayers}
+                </Text>
+              </View>
+              
+              {periodStats.most_consistent_prayer && (
+                <>
+                  <View style={styles.summaryDivider} />
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>
+                      {t('prayerTracker.stats.mostConsistent')}
+                    </Text>
+                    <Text style={[styles.summaryValue, { color: '#F39C12' }]}>
+                      {getPrayerName(periodStats.most_consistent_prayer)}
+                    </Text>
+                  </View>
+                </>
+              )}
+            </LinearGradient>
           </View>
 
           {/* Period Info */}
@@ -198,14 +223,19 @@ export const StatsSection = () => {
           </Text>
         </>
       ) : (
-        <View style={styles.emptyState}>
-          <Ionicons name="stats-chart" size={64} color="#CCC" />
-          <Text style={styles.emptyStateText}>
-            {t('prayerTracker.stats.noStats')}
-          </Text>
-          <Text style={styles.emptyStateSubtext}>
-            {t('prayerTracker.stats.startTracking')}
-          </Text>
+        <View style={styles.emptyStateWrapper}>
+          <LinearGradient
+            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            style={styles.emptyState}
+          >
+            <Ionicons name="stats-chart" size={64} color="#5BA895" />
+            <Text style={styles.emptyStateText}>
+              {t('prayerTracker.stats.noStats')}
+            </Text>
+            <Text style={styles.emptyStateSubtext}>
+              {t('prayerTracker.stats.startTracking')}
+            </Text>
+          </LinearGradient>
         </View>
       )}
     </View>
@@ -225,10 +255,17 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 16,
   },
+  periodSelectorWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   periodSelector: {
     flexDirection: 'row',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 12,
     padding: 4,
   },
   periodButton: {
@@ -239,20 +276,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   periodButtonActive: {
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
+    overflow: 'hidden',
+  },
+  periodButtonGradient: {
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
   periodButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#1A1A1A',
   },
   periodButtonTextActive: {
-    color: '#00A86B',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#5BA895',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -260,28 +306,35 @@ const styles = StyleSheet.create({
     marginHorizontal: -6,
     marginBottom: 16,
   },
-  statCard: {
+  statCardWrapper: {
     width: '50%',
     padding: 6,
   },
-  statCardInner: {
-    backgroundColor: '#FFF',
+  statCard: {
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
   },
-  statIcon: {
+  statIconContainer: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 8,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  statIconGradient: {
     width: 48,
     height: 48,
-    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   statValue: {
     fontSize: 24,
@@ -291,19 +344,22 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#1A1A1A',
     textAlign: 'center',
+    fontWeight: '600',
+  },
+  summaryCardWrapper: {
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   summaryCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
     padding: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -313,7 +369,8 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 15,
-    color: '#666',
+    color: '#1A1A1A',
+    fontWeight: '600',
   },
   summaryValue: {
     fontSize: 16,
@@ -321,14 +378,15 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
   },
   summaryDivider: {
-    height: 1,
-    backgroundColor: '#F0F0F0',
+    height: 2,
+    backgroundColor: 'rgba(91, 168, 149, 0.2)',
     marginVertical: 4,
   },
   periodInfo: {
     fontSize: 12,
-    color: '#999',
+    color: '#1A1A1A',
     textAlign: 'center',
+    fontWeight: '600',
   },
   loadingContainer: {
     padding: 40,
@@ -338,7 +396,17 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
+    color: '#1A1A1A',
+    fontWeight: '600',
+  },
+  emptyStateWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   emptyState: {
     padding: 40,
@@ -347,14 +415,15 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '700',
+    color: '#1A1A1A',
     marginTop: 16,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#1A1A1A',
     marginTop: 8,
     textAlign: 'center',
+    fontWeight: '600',
   },
 });

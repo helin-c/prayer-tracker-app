@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/guides/GuidesScreen.jsx (WITH LOADING)
+// FILE: src/screens/guides/GuidesScreen.jsx (PRODUCTION READY)
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -10,18 +10,89 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
-import { IslamicLoadingScreen } from '../../components/loading/IslamicLoadingScreen';
+
+// COMPONENT IMPORTS
+import {
+  SkeletonLoader,
+  SkeletonLine,
+  SkeletonCircle,
+} from '../../components/loading/SkeletonLoader';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 2;
 
+// ============================================================================
+// CUSTOM SKELETON FOR GUIDES SCREEN
+// ============================================================================
+const GuidesSkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+
+  return (
+    <View style={{ padding: 20 }}>
+      {/* Header Skeleton */}
+      <View style={{ marginBottom: 24 }}>
+        <SkeletonLine
+          width={180}
+          height={32}
+          style={{ ...skeletonStyle, marginBottom: 8 }}
+        />
+        <SkeletonLine width={240} height={16} style={skeletonStyle} />
+      </View>
+
+      {/* Featured Card Skeleton */}
+      <SkeletonLoader
+        width="100%"
+        height={160}
+        borderRadius={20}
+        style={{ ...skeletonStyle, marginBottom: 32 }}
+      />
+
+      {/* Section Title Skeleton */}
+      <SkeletonLine
+        width={120}
+        height={20}
+        style={{ ...skeletonStyle, marginBottom: 16 }}
+      />
+
+      {/* Grid Cards Skeleton */}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+        }}
+      >
+        {[1, 2, 3, 4].map((i) => (
+          <SkeletonLoader
+            key={i}
+            width={CARD_WIDTH}
+            height={160}
+            borderRadius={16}
+            style={{ ...skeletonStyle, marginBottom: 16 }}
+          />
+        ))}
+      </View>
+
+      {/* Help Section Skeleton */}
+      <SkeletonLoader
+        width="100%"
+        height={180}
+        borderRadius={16}
+        style={{ ...skeletonStyle, marginTop: 16 }}
+      />
+    </View>
+  );
+};
+
+// ============================================================================
+// MAIN SCREEN
+// ============================================================================
 export const GuidesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { initialize } = useQuranStore();
@@ -152,22 +223,12 @@ export const GuidesScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  if (isLoading) {
-    return (
-      <IslamicLoadingScreen 
-        message={t('guides.loadingGuides')}
-        submessage={t('guides.preparingContent')}
-      />
-    );
-  }
-
   return (
-    <ImageBackground
-      source={require('../../assets/images/illustrations/background.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {isLoading ? (
+        // SKELETON LOADING STATE
+        <GuidesSkeleton />
+      ) : (
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -196,7 +257,9 @@ export const GuidesScreen = ({ navigation }) => {
                   <Ionicons name="book" size={48} color="#FFF" />
                 </View>
                 <View style={styles.featuredText}>
-                  <Text style={styles.featuredBadge}>{t('guides.popular')}</Text>
+                  <Text style={styles.featuredBadge}>
+                    {t('guides.popular')}
+                  </Text>
                   <Text style={styles.featuredTitle}>{t('quran.quran')}</Text>
                   <Text style={styles.featuredSubtitle}>
                     {t('guides.quranDescription')}
@@ -234,23 +297,20 @@ export const GuidesScreen = ({ navigation }) => {
                   })
                 }
               >
-                <Text style={styles.helpButtonText}>{t('guides.getStarted')}</Text>
+                <Text style={styles.helpButtonText}>
+                  {t('guides.getStarted')}
+                </Text>
                 <Ionicons name="arrow-forward" size={16} color="#00A86B" />
               </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
-      </SafeAreaView>
-    </ImageBackground>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',

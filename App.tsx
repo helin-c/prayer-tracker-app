@@ -1,63 +1,109 @@
 // ============================================================================
-// FILE: App.js (WITH i18n - FIXED)
+// FILE: App.tsx
 // ============================================================================
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet, LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { I18nextProvider } from 'react-i18next';
+import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+// Services & Config
 import i18n from './src/i18n';
+import { preloadImages } from './src/utils/imagePreloader';
+
+// Navigation
 import { AppNavigator } from './src/navigation/AppNavigator';
 
+// Stores
+import { useAuthStore } from './src/store/authStore';
+import { useSettingsStore } from './src/store/settingsStore';
+import { useTasbihStore } from './src/store/tasbihStore';
+
+// Gereksiz sarı uyarıları production'da gizle
+LogBox.ignoreLogs(['Require cycle:']); 
+
+// Splash Screen'in otomatik kapanmasını engelle (Biz manuel kapatacağız)
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 export default function App() {
-  const [i18nReady, setI18nReady] = useState(false);
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  // Store actions
+  const { initialize: initAuth } = useAuthStore();
+  const { initialize: initSettings } = useSettingsStore();
+  const { loadSessions: initTasbih } = useTasbihStore();
 
   useEffect(() => {
-    // Initialize i18n
-    const initI18n = async () => {
+    async function prepare() {
       try {
-        // Wait a bit for i18n to fully initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check if i18n is initialized
-        if (i18n.isInitialized) {
-          setI18nReady(true);
-        } else {
-          // If not, wait for the initialized event
-          i18n.on('initialized', () => {
-            setI18nReady(true);
-          });
-        }
-      } catch (error) {
-        console.error('i18n initialization error:', error);
-        // Set ready anyway to prevent blocking the app
-        setI18nReady(true);
-      }
-    };
+        // 1. Kritik İşlemleri Paralel Başlat
+        const initPromises = [
+          // Dil Yüklemesi
+          new Promise<void>((resolve) => {
+            if (i18n.isInitialized) {
+              resolve();
+            } else {
+              const onInit = () => {
+                i18n.off('initialized', onInit);
+                resolve();
+              };
+              i18n.on('initialized', onInit);
+            }
+          }),
+          // Resimlerin Önbelleğe Alınması
+          preloadImages(),
+          // Store'ların Başlatılması (Auth, Settings, Data)
+          initAuth(),
+          initSettings(),
+          initTasbih(),
+        ];
 
-    initI18n();
+        // Hepsini bekle (Maksimum 8 saniye timeout koyduk)
+        await Promise.race([
+          Promise.all(initPromises),
+          // 👇 DÜZELTİLEN SATIR BURASI: 'resolve' parametresi eklendi
+          new Promise((resolve) => setTimeout(() => resolve(null), 8000)) 
+        ]);
+
+      } catch (e) {
+        console.warn('App initialization warning:', e);
+        // Hata olsa bile uygulamayı açmaya çalış, kullanıcı takılı kalmasın
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
   }, []);
 
-  if (!i18nReady) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00A86B" />
-      </View>
-    );
+  // Root View Layout olduğunda Splash Screen'i gizle
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      // Animasyonlu bir geçiş istenirse burada yapılabilir ama native hide yeterlidir
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null; // Splash screen hala görünür durumda
   }
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <StatusBar style="auto" />
-      <AppNavigator />
-    </I18nextProvider>
+    <SafeAreaProvider onLayout={onLayoutRootView}>
+      <I18nextProvider i18n={i18n}>
+        <StatusBar style="auto" />
+        <View style={styles.container}>
+          <AppNavigator />
+        </View>
+      </I18nextProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: '#4A9B87', // Theme background color ile eşleşmeli
   },
 });
