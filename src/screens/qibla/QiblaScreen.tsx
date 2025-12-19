@@ -9,18 +9,20 @@ import {
   StyleSheet,
   Animated,
   Platform,
-  Alert,
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
   Linking,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import { usePrayerStore } from '../../store/prayerStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const { width, height } = Dimensions.get('window');
 const KAABA_LOCATION = { latitude: 21.4225, longitude: 39.8262 };
@@ -28,14 +30,11 @@ const COMPASS_SIZE = Math.min(width * 0.7, 320);
 const SECCADE_WIDTH = 160;
 const SECCADE_HEIGHT = 200;
 const ALIGNMENT_THRESHOLD = 5; // degrees
-const ASSET_OFFSET = 0; // Adjust if seccade image orientation is off
+const ASSET_OFFSET = 0; 
 
 export const QiblaScreen = () => {
   const { t } = useTranslation();
-
-  // 🎯 Use location from prayer store instead of fetching again
-  const { location: storeLocation, fetchWithCurrentLocation } =
-    usePrayerStore();
+  const { location: storeLocation, fetchWithCurrentLocation } = usePrayerStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,7 +68,7 @@ export const QiblaScreen = () => {
     return () => pulse.stop();
   }, []);
 
-  // Calculate Qibla direction using proper great circle formula
+  // Calculate Qibla direction
   const calculateQiblaDirection = (userLat, userLon) => {
     const φ1 = (userLat * Math.PI) / 180;
     const φ2 = (KAABA_LOCATION.latitude * Math.PI) / 180;
@@ -85,15 +84,13 @@ export const QiblaScreen = () => {
     return bearing;
   };
 
-  // 🚀 OPTIMIZED: Use store location first, only fetch if not available
+  // Initialize Location
   const initializeLocation = async () => {
     try {
       setLoading(true);
       setPermissionStatus('checking');
 
-      // ✅ Try to use location from store first
       if (storeLocation?.latitude && storeLocation?.longitude) {
-        console.log('✅ Using location from store:', storeLocation.city);
         setUserLocation({
           latitude: storeLocation.latitude,
           longitude: storeLocation.longitude,
@@ -109,30 +106,19 @@ export const QiblaScreen = () => {
         return;
       }
 
-      // ⚠️ No store location available, need to fetch
-      console.log('⚠️ No location in store, fetching...');
       setPermissionStatus('requesting');
-
       const result = await fetchWithCurrentLocation();
 
       if (!result.success) {
         throw new Error(result.error || t('qibla.errors.locationFailed'));
       }
 
-      // After fetching, try again with updated store location
-      // Note: fetchWithCurrentLocation updates the store, so we can use the result directly or check store again.
-      // Since store updates might be async in React state, better use result data if available,
-      // but fetchWithCurrentLocation returns success boolean usually. Let's assume store updates.
-      // Or we can rely on re-render if store changes. But to be safe, let's re-check store or fetch fresh.
-
-      // Re-fetching strictly for coordinates just in case
       let finalLat, finalLon;
 
       if (storeLocation?.latitude) {
         finalLat = storeLocation.latitude;
         finalLon = storeLocation.longitude;
       } else {
-        // Fallback if store update is slow
         const loc = await Location.getCurrentPositionAsync({});
         finalLat = loc.coords.latitude;
         finalLon = loc.coords.longitude;
@@ -154,9 +140,7 @@ export const QiblaScreen = () => {
       setLoading(false);
     } catch (err) {
       console.error('Location initialization error:', err);
-
       let errorMessage = t('qibla.errors.locationFailed');
-
       if (
         err.message?.includes('denied') ||
         err.message?.includes('permission')
@@ -166,19 +150,17 @@ export const QiblaScreen = () => {
       } else {
         setPermissionStatus('error');
       }
-
       setError(errorMessage);
       setLoading(false);
     }
   };
 
-  // Subscribe to device heading (tilt-compensated)
+  // Subscribe to Heading
   const subscribeHeading = async () => {
     try {
       const hasLocation = await Location.hasServicesEnabledAsync();
       if (!hasLocation) {
-        // Even if GPS off, heading might work, but let's warn
-        // Actually for compass only magnetometer is needed usually
+        // Warning logic optional
       }
 
       headingSub.current = await Location.watchHeadingAsync((headingData) => {
@@ -187,7 +169,6 @@ export const QiblaScreen = () => {
             ? headingData.trueHeading
             : headingData.magHeading;
 
-        // Apply low-pass filter for smooth rotation
         const alpha = 0.85;
         const smoothHeading =
           alpha * rawHeading + (1 - alpha) * lastValidReading.current;
@@ -195,14 +176,10 @@ export const QiblaScreen = () => {
 
         setCurrentHeading(smoothHeading);
 
-        // Calculate difference between Qibla direction and current device heading
         let diff = qiblaDirection - smoothHeading + ASSET_OFFSET;
-
-        // Normalize to -180 to 180 range for shortest rotation path
         while (diff > 180) diff -= 360;
         while (diff < -180) diff += 360;
 
-        // Animate the seccade rotation
         Animated.spring(compassRotation, {
           toValue: diff,
           useNativeDriver: true,
@@ -212,18 +189,14 @@ export const QiblaScreen = () => {
           restSpeedThreshold: 0.1,
         }).start();
       });
-
-      console.log('✅ Heading subscription started');
     } catch (err) {
       console.error('Heading error:', err);
       setError(t('qibla.errors.magnetometerUnavailable'));
     }
   };
 
-  // Initialize location on mount
   useEffect(() => {
     initializeLocation();
-
     return () => {
       if (headingSub.current) {
         headingSub.current.remove();
@@ -231,12 +204,10 @@ export const QiblaScreen = () => {
     };
   }, []);
 
-  // Subscribe to heading once location is available
   useEffect(() => {
     if (!loading && !error && userLocation && qiblaDirection > 0) {
       subscribeHeading();
     }
-
     return () => {
       if (headingSub.current) {
         headingSub.current.remove();
@@ -260,10 +231,19 @@ export const QiblaScreen = () => {
     }
   };
 
-  // Loading state (Inline - Not Blocking Entire Screen if possible, but for initial setup it blocks center)
+  const interpolatedRotation = compassRotation.interpolate({
+    inputRange: [-360, 360],
+    outputRange: ['-360deg', '360deg'],
+  });
+
+  const diff = qiblaDirection - currentHeading + ASSET_OFFSET;
+  const normalizedDiff = ((diff + 540) % 360) - 180;
+  const isAligned = Math.abs(normalizedDiff) < ALIGNMENT_THRESHOLD;
+
+  // Loading State
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenLayout>
         <View style={styles.centerContent}>
           <View style={styles.loadingCircle}>
             <Ionicons name="compass-outline" size={48} color="#00A86B" />
@@ -282,14 +262,14 @@ export const QiblaScreen = () => {
                 : t('qibla.gettingCoordinates')}
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
-  // Error state
+  // Error State
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenLayout>
         <View style={styles.centerContent}>
           <View style={styles.errorCircle}>
             <Ionicons name="alert-circle-outline" size={64} color="#DC3545" />
@@ -321,22 +301,15 @@ export const QiblaScreen = () => {
             )}
           </View>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
-  const interpolatedRotation = compassRotation.interpolate({
-    inputRange: [-360, 360],
-    outputRange: ['-360deg', '360deg'],
-  });
-
-  // Calculate alignment using normalized difference
-  const diff = qiblaDirection - currentHeading + ASSET_OFFSET;
-  const normalizedDiff = ((diff + 540) % 360) - 180;
-  const isAligned = Math.abs(normalizedDiff) < ALIGNMENT_THRESHOLD;
-
+  // Main Render
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    // noPaddingBottom={true} replicates edges={['top']} behavior, allowing full height usage
+    <ScreenLayout noPaddingBottom={true}>
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
@@ -457,15 +430,12 @@ export const QiblaScreen = () => {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
   content: {
     flex: 1,
   },

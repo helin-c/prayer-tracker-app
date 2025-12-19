@@ -13,11 +13,14 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -93,7 +96,8 @@ export const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -213,7 +217,7 @@ export const RegisterScreen = ({ navigation }) => {
               <Button
                 title={t('auth.createAccount')}
                 onPress={handleRegister}
-                loading={isLoading} // Uses internal ActivityIndicator
+                loading={isLoading} 
                 disabled={isLoading}
                 style={styles.registerButton}
               />
@@ -241,21 +245,20 @@ export const RegisterScreen = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
+  
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     padding: 24,
+    // Removed transparent bg
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',

@@ -11,12 +11,15 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
-  ActivityIndicator, // Spinner için eklendi
+  ActivityIndicator, 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // STORE IMPORTS
 import { useAuthStore } from '../../store/authStore';
@@ -31,103 +34,37 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR PROFILE SCREEN
-// ============================================================================
-const ProfileSkeleton = () => {
+// ... [ProfileSkeleton remains exactly the same] ...
+const ProfileSkeleton = () => { 
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
-
   return (
     <View style={{ padding: 20 }}>
       {/* Header Skeleton */}
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: 24,
-        }}
-      >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
         <SkeletonLine width={120} height={32} style={skeletonStyle} />
         <SkeletonCircle size={40} style={skeletonStyle} />
       </View>
-
       {/* Profile Card Skeleton */}
-      <View
-        style={{
-          padding: 24,
-          alignItems: 'center',
-          borderRadius: 20,
-          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-          marginBottom: 20,
-        }}
-      >
-        <SkeletonCircle
-          size={100}
-          style={{ ...skeletonStyle, marginBottom: 16 }}
-        />
-        <SkeletonLine
-          width={180}
-          height={24}
-          style={{ ...skeletonStyle, marginBottom: 8 }}
-        />
-        <SkeletonLine
-          width={140}
-          height={16}
-          style={{ ...skeletonStyle, marginBottom: 20 }}
-        />
-
-        {/* Stats Row Skeleton */}
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            justifyContent: 'space-around',
-            marginBottom: 20,
-          }}
-        >
+      <View style={{ padding: 24, alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.3)', marginBottom: 20 }}>
+        <SkeletonCircle size={100} style={{ ...skeletonStyle, marginBottom: 16 }} />
+        <SkeletonLine width={180} height={24} style={{ ...skeletonStyle, marginBottom: 8 }} />
+        <SkeletonLine width={140} height={16} style={{ ...skeletonStyle, marginBottom: 20 }} />
+        <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 20 }}>
           {[1, 2, 3].map((i) => (
             <View key={i} style={{ alignItems: 'center' }}>
-              <SkeletonLine
-                width={30}
-                height={24}
-                style={{ ...skeletonStyle, marginBottom: 4 }}
-              />
+              <SkeletonLine width={30} height={24} style={{ ...skeletonStyle, marginBottom: 4 }} />
               <SkeletonLine width={50} height={12} style={skeletonStyle} />
             </View>
           ))}
         </View>
-
-        {/* Buttons Skeleton */}
         <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
-          <SkeletonLoader
-            width="48%"
-            height={44}
-            borderRadius={12}
-            style={skeletonStyle}
-          />
-          <SkeletonLoader
-            width="48%"
-            height={44}
-            borderRadius={12}
-            style={skeletonStyle}
-          />
+          <SkeletonLoader width="48%" height={44} borderRadius={12} style={skeletonStyle} />
+          <SkeletonLoader width="48%" height={44} borderRadius={12} style={skeletonStyle} />
         </View>
       </View>
-
-      {/* List Section Skeleton */}
-      <SkeletonLine
-        width={100}
-        height={20}
-        style={{ ...skeletonStyle, marginBottom: 12 }}
-      />
+      <SkeletonLine width={100} height={20} style={{ ...skeletonStyle, marginBottom: 12 }} />
       {[1, 2].map((i) => (
-        <SkeletonLoader
-          key={i}
-          width="100%"
-          height={80}
-          borderRadius={12}
-          style={{ ...skeletonStyle, marginBottom: 12 }}
-        />
+        <SkeletonLoader key={i} width="100%" height={80} borderRadius={12} style={{ ...skeletonStyle, marginBottom: 12 }} />
       ))}
     </View>
   );
@@ -151,7 +88,7 @@ export const ProfileScreen = ({ navigation }) => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false); // Logout spinner state
+  const [isLoggingOut, setIsLoggingOut] = useState(false); 
 
   useEffect(() => {
     loadData();
@@ -164,7 +101,6 @@ export const ProfileScreen = ({ navigation }) => {
         fetchPendingRequests(),
         fetchPeriodStats('week'),
       ]);
-      // Add small delay for smooth transition
       setTimeout(() => {
         setInitialLoading(false);
       }, 500);
@@ -229,9 +165,9 @@ export const ProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       {initialLoading ? (
-        // SKELETON LOADING STATE
         <ProfileSkeleton />
       ) : (
         <ScrollView
@@ -621,14 +557,16 @@ export const ProfileScreen = ({ navigation }) => {
 
           {/* Version */}
           <Text style={styles.versionText}>{t('profile.version')} 1.0.0</Text>
+          
+          <View style={{height: 20}} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
+  // Removed container since layout handles background
   scrollView: { flex: 1 },
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: {

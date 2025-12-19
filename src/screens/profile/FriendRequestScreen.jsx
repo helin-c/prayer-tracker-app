@@ -9,12 +9,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ActivityIndicator, // Spinner için eklendi
+  ActivityIndicator, 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // COMPONENT IMPORTS
 import {
@@ -23,9 +26,6 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR REQUEST SCREEN
-// ============================================================================
 const RequestSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
 
@@ -161,20 +161,17 @@ export const FriendRequestScreen = ({ navigation, route }) => {
       .slice(0, 2);
   };
 
-  // Eğer ilk yükleme ise (arkadaş sayısı vb. çekiliyorsa) ve istek verisi yoksa
-  // Ancak route.params.request genelde sync gelir. friendsCount async gelir.
-  // friendsCount gelene kadar butonları disabled yapabiliriz ya da skeleton gösterebiliriz.
-  // Burada isLoading friendsStore'dan geliyor, friendsCount fetch işlemi için.
   if (isLoading && !friendsCount) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenLayout>
         <RequestSkeleton />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -275,15 +272,12 @@ export const FriendRequestScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since Layout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',

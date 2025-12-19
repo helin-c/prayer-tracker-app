@@ -13,11 +13,14 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const LoginScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -63,7 +66,7 @@ export const LoginScreen = ({ navigation }) => {
     const result = await login(cleanData);
 
     if (result.success) {
-      // Success handled by auth store (navigation usually happens in AppNavigator based on user state)
+      // Success handled by auth store
     } else {
       Alert.alert(
         t('auth.errors.loginFailed'),
@@ -73,7 +76,9 @@ export const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    // ScreenLayout automatically handles the background image and status bar padding
+    <ScreenLayout>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -103,7 +108,7 @@ export const LoginScreen = ({ navigation }) => {
                 keyboardType="email-address"
                 leftIcon="mail-outline"
                 error={errors.email}
-                editable={!isLoading} // Disable input while loading
+                editable={!isLoading} 
               />
 
               <Input
@@ -114,7 +119,7 @@ export const LoginScreen = ({ navigation }) => {
                 secureTextEntry
                 leftIcon="lock-closed-outline"
                 error={errors.password}
-                editable={!isLoading} // Disable input while loading
+                editable={!isLoading} 
               />
 
               <TouchableOpacity
@@ -130,7 +135,7 @@ export const LoginScreen = ({ navigation }) => {
               <Button
                 title={t('auth.signIn')}
                 onPress={handleLogin}
-                loading={isLoading} // Uses internal ActivityIndicator
+                loading={isLoading} 
                 disabled={isLoading}
                 style={styles.loginButton}
               />
@@ -158,44 +163,40 @@ export const LoginScreen = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent', 
-  },
+  // Removed container logic since Layout handles it
   
   keyboardView: {
     flex: 1,
   },
 
-  // 2. Scroll İçeriği: Kartı ekranın ortasına hizalar
+  // Scroll Content: Centers the card vertically
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center', // Dikeyde ortala
+    justifyContent: 'center', 
   },
 
-  // 3. Login Kartı: Formun olduğu beyaz alan
+  // Login Card: Semi-transparent white to show background subtly
   card: {
-    // Hafif saydam beyaz arka plan (Arkadaki resim çok hafif hissedilir)
     backgroundColor: 'rgba(255, 255, 255, 0.92)', 
     borderRadius: 24,
     padding: 24,
     paddingTop: 32,
     
-    // Gölge Efektleri (Kartın havada durması için)
+    // Shadow Effects
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
-    elevation: 10, // Android için
+    elevation: 10, 
   },
 
-  // 4. Header Bölümü (Logo + Başlıklar)
+  // Header Section
   header: {
     alignItems: 'center',
     marginBottom: 32,
@@ -204,12 +205,11 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#F0FFF4', // Mint yeşilinin çok açığı
+    backgroundColor: '#F0FFF4', 
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
     
-    // Logo içine hafif gölge
     shadowColor: '#00A86B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '800', // Extra Bold
+    fontWeight: '800', 
     color: '#1A1A1A',
     marginBottom: 8,
     textAlign: 'center',
@@ -230,15 +230,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // 5. Form Alanı
+  // Form Section
   form: {
     width: '100%',
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginTop: -4, // Input'un altına biraz yaklaştır
+    marginTop: -4, 
     marginBottom: 24,
-    padding: 4, // Tıklama alanını genişlet
+    padding: 4, 
   },
   forgotPasswordText: {
     fontSize: 14,
@@ -247,16 +247,16 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginBottom: 24,
-    height: 56, // Sabit yükseklik (spinner dönünce zıplamasın diye)
+    height: 56, 
     borderRadius: 16,
-    shadowColor: '#00A86B', // Buton gölgesi (renkli)
+    shadowColor: '#00A86B', 
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
   },
 
-  // 6. Kayıt Ol Linki
+  // Register Link
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -273,13 +273,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // 7. Alt Kısımdaki Söz (Footer Quote)
+  // Footer Quote
   footerQuote: {
     marginTop: 40,
     alignItems: 'center',
     paddingHorizontal: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)', // Çok hafif ayırıcı çizgi
+    borderTopColor: 'rgba(0,0,0,0.05)', 
     paddingTop: 20,
   },
   quoteText: {

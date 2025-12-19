@@ -12,10 +12,13 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const AddFriendScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -72,7 +75,8 @@ export const AddFriendScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -163,22 +167,18 @@ export const AddFriendScreen = ({ navigation }) => {
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since Layout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomColor: '#F0F0F0',
   },
   backButton: {
     width: 40,

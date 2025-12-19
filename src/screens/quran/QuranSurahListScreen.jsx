@@ -12,11 +12,14 @@ import {
   TextInput,
   ImageBackground,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // COMPONENT IMPORTS
 import {
@@ -25,9 +28,6 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR QURAN LIST SCREEN
-// ============================================================================
 const QuranListSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
 
@@ -189,7 +189,8 @@ export const QuranSurahListScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -285,27 +286,19 @@ export const QuranSurahListScreen = ({ navigation }) => {
           />
         </>
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'transparent',
+    // Removed transparent bg
   },
   backButton: {
     width: 40,

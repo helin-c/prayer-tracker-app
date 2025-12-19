@@ -17,11 +17,15 @@ import {
   FlatList,
   Animated,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
+
 import { useAuthStore } from '../../store/authStore';
 import { usePrayerStore } from '../../store/prayerStore';
 import { useFriendsStore } from '../../store/friendsStore';
@@ -158,7 +162,6 @@ export const HomeScreen = ({ navigation }) => {
   const { friends, fetchFriends } = useFriendsStore();
 
   const [refreshing, setRefreshing] = useState(false);
-  // retryCount can still be used for logic, even if we don't show the old loading screen
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
@@ -302,7 +305,11 @@ export const HomeScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    // We pass noPaddingBottom={true} because the ScrollView has its own contentContainer padding
+    // to handle the TabBar space
+    <ScreenLayout noPaddingBottom={true}>
+      
       {isLoading && !prayerTimes ? (
         // SKELETON LOADING STATE
         <HomeSkeleton />
@@ -546,15 +553,12 @@ export const HomeScreen = ({ navigation }) => {
           <View style={styles.bottomSpacing} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container background since Layout handles it
   scrollView: {
     flex: 1,
   },

@@ -15,11 +15,14 @@ import {
   RefreshControl,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // STORE IMPORTS
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
@@ -27,7 +30,6 @@ import { useTasbihStore } from '../../store/tasbihStore';
 
 // COMPONENT IMPORTS
 import { StatsSection } from '../../components/tracker/StatsSection';
-// *** YENİ: Reusable Skeleton Import ***
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -45,9 +47,6 @@ export const PRAYER_ICONS = {
   Isha: 'moon',
 };
 
-// ============================================================================
-// CUSTOM SKELETON FOR TRACKER SCREEN
-// ============================================================================
 const TrackerSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
 
@@ -130,14 +129,14 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   const [initialLoading, setInitialLoading] = useState(true);
 
   // State for button spinner inside modal
-  const [processingAction, setProcessingAction] = useState(null); // 'ontime' | 'done' | 'missed' | null
+  const [processingAction, setProcessingAction] = useState(null); 
 
   const { loadSessions } = useTasbihStore();
 
   const {
     dayPrayers,
     weekPrayers,
-    isLoading, // This comes from store, used for subsequent updates
+    isLoading, 
     error,
     fetchDayPrayers,
     fetchWeekPrayers,
@@ -198,18 +197,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
 
   const formatDisplayDate = (date) => {
     const months = [
-      t('prayerTracker.months.jan'),
-      t('prayerTracker.months.feb'),
-      t('prayerTracker.months.mar'),
-      t('prayerTracker.months.apr'),
-      t('prayerTracker.months.may'),
-      t('prayerTracker.months.jun'),
-      t('prayerTracker.months.jul'),
-      t('prayerTracker.months.aug'),
-      t('prayerTracker.months.sep'),
-      t('prayerTracker.months.oct'),
-      t('prayerTracker.months.nov'),
-      t('prayerTracker.months.dec'),
+      t('prayerTracker.months.jan'), t('prayerTracker.months.feb'), t('prayerTracker.months.mar'),
+      t('prayerTracker.months.apr'), t('prayerTracker.months.may'), t('prayerTracker.months.jun'),
+      t('prayerTracker.months.jul'), t('prayerTracker.months.aug'), t('prayerTracker.months.sep'),
+      t('prayerTracker.months.oct'), t('prayerTracker.months.nov'), t('prayerTracker.months.dec'),
     ];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
@@ -224,11 +215,8 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     setModalVisible(true);
   };
 
-  // Improved Action Handler with Spinner State
   const handlePrayerAction = async (actionType) => {
     if (!selectedPrayer) return;
-
-    // Set loading state for specific button
     setProcessingAction(actionType);
 
     const completed = actionType !== 'missed';
@@ -245,13 +233,9 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       });
 
       setModalVisible(false);
-      // Wait a tiny bit for modal to close smoothly before refreshing data visual
       setTimeout(() => loadData(), 300);
     } catch (err) {
-      Alert.alert(
-        t('tasbih.alerts.error'),
-        'Failed to track prayer. Please try again.'
-      );
+      Alert.alert(t('tasbih.alerts.error'), 'Failed to track prayer. Please try again.');
     } finally {
       setProcessingAction(null);
     }
@@ -262,7 +246,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return dayPrayers.completion_percentage || 0;
   };
 
-  // ... (SVG Components: CircularProgress, WeekDayCircle - Kept same)
   const CircularProgress = ({ percentage, size = 120, strokeWidth = 12 }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
@@ -271,33 +254,16 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return (
       <View style={styles.circularProgress}>
         <Svg width={size} height={size}>
+          <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#E0E0E0" strokeWidth={strokeWidth} fill="none" />
           <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="#E0E0E0"
-            strokeWidth={strokeWidth}
-            fill="none"
-          />
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="#5BA895"
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
-            strokeLinecap="round"
-            rotation="-90"
-            origin={`${size / 2}, ${size / 2}`}
+            cx={size / 2} cy={size / 2} r={radius} stroke="#5BA895" strokeWidth={strokeWidth} fill="none"
+            strokeDasharray={circumference} strokeDashoffset={circumference - progress}
+            strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
           />
         </Svg>
         <View style={styles.circularProgressText}>
           <Text style={styles.percentageText}>{Math.round(percentage)}%</Text>
-          <Text style={styles.percentageLabel}>
-            {t('prayerTracker.complete')}
-          </Text>
+          <Text style={styles.percentageLabel}>{t('prayerTracker.complete')}</Text>
         </View>
       </View>
     );
@@ -313,55 +279,29 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     const isSelected = date.toDateString() === selectedDate.toDateString();
 
     const weekDayLabels = [
-      t('prayerTracker.weekDays.monday'),
-      t('prayerTracker.weekDays.tuesday'),
-      t('prayerTracker.weekDays.wednesday'),
-      t('prayerTracker.weekDays.thursday'),
-      t('prayerTracker.weekDays.friday'),
-      t('prayerTracker.weekDays.saturday'),
+      t('prayerTracker.weekDays.monday'), t('prayerTracker.weekDays.tuesday'),
+      t('prayerTracker.weekDays.wednesday'), t('prayerTracker.weekDays.thursday'),
+      t('prayerTracker.weekDays.friday'), t('prayerTracker.weekDays.saturday'),
       t('prayerTracker.weekDays.sunday'),
     ];
 
     return (
-      <TouchableOpacity
-        style={styles.weekDayContainer}
-        onPress={() => setSelectedDate(date)}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.weekDayContainer} onPress={() => setSelectedDate(date)} activeOpacity={0.7}>
         <Text style={[styles.weekDayName, today && styles.todayText]}>
           {weekDayLabels[date.getDay() === 0 ? 6 : date.getDay() - 1]}
         </Text>
         <View style={styles.weekDayCircle}>
           <Svg width={size} height={size}>
-            <Circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke="#E0E0E0"
-              strokeWidth={strokeWidth}
-              fill={isSelected ? '#5BA895' : '#FFF'}
-            />
+            <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#E0E0E0" strokeWidth={strokeWidth} fill={isSelected ? '#5BA895' : '#FFF'} />
             {percentage > 0 && (
               <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="#5BA895"
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - progress}
-                strokeLinecap="round"
-                rotation="-90"
-                origin={`${size / 2}, ${size / 2}`}
+                cx={size / 2} cy={size / 2} r={radius} stroke="#5BA895" strokeWidth={strokeWidth} fill="none"
+                strokeDasharray={circumference} strokeDashoffset={circumference - progress}
+                strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
               />
             )}
           </Svg>
-          <Text
-            style={[styles.weekDayDate, isSelected && styles.todayDateText]}
-          >
-            {date.getDate()}
-          </Text>
+          <Text style={[styles.weekDayDate, isSelected && styles.todayDateText]}>{date.getDate()}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -371,19 +311,19 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return t(`prayerTracker.prayers.${prayerName.toLowerCase()}`);
   };
 
-  // IF LOADING INITIALLY, SHOW SKELETON
+  // IF LOADING INITIALLY, SHOW SKELETON WITH BACKGROUND
   if (initialLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenLayout>
         <TrackerSkeleton />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
-  // IF ERROR
+  // IF ERROR, SHOW ERROR WITH BACKGROUND
   if (error && !dayPrayers) {
     return (
-      <SafeAreaView style={styles.container}>
+      <ScreenLayout>
         <View style={styles.errorContainer}>
           <LinearGradient
             colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
@@ -392,23 +332,19 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             <Ionicons name="alert-circle" size={64} color="#DC3545" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadData}>
-              <LinearGradient
-                colors={['#5BA895', '#4A9B87']}
-                style={styles.retryButtonGradient}
-              >
-                <Text style={styles.retryButtonText}>
-                  {t('prayerTracker.retry')}
-                </Text>
+              <LinearGradient colors={['#5BA895', '#4A9B87']} style={styles.retryButtonGradient}>
+                <Text style={styles.retryButtonText}>{t('prayerTracker.retry')}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </LinearGradient>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -433,10 +369,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <LinearGradient
-              colors={[
-                'rgba(255, 255, 255, 0.95)',
-                'rgba(255, 255, 255, 0.95)',
-              ]}
+              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
               style={styles.calendarButton}
             >
               <Ionicons name="calendar-outline" size={28} color="#5BA895" />
@@ -453,17 +386,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           >
             {weekDates.map((date, index) => {
               const dateStr = formatDate(date);
-              const dayData = weekPrayers?.days?.find(
-                (d) => d.date === dateStr
-              );
+              const dayData = weekPrayers?.days?.find((d) => d.date === dateStr);
               const percentage = dayData?.completion_percentage || 0;
-
               return (
-                <WeekDayCircle
-                  key={index}
-                  date={date}
-                  percentage={percentage}
-                />
+                <WeekDayCircle key={index} date={date} percentage={percentage} />
               );
             })}
           </ScrollView>
@@ -499,8 +425,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               : t('prayerTracker.prayers1')}
           </Text>
 
-          {/* If we are loading day data specifically but not initial load, maybe show spinner inside list? */}
-          {/* For now we stick to data presence check */}
           {dayPrayers?.prayers?.map((prayer, index) => (
             <TouchableOpacity
               key={index}
@@ -513,14 +437,8 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                   prayer.completed
                     ? ['rgba(240, 255, 244, 0.95)', 'rgba(240, 255, 244, 0.95)']
                     : prayer.id && !prayer.completed
-                      ? [
-                          'rgba(255, 235, 238, 0.95)',
-                          'rgba(255, 235, 238, 0.95)',
-                        ]
-                      : [
-                          'rgba(255, 255, 255, 0.95)',
-                          'rgba(255, 255, 255, 0.95)',
-                        ]
+                      ? ['rgba(255, 235, 238, 0.95)', 'rgba(255, 235, 238, 0.95)']
+                      : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']
                 }
                 style={styles.prayerCard}
               >
@@ -535,55 +453,33 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                     <Ionicons
                       name={PRAYER_ICONS[prayer.prayer_name]}
                       size={24}
-                      color={
-                        prayer.completed
-                          ? '#FFF'
-                          : prayer.id && !prayer.completed
-                            ? '#FFF'
-                            : '#5BA895'
-                      }
+                      color={prayer.completed || (prayer.id && !prayer.completed) ? '#FFF' : '#5BA895'}
                     />
                   </View>
                   <View>
-                    <Text style={styles.prayerName}>
-                      {getPrayerName(prayer.prayer_name)}
-                    </Text>
+                    <Text style={styles.prayerName}>{getPrayerName(prayer.prayer_name)}</Text>
                     {prayer.completed && prayer.on_time && (
-                      <Text style={styles.onTimeLabel}>
-                        {t('prayerTracker.status.onTime')}
-                      </Text>
+                      <Text style={styles.onTimeLabel}>{t('prayerTracker.status.onTime')}</Text>
                     )}
                     {prayer.completed && !prayer.on_time && (
-                      <Text style={styles.lateLabel}>
-                        {t('prayerTracker.status.late')}
-                      </Text>
+                      <Text style={styles.lateLabel}>{t('prayerTracker.status.late')}</Text>
                     )}
                     {prayer.id && !prayer.completed && (
-                      <Text style={styles.missedLabel}>
-                        {t('prayerTracker.status.missed')}
-                      </Text>
+                      <Text style={styles.missedLabel}>{t('prayerTracker.status.missed')}</Text>
                     )}
                   </View>
                 </View>
                 <View style={styles.prayerCardRight}>
                   {prayer.completed ? (
                     <View style={styles.completedBadge}>
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={28}
-                        color="#5BA895"
-                      />
+                      <Ionicons name="checkmark-circle" size={28} color="#5BA895" />
                     </View>
                   ) : prayer.id && !prayer.completed ? (
                     <View style={styles.missedBadge}>
                       <Ionicons name="close-circle" size={28} color="#DC3545" />
                     </View>
                   ) : (
-                    <Ionicons
-                      name="chevron-forward"
-                      size={24}
-                      color="#1A1A1A"
-                    />
+                    <Ionicons name="chevron-forward" size={24} color="#1A1A1A" />
                   )}
                 </View>
               </LinearGradient>
@@ -595,9 +491,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="leaf-outline" size={20} color="#5BA895" />
-            <Text style={styles.sectionTitle}>
-              {t('prayerTracker.afterPrayerRemembrance')}
-            </Text>
+            <Text style={styles.sectionTitle}>{t('prayerTracker.afterPrayerRemembrance')}</Text>
           </View>
 
           <TouchableOpacity
@@ -619,42 +513,25 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               </View>
 
               <View style={styles.tasbihContent}>
-                <Text style={styles.tasbihTitle}>
-                  {t('prayerTracker.digitalTasbih')}
-                </Text>
-                <Text style={styles.tasbihSubtitle}>
-                  {t('prayerTracker.countDhikr')}
-                </Text>
+                <Text style={styles.tasbihTitle}>{t('prayerTracker.digitalTasbih')}</Text>
+                <Text style={styles.tasbihSubtitle}>{t('prayerTracker.countDhikr')}</Text>
                 <View style={styles.tasbihBadges}>
                   <View style={styles.tasbihBadge}>
-                    <Ionicons
-                      name="bookmark-outline"
-                      size={14}
-                      color="#1A1A1A"
-                    />
-                    <Text style={styles.tasbihBadgeText}>
-                      {t('prayerTracker.saveProgress')}
-                    </Text>
+                    <Ionicons name="bookmark-outline" size={14} color="#1A1A1A" />
+                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.saveProgress')}</Text>
                   </View>
                   <View style={styles.tasbihBadge}>
-                    <Ionicons
-                      name="trending-up-outline"
-                      size={14}
-                      color="#1A1A1A"
-                    />
-                    <Text style={styles.tasbihBadgeText}>
-                      {t('prayerTracker.trackHistory')}
-                    </Text>
+                    <Ionicons name="trending-up-outline" size={14} color="#1A1A1A" />
+                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.trackHistory')}</Text>
                   </View>
                 </View>
               </View>
-
               <Ionicons name="chevron-forward" size={24} color="#5BA895" />
             </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {/* Statistics Section (Might have its own loading inside, or we rely on page skeleton) */}
+        {/* Statistics Section */}
         <StatsSection />
       </ScrollView>
 
@@ -671,86 +548,59 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               <Text style={styles.modalTitle}>
                 {selectedPrayer && getPrayerName(selectedPrayer.prayer_name)}
               </Text>
-              {/* Disable Close if processing */}
-              <TouchableOpacity
-                onPress={() => !processingAction && setModalVisible(false)}
-              >
-                <Ionicons
-                  name="close"
-                  size={28}
-                  color={processingAction ? '#CCC' : '#666'}
-                />
+              <TouchableOpacity onPress={() => !processingAction && setModalVisible(false)}>
+                <Ionicons name="close" size={28} color={processingAction ? '#CCC' : '#666'} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>
-              {t('prayerTracker.modal.markAs')}
-            </Text>
+            <Text style={styles.modalSubtitle}>{t('prayerTracker.modal.markAs')}</Text>
 
-            {/* ACTION: Done On Time */}
             <TouchableOpacity
               style={styles.modalButtonWrapper}
               onPress={() => handlePrayerAction('ontime')}
               disabled={processingAction !== null}
             >
-              <LinearGradient
-                colors={['#5BA895', '#4A9B87']}
-                style={styles.modalButton}
-              >
+              <LinearGradient colors={['#5BA895', '#4A9B87']} style={styles.modalButton}>
                 {processingAction === 'ontime' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="time" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>
-                      {t('prayerTracker.modal.doneOnTime')}
-                    </Text>
+                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneOnTime')}</Text>
                   </>
                 )}
               </LinearGradient>
             </TouchableOpacity>
 
-            {/* ACTION: Done Late */}
             <TouchableOpacity
               style={styles.modalButtonWrapper}
               onPress={() => handlePrayerAction('done')}
               disabled={processingAction !== null}
             >
-              <LinearGradient
-                colors={['#3498DB', '#2E86C1']}
-                style={styles.modalButton}
-              >
+              <LinearGradient colors={['#3498DB', '#2E86C1']} style={styles.modalButton}>
                 {processingAction === 'done' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>
-                      {t('prayerTracker.modal.doneLate')}
-                    </Text>
+                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneLate')}</Text>
                   </>
                 )}
               </LinearGradient>
             </TouchableOpacity>
 
-            {/* ACTION: Missed */}
             <TouchableOpacity
               style={styles.modalButtonWrapper}
               onPress={() => handlePrayerAction('missed')}
               disabled={processingAction !== null}
             >
-              <LinearGradient
-                colors={['#DC3545', '#C82333']}
-                style={styles.modalButton}
-              >
+              <LinearGradient colors={['#DC3545', '#C82333']} style={styles.modalButton}>
                 {processingAction === 'missed' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="close-circle" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>
-                      {t('prayerTracker.modal.missed')}
-                    </Text>
+                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.missed')}</Text>
                   </>
                 )}
               </LinearGradient>
@@ -758,15 +608,12 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
   scrollView: {
     flex: 1,
   },

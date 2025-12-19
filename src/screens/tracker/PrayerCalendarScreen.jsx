@@ -14,11 +14,14 @@ import {
   Dimensions,
   Modal,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // STORE IMPORTS
 import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
@@ -34,9 +37,6 @@ import {
 const { width } = Dimensions.get('window');
 const CIRCLE_SIZE = (width - 80) / 7;
 
-// ============================================================================
-// CUSTOM SKELETON FOR CALENDAR SCREEN
-// ============================================================================
 const CalendarSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
 
@@ -151,8 +151,6 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   }, [selectedMonth]);
 
   const loadMonthData = async () => {
-    // If it's not the first load, we don't want to show the full skeleton,
-    // but we let the grid handle the loading spinner.
     try {
       const firstDay = new Date(
         selectedMonth.getFullYear(),
@@ -302,7 +300,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   };
 
   const changeMonth = (direction) => {
-    if (isLoading) return; // Prevent spamming while loading
+    if (isLoading) return;
 
     const newMonth = new Date(selectedMonth);
     newMonth.setMonth(newMonth.getMonth() + direction);
@@ -319,32 +317,21 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 
   const getMonthYearText = () => {
     const months = [
-      t('prayerTracker.months.jan'),
-      t('prayerTracker.months.feb'),
-      t('prayerTracker.months.mar'),
-      t('prayerTracker.months.apr'),
-      t('prayerTracker.months.may'),
-      t('prayerTracker.months.jun'),
-      t('prayerTracker.months.jul'),
-      t('prayerTracker.months.aug'),
-      t('prayerTracker.months.sep'),
-      t('prayerTracker.months.oct'),
-      t('prayerTracker.months.nov'),
-      t('prayerTracker.months.dec'),
+      t('prayerTracker.months.jan'), t('prayerTracker.months.feb'), t('prayerTracker.months.mar'),
+      t('prayerTracker.months.apr'), t('prayerTracker.months.may'), t('prayerTracker.months.jun'),
+      t('prayerTracker.months.jul'), t('prayerTracker.months.aug'), t('prayerTracker.months.sep'),
+      t('prayerTracker.months.oct'), t('prayerTracker.months.nov'), t('prayerTracker.months.dec'),
     ];
     return `${months[selectedMonth.getMonth()]} ${selectedMonth.getFullYear()}`;
   };
 
   const handleDayPress = (day) => {
     if (!day) return;
-
     const date = new Date(day.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     date.setHours(0, 0, 0, 0);
-
     if (date > today) return;
-
     setSelectedDay(day);
     setShowDayModal(true);
   };
@@ -385,27 +372,12 @@ export const PrayerCalendarScreen = ({ navigation }) => {
         activeOpacity={0.7}
       >
         <Svg width={size} height={size}>
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="#E0E0E0"
-            strokeWidth={strokeWidth}
-            fill="#FFF"
-          />
+          <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#E0E0E0" strokeWidth={strokeWidth} fill="#FFF" />
           {percentage > 0 && (
             <Circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke="#5BA895"
-              strokeWidth={strokeWidth}
-              fill="none"
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference - progress}
-              strokeLinecap="round"
-              rotation="-90"
-              origin={`${size / 2}, ${size / 2}`}
+              cx={size / 2} cy={size / 2} r={radius} stroke="#5BA895" strokeWidth={strokeWidth}
+              fill="none" strokeDasharray={circumference} strokeDashoffset={circumference - progress}
+              strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
             />
           )}
         </Svg>
@@ -428,10 +400,8 @@ export const PrayerCalendarScreen = ({ navigation }) => {
     const date = new Date(selectedDay.date);
     const prayerNames = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
     const prayerTranslations = [
-      t('prayerTracker.prayers.fajr'),
-      t('prayerTracker.prayers.dhuhr'),
-      t('prayerTracker.prayers.asr'),
-      t('prayerTracker.prayers.maghrib'),
+      t('prayerTracker.prayers.fajr'), t('prayerTracker.prayers.dhuhr'),
+      t('prayerTracker.prayers.asr'), t('prayerTracker.prayers.maghrib'),
       t('prayerTracker.prayers.isha'),
     ];
 
@@ -497,52 +467,32 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                         ]}
                       >
                         {isCompleted ? (
-                          <Ionicons
-                            name="checkmark"
-                            size={20}
-                            color={isOnTime ? '#5BA895' : '#F39C12'}
-                          />
+                          <Ionicons name="checkmark" size={20} color={isOnTime ? '#5BA895' : '#F39C12'} />
                         ) : (
                           <Ionicons name="close" size={20} color="#E74C3C" />
                         )}
                       </View>
                       <View style={styles.prayerInfo}>
-                        <Text style={styles.prayerName}>
-                          {prayerTranslations[index]}
-                        </Text>
+                        <Text style={styles.prayerName}>{prayerTranslations[index]}</Text>
                       </View>
                     </View>
                     <View style={styles.prayerStatusBadge}>
                       {isOnTime && (
                         <View style={[styles.statusBadge, styles.onTimeBadge]}>
                           <Ionicons name="time" size={12} color="#5BA895" />
-                          <Text style={styles.onTimeText}>
-                            {t('calendar.onTime')}
-                          </Text>
+                          <Text style={styles.onTimeText}>{t('calendar.onTime')}</Text>
                         </View>
                       )}
                       {isLate && (
                         <View style={[styles.statusBadge, styles.lateBadge]}>
-                          <Ionicons
-                            name="time-outline"
-                            size={12}
-                            color="#F39C12"
-                          />
-                          <Text style={styles.lateText}>
-                            {t('calendar.late')}
-                          </Text>
+                          <Ionicons name="time-outline" size={12} color="#F39C12" />
+                          <Text style={styles.lateText}>{t('calendar.late')}</Text>
                         </View>
                       )}
                       {isMissed && (
                         <View style={[styles.statusBadge, styles.missedBadge]}>
-                          <Ionicons
-                            name="close-circle"
-                            size={12}
-                            color="#E74C3C"
-                          />
-                          <Text style={styles.missedText}>
-                            {t('calendar.missed')}
-                          </Text>
+                          <Ionicons name="close-circle" size={12} color="#E74C3C" />
+                          <Text style={styles.missedText}>{t('calendar.missed')}</Text>
                         </View>
                       )}
                     </View>
@@ -573,24 +523,22 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 
   if (initialLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenLayout>
         <CalendarSkeleton />
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   const weekDayLabels = [
-    t('prayerTracker.weekDays.monday'),
-    t('prayerTracker.weekDays.tuesday'),
-    t('prayerTracker.weekDays.wednesday'),
-    t('prayerTracker.weekDays.thursday'),
-    t('prayerTracker.weekDays.friday'),
-    t('prayerTracker.weekDays.saturday'),
+    t('prayerTracker.weekDays.monday'), t('prayerTracker.weekDays.tuesday'),
+    t('prayerTracker.weekDays.wednesday'), t('prayerTracker.weekDays.thursday'),
+    t('prayerTracker.weekDays.friday'), t('prayerTracker.weekDays.saturday'),
     t('prayerTracker.weekDays.sunday'),
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -789,12 +737,12 @@ export const PrayerCalendarScreen = ({ navigation }) => {
       </ScrollView>
 
       <DayDetailModal />
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
+  // Removed container logic since Layout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -847,7 +795,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 5,
-    minHeight: 300, // Ensure height for spinner
+    minHeight: 300, 
   },
   calendarContainer: {
     padding: 16,

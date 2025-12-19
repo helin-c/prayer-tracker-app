@@ -11,12 +11,15 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator, // Spinner için eklendi
+  ActivityIndicator, 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
@@ -85,7 +88,8 @@ export const EditProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -241,16 +245,16 @@ export const EditProfileScreen = ({ navigation }) => {
             {t('common.cancel')}
           </Text>
         </TouchableOpacity>
+        
+        {/* Extra bottom padding */}
+        <View style={{height: 40}} />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles background
   header: {
     flexDirection: 'row',
     alignItems: 'center',

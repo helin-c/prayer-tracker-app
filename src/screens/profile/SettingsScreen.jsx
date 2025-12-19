@@ -10,12 +10,15 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator, // Spinner için eklendi
+  ActivityIndicator, 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -75,7 +78,8 @@ export const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -168,15 +172,12 @@ export const SettingsScreen = ({ navigation }) => {
           )}
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container
   header: {
     flexDirection: 'row',
     alignItems: 'center',

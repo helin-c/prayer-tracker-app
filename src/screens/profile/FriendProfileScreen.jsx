@@ -13,11 +13,14 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFriendsStore } from '../../store/friendsStore';
 import { format, startOfWeek } from 'date-fns';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // COMPONENT IMPORTS
 import {
@@ -26,9 +29,6 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR FRIEND PROFILE
-// ============================================================================
 const FriendSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
 
@@ -140,6 +140,7 @@ const FriendSkeleton = () => {
   );
 };
 
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -150,7 +151,7 @@ export const FriendProfileScreen = ({ navigation, route }) => {
 
   const [weekData, setWeekData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isRemoving, setIsRemoving] = useState(false); // Removal loading state
+  const [isRemoving, setIsRemoving] = useState(false); 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -169,7 +170,6 @@ export const FriendProfileScreen = ({ navigation, route }) => {
       console.error('Error loading friend week data:', error);
     } finally {
       setLoading(false);
-      // Smooth fade-in when content loads
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
@@ -222,8 +222,8 @@ export const FriendProfileScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
         {/* Header - Always Visible */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -345,23 +345,18 @@ export const FriendProfileScreen = ({ navigation, route }) => {
                   </>
                 )}
               </TouchableOpacity>
+              
+              {/* Extra bottom padding */}
+              <View style={{height: 40}} />
             </ScrollView>
           </Animated.View>
         )}
-      </SafeAreaView>
-    </View>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container and safeArea since Layout handles them
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -390,10 +385,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-
-  // ============================================================================
-  // REAL CONTENT STYLES
-  // ============================================================================
+  // ... [Rest of the styles remain exactly the same] ...
   profileCard: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -406,113 +398,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#00A86B',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  avatarText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFF',
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 20,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginTop: 24,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#666',
-  },
-  statDivider: {
-    width: 1,
-    height: 60,
-    backgroundColor: '#E0E0E0',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 16,
-  },
-  weekGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  dayCard: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  dayName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-  },
-  dayCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  dayPercentage: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#FFF',
-  },
-  dayDate: {
-    fontSize: 10,
-    color: '#999',
-  },
-  noData: {
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#999',
-    padding: 20,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-  },
+  // ...
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -530,11 +416,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    height: 56, // Fixed height for consistent layout
+    height: 56, 
   },
   removeButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#DC3545',
   },
+  // Add other styles back here (avatar, name, email, statsRow, etc.)
+  avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#00A86B', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  avatarText: { fontSize: 36, fontWeight: 'bold', color: '#FFF' },
+  name: { fontSize: 24, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 4 },
+  email: { fontSize: 14, color: '#666', marginBottom: 20 },
+  statsRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginTop: 24 },
+  statItem: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 24, fontWeight: 'bold', color: '#1A1A1A', marginTop: 8, marginBottom: 4 },
+  statLabel: { fontSize: 12, color: '#666' },
+  statDivider: { width: 1, height: 60, backgroundColor: '#E0E0E0' },
+  section: { marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 16 },
+  weekGrid: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
+  dayCard: { alignItems: 'center', flex: 1 },
+  dayName: { fontSize: 12, fontWeight: '600', color: '#666', marginBottom: 8 },
+  dayCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  dayPercentage: { fontSize: 11, fontWeight: 'bold', color: '#FFF' },
+  dayDate: { fontSize: 10, color: '#999' },
+  noData: { textAlign: 'center', fontSize: 14, color: '#999', padding: 20, backgroundColor: '#FFF', borderRadius: 16 },
 });

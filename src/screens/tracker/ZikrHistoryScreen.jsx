@@ -10,13 +10,16 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  ActivityIndicator, // Spinner için eklendi
+  ActivityIndicator, 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, tr } from 'date-fns/locale';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // STORE IMPORTS
 import { useTasbihStore } from '../../store/tasbihStore';
@@ -28,9 +31,6 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR HISTORY SCREEN
-// ============================================================================
 const HistorySkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
 
@@ -115,7 +115,7 @@ export const ZikrHistoryScreen = ({ navigation }) => {
   } = useTasbihStore();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isClearing, setIsClearing] = useState(false); // Silme işlemi loading state'i
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -167,11 +167,9 @@ export const ZikrHistoryScreen = ({ navigation }) => {
     );
   };
 
-  // Async clearing function with Loading State
   const performClearAll = async () => {
     setIsClearing(true);
     try {
-      // UX için küçük bir gecikme ekleyebiliriz veya veritabanı işlemi zaten sürer
       await clearAllSessions();
     } finally {
       setIsClearing(false);
@@ -287,7 +285,8 @@ export const ZikrHistoryScreen = ({ navigation }) => {
   ).length;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -381,22 +380,21 @@ export const ZikrHistoryScreen = ({ navigation }) => {
           )}
         </>
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomColor: '#F0F0F0',
+    // Removed border for cleaner look over bg, can add back if needed
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   backButton: {
     width: 40,

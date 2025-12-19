@@ -11,11 +11,14 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // COMPONENT IMPORTS
 import {
@@ -24,9 +27,6 @@ import {
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ============================================================================
-// CUSTOM SKELETON FOR BOOKMARKS SCREEN
-// ============================================================================
 const BookmarksSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
 
@@ -146,7 +146,6 @@ export const QuranBookmarksScreen = ({ navigation }) => {
     const ayah = getAyah(bookmark.surahNumber, bookmark.ayahNumber);
 
     if (!surah || !ayah) {
-      // console.warn('Missing surah or ayah for bookmark:', bookmark);
       return null;
     }
 
@@ -221,7 +220,8 @@ export const QuranBookmarksScreen = ({ navigation }) => {
     : [];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    <ScreenLayout noPaddingBottom={true}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -250,27 +250,19 @@ export const QuranBookmarksScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container since ScreenLayout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'transparent',
+    // Removed transparent bg
   },
   backButton: {
     width: 40,

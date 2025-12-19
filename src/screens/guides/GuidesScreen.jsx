@@ -11,11 +11,14 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
+
+// IMPORT THE NEW LAYOUT
+import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // COMPONENT IMPORTS
 import {
@@ -102,7 +105,6 @@ export const GuidesScreen = ({ navigation }) => {
     const initializeScreen = async () => {
       try {
         await initialize();
-        // Add small delay to ensure smooth transition
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
@@ -111,7 +113,6 @@ export const GuidesScreen = ({ navigation }) => {
         setIsLoading(false);
       }
     };
-
     initializeScreen();
   }, []);
 
@@ -125,6 +126,7 @@ export const GuidesScreen = ({ navigation }) => {
       gradient: ['#00A86B', '#00D084'],
       action: () => navigation.navigate('QuranSurahList'),
     },
+    // ... rest of your guides array
     {
       id: 'prayer',
       title: t('guides.prayer'),
@@ -224,9 +226,10 @@ export const GuidesScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // WRAPPED IN SCREEN LAYOUT
+    // Added noPaddingBottom because ScrollView has its own padding
+    <ScreenLayout noPaddingBottom={true}>
       {isLoading ? (
-        // SKELETON LOADING STATE
         <GuidesSkeleton />
       ) : (
         <ScrollView
@@ -304,17 +307,17 @@ export const GuidesScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Extra bottom spacing for Tab Bar if needed */}
+          <View style={{height: 40}} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  // Removed container logic
   scrollView: {
     flex: 1,
   },
