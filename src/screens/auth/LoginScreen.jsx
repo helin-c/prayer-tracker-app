@@ -7,8 +7,8 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  KeyboardAvoidingView, // <-- Added
+  Platform,             // <-- Added
   ScrollView,
   Alert,
   TouchableOpacity,
@@ -77,15 +77,15 @@ export const LoginScreen = ({ navigation }) => {
 
   return (
     // WRAPPED IN SCREEN LAYOUT
-    // ScreenLayout automatically handles the background image and status bar padding
     <ScreenLayout>
+      {/* KEYBOARD AVOIDING VIEW WRAPPER */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="handled" // Allows pressing button while keyboard is open
           showsVerticalScrollIndicator={false}
         >
           {/* Header with semi-transparent card */}

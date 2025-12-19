@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/profile/ProfileScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/profile/ProfileScreen.jsx (FIXED DATA LOADING)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -13,7 +13,6 @@ import {
   Alert,
   ActivityIndicator, 
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -70,9 +69,6 @@ const ProfileSkeleton = () => {
   );
 };
 
-// ============================================================================
-// MAIN SCREEN
-// ============================================================================
 export const ProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
@@ -81,13 +77,23 @@ export const ProfileScreen = ({ navigation }) => {
     pendingRequests,
     fetchFriends,
     fetchPendingRequests,
-    isLoading,
+    // Renamed isLoading to isFriendsLoading to avoid conflict
+    isLoading: isFriendsLoading,
   } = useFriendsStore();
-  const { periodStats, fetchPeriodStats } = usePrayerTrackerStore();
+  
+  const { 
+    periodStats, 
+    fetchPeriodStats,
+    // Renamed isLoading to isStatsLoading
+    isLoading: isStatsLoading 
+  } = usePrayerTrackerStore();
+  
   const { location } = usePrayerStore();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  
+  // Use a local loading state for initial mount
+  const [initialMountLoading, setInitialMountLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false); 
 
   useEffect(() => {
@@ -95,18 +101,22 @@ export const ProfileScreen = ({ navigation }) => {
   }, []);
 
   const loadData = async () => {
+    // Start loading state
+    setInitialMountLoading(true);
     try {
       await Promise.all([
         fetchFriends(),
         fetchPendingRequests(),
-        fetchPeriodStats('week'),
+        // Ensure we explicitly fetch 'week' stats on load
+        fetchPeriodStats('week'), 
       ]);
-      setTimeout(() => {
-        setInitialLoading(false);
-      }, 500);
     } catch (error) {
       console.error('Error loading profile data:', error);
-      setInitialLoading(false);
+    } finally {
+      // Small delay to ensure UI doesn't flash
+      setTimeout(() => {
+        setInitialMountLoading(false);
+      }, 300);
     }
   };
 
@@ -164,10 +174,21 @@ export const ProfileScreen = ({ navigation }) => {
     return t('profile.locationPlaceholder');
   };
 
+  // CHECK: Should we show the skeleton?
+  // Show if:
+  // 1. Initial mount is happening
+  // 2. OR Stats are loading AND we don't have stats data yet
+  // 3. OR Friends are loading AND we don't have friends data yet
+  const shouldShowSkeleton = 
+    initialMountLoading || 
+    (isStatsLoading && !periodStats) || 
+    (isFriendsLoading && !friends);
+
   return (
     // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
-      {initialLoading ? (
+      
+      {shouldShowSkeleton ? (
         <ProfileSkeleton />
       ) : (
         <ScrollView
@@ -239,7 +260,10 @@ export const ProfileScreen = ({ navigation }) => {
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
                   <Text style={styles.statValue}>
-                    {periodStats?.completion_rate?.toFixed(0) || 0}%
+                    {/* Ensure completion_rate exists, default to 0 */}
+                    {periodStats?.completion_rate !== undefined 
+                      ? Math.round(periodStats.completion_rate) 
+                      : 0}%
                   </Text>
                   <Text style={styles.statLabel}>
                     {t('profile.completion')}

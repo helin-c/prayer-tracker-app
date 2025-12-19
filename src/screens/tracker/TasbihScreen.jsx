@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/TasbihScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/tracker/TasbihScreen.jsx (BUTTON ORDER FIXED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -57,7 +57,7 @@ export const TasbihScreen = ({ navigation }) => {
     setTimeout(() => setToast({ visible: false, text: '' }), 2200);
   };
 
-  // Common zikr presets with translation
+  // ... [PRESETS array remains same] ...
   const PRESETS = [
     {
       name: t('tasbih.presets.subhanallah'),
@@ -86,49 +86,40 @@ export const TasbihScreen = ({ navigation }) => {
     },
   ];
 
-  // Calculate progress
+  // ... [Logic functions remain same: progress, handleIncrement, handlePresetSelect, settings, reset, save] ...
   const hasTarget = targetCount > 0;
   const progress = hasTarget
     ? Math.min((currentCount / targetCount) * 100, 100)
     : 0;
   const isTargetReached = hasTarget && currentCount >= targetCount;
 
-  // Haptic feedback on count
   const handleIncrement = () => {
     increment();
-
-    // Vibrate on milestones
     const nextCount = currentCount + 1;
     if (nextCount % 33 === 0 || (hasTarget && nextCount === targetCount)) {
       Vibration.vibrate(100);
     }
   };
 
-  // Quick select preset
   const handlePresetSelect = (preset) => {
     startNewSession(preset.name, preset.target);
   };
 
-  // Open settings modal
   const handleOpenSettings = () => {
     setTempName(zikrName);
     setTempTarget(targetCount > 0 ? targetCount.toString() : '');
     setShowSettingsModal(true);
   };
 
-  // Apply settings
   const handleApplySettings = () => {
     const name = tempName.trim();
     const target = parseInt(tempTarget) || 0;
-
     updateSessionSettings(name, target);
     setShowSettingsModal(false);
   };
 
-  // Reset with confirmation
   const handleReset = () => {
     if (currentCount === 0) return;
-
     Alert.alert(
       t('tasbih.alerts.resetCounter'),
       t('tasbih.alerts.resetMessage'),
@@ -143,7 +134,6 @@ export const TasbihScreen = ({ navigation }) => {
     );
   };
 
-  // Complete reset with confirmation
   const handleCompleteReset = () => {
     Alert.alert(
       t('tasbih.alerts.clearEverything'),
@@ -159,14 +149,11 @@ export const TasbihScreen = ({ navigation }) => {
     );
   };
 
-  // Save session with Loading State
   const handleSave = async () => {
-    if (isSaving) return; // Çift tıklamayı önle
-
+    if (isSaving) return;
     setIsSaving(true);
     try {
       await saveSession();
-      // Başarılı olduğunda
       showToast(
         sessionId
           ? t('tasbih.alerts.progressUpdated')
@@ -181,7 +168,6 @@ export const TasbihScreen = ({ navigation }) => {
     }
   };
 
-  // Open save modal
   const handleOpenSaveModal = () => {
     if (currentCount === 0) {
       Alert.alert(
@@ -190,7 +176,6 @@ export const TasbihScreen = ({ navigation }) => {
       );
       return;
     }
-
     if (!zikrName.trim()) {
       Alert.alert(
         t('tasbih.alerts.nameRequired'),
@@ -202,7 +187,6 @@ export const TasbihScreen = ({ navigation }) => {
       );
       return;
     }
-
     setShowSaveModal(true);
   };
 
@@ -300,18 +284,10 @@ export const TasbihScreen = ({ navigation }) => {
           <Ionicons name="add" size={64} color="#FFF" />
         </TouchableOpacity>
 
-        {/* Action Buttons */}
+        {/* REORDERED Action Buttons: Reset | Clear | Save */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.saveButton]}
-            onPress={handleOpenSaveModal}
-          >
-            <Ionicons name="bookmark" size={20} color="#00A86B" />
-            <Text style={[styles.actionButtonText, { color: '#00A86B' }]}>
-              {t('tasbih.save')}
-            </Text>
-          </TouchableOpacity>
-
+          
+          {/* 1. RESET (Left) */}
           <TouchableOpacity
             style={[styles.actionButton, styles.resetButton]}
             onPress={handleReset}
@@ -322,6 +298,7 @@ export const TasbihScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
 
+          {/* 2. CLEAR (Middle) */}
           <TouchableOpacity
             style={[styles.actionButton, styles.clearButton]}
             onPress={handleCompleteReset}
@@ -331,6 +308,18 @@ export const TasbihScreen = ({ navigation }) => {
               {t('tasbih.clear')}
             </Text>
           </TouchableOpacity>
+
+          {/* 3. SAVE (Right) */}
+          <TouchableOpacity
+            style={[styles.actionButton, styles.saveButton]}
+            onPress={handleOpenSaveModal}
+          >
+            <Ionicons name="bookmark" size={20} color="#00A86B" />
+            <Text style={[styles.actionButtonText, { color: '#00A86B' }]}>
+              {t('tasbih.save')}
+            </Text>
+          </TouchableOpacity>
+
         </View>
 
         {/* Quick Presets */}

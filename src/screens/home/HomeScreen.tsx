@@ -151,7 +151,7 @@ export const HomeScreen = ({ navigation }) => {
   const {
     prayerTimes,
     location,
-    isLoading,
+    isLoading, // Comes from PrayerStore
     error,
     fetchWithCurrentLocation,
     loadSavedLocation,
@@ -163,10 +163,18 @@ export const HomeScreen = ({ navigation }) => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  
+  // Local loading state to ensure we wait for initial mounting/checking
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    initializePrayerTimes();
-    fetchFriends();
+    const init = async () => {
+      await initializePrayerTimes();
+      await fetchFriends();
+      // Only set this to false after we've attempted to fetch/load
+      setIsInitializing(false); 
+    };
+    init();
   }, []);
 
   useFocusEffect(
@@ -180,6 +188,7 @@ export const HomeScreen = ({ navigation }) => {
 
   const initializePrayerTimes = async () => {
     await loadSavedLocation();
+    // Use stored location if available, otherwise fetch
     if (!location && !prayerTimes) {
       await fetchWithCurrentLocation();
     }
@@ -304,17 +313,24 @@ export const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  // KEY FIX: Improved Loading Logic
+  // We show skeleton if:
+  // 1. We are initializing (first boot check)
+  // 2. PrayerStore says it is loading (fetching data)
+  // 3. We don't have prayer times yet (critical data missing)
+  const shouldShowSkeleton = isInitializing || isLoading || !prayerTimes;
+
   return (
     // WRAPPED IN SCREEN LAYOUT
     // We pass noPaddingBottom={true} because the ScrollView has its own contentContainer padding
     // to handle the TabBar space
     <ScreenLayout noPaddingBottom={true}>
       
-      {isLoading && !prayerTimes ? (
-        // SKELETON LOADING STATE
+      {shouldShowSkeleton ? (
+        // SKELETON LOADING STATE (Only shows until we have data)
         <HomeSkeleton />
       ) : (
-        // ACTUAL CONTENT
+        // ACTUAL CONTENT (Only renders when we have Prayer Times)
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}

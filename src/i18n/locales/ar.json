@@ -15,7 +15,8 @@
     "password": "كلمة المرور",
     "language": "اللغة",
     "pleaseWait":"يرجى الانتظار...",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "notice": "تنبيه"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -264,6 +265,7 @@
     "complete": "مكتمل",
     "statistics": "الإحصائيات",
     "afterPrayerRemembrance": "أذكار ما بعد الصلاة",
+    "futureDateLocked": "لا يمكنك تسجيل الصلوات لتواريخ مستقبلية.",
     "digitalTasbih": "المسبحة الرقمية",
     "countDhikr": "عدّ الأذكار بعد الصلاة",
     "saveProgress": "حفظ التقدم",

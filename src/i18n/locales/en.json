@@ -19,7 +19,8 @@
     "minute": "minute",
     "second": "second",
     "pleaseWait" :"Please wait...",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "notice": "Notice"
   },
   "auth": {
     "signIn": "Sign In",
@@ -267,6 +268,7 @@
     "today": "Today",
     "selectedDate": "Selected Date",
     "todaysPrayers": "Today's Prayers",
+    "futureDateLocked": "You cannot track prayers for future dates.",
     "prayers1": "Prayers",
     "complete": "Complete",
     "statistics": "Statistics",

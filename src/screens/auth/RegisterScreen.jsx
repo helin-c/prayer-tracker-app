@@ -7,8 +7,8 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  KeyboardAvoidingView, // <-- Added
+  Platform,             // <-- Added
   ScrollView,
   Alert,
   TouchableOpacity,
@@ -98,13 +98,14 @@ export const RegisterScreen = ({ navigation }) => {
   return (
     // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
+      {/* KEYBOARD AVOIDING VIEW WRAPPER */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="handled" // Critical for buttons to work while keyboard is up
           showsVerticalScrollIndicator={false}
         >
           {/* Card Container */}
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    // Removed transparent bg
+    paddingBottom: 40, // Added padding bottom to ensure scroll clears keyboard
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -348,6 +349,7 @@ const styles = StyleSheet.create({
   registerButton: {
     marginTop: 8,
     marginBottom: 24,
+    height: 56, // Fixed height for consistent layout
   },
   loginContainer: {
     flexDirection: 'row',

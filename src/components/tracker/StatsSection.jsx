@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/tracker/StatsSection.jsx (WITH GRADIENTS)
+// FILE: src/components/tracker/StatsSection.jsx (IMPROVED PERIOD SELECTOR)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -99,38 +99,42 @@ export const StatsSection = () => {
       <View style={styles.header}>
         <Text style={styles.title}>{t('prayerTracker.statistics')}</Text>
         
-        {/* Period Selector */}
+        {/* IMPROVED Period Selector */}
         <View style={styles.periodSelectorWrapper}>
           <LinearGradient
             colors={['rgba(240, 255, 244, 0.5)', 'rgba(240, 255, 244, 0.4)']}
             style={styles.periodSelector}
           >
-            {PERIODS.map((period) => (
-              <TouchableOpacity
-                key={period.key}
-                style={[
-                  styles.periodButton,
-                  selectedPeriod === period.key && styles.periodButtonActive,
-                ]}
-                onPress={() => handlePeriodChange(period.key)}
-                activeOpacity={0.7}
-              >
-                {selectedPeriod === period.key ? (
-                  <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
-                    style={styles.periodButtonGradient}
-                  >
-                    <Text style={styles.periodButtonTextActive}>
-                      {period.label}
-                    </Text>
-                  </LinearGradient>
-                ) : (
-                  <Text style={styles.periodButtonText}>
-                    {period.label}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))}
+            {PERIODS.map((period) => {
+              const isActive = selectedPeriod === period.key;
+              return (
+                <TouchableOpacity
+                  key={period.key}
+                  style={styles.periodButtonContainer} // Container to keep layout stable
+                  onPress={() => handlePeriodChange(period.key)}
+                  activeOpacity={0.7}
+                >
+                  {isActive ? (
+                    <LinearGradient
+                      colors={['#5BA895', '#4A9B87']} // Active gradient colors
+                      style={styles.periodButtonActiveGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    >
+                      <Text style={styles.periodButtonTextActive}>
+                        {period.label}
+                      </Text>
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.periodButtonInactive}>
+                      <Text style={styles.periodButtonTextInactive}>
+                        {period.label}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </LinearGradient>
         </View>
       </View>
@@ -255,6 +259,7 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 16,
   },
+  // --- IMPROVED PERIOD SELECTOR STYLES ---
   periodSelectorWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
@@ -263,43 +268,44 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+    backgroundColor: '#FFF', // Ensure background is solid
   },
   periodSelector: {
     flexDirection: 'row',
-    padding: 4,
+    padding: 4, // Padding around the buttons inside the container
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  periodButton: {
+  periodButtonContainer: {
+    flex: 1, // Each button takes equal width
+    height: 40, // Fixed height to prevent jumping
+    borderRadius: 8,
+    overflow: 'hidden', // Ensure gradient respects border radius
+  },
+  periodButtonActiveGradient: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  periodButtonActive: {
-    overflow: 'hidden',
-  },
-  periodButtonGradient: {
-    width: '100%',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#2D6856',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  periodButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
+  periodButtonInactive: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: 'transparent', // Or a very light gray if preferred
   },
   periodButtonTextActive: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#5BA895',
+    color: '#FFFFFF', // White text on active
   },
+  periodButtonTextInactive: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666666', // Dark gray text on inactive
+  },
+  // ----------------------------------------
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

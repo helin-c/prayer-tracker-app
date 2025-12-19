@@ -19,7 +19,8 @@
     "minute": "dakika",
     "second": "saniye",
     "pleaseWait":"Lütfen bekleyin...",
-    "viewAll": "Tümünü Gör"
+    "viewAll": "Tümünü Gör",
+    "notice": "Uyarı"
   },
   "auth": {
     "signIn": "Giriş Yap",
@@ -266,6 +267,7 @@
     "subtitle": "Günlük namazlarınızı takip edin",
     "today": "Bugün",
     "selectedDate": "Seçili Tarih",
+    "futureDateLocked": "Gelecek tarihler için namaz takibi yapılamaz.",
     "todaysPrayers": "Bugünün Namazları",
     "prayers1": "Namazlar",
     "complete": "Tamamlandı",
