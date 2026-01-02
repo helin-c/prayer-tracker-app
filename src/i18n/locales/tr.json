@@ -18,7 +18,7 @@
     "hour": "saat",
     "minute": "dakika",
     "second": "saniye",
-    "pleaseWait":"Lütfen bekleyin...",
+    "pleaseWait": "Lütfen bekleyin...",
     "viewAll": "Tümünü Gör",
     "notice": "Uyarı"
   },
@@ -98,7 +98,7 @@
     "haveYouPrayed": "Namazını kıldın mı",
     "trackYourPrayers": "Günlük namazlarını takip et",
     "prayersMissed": "bugün kaçırılan namaz",
-    "left":"kaldı",
+    "left": "kaldı",
     "markPrayersCompleted": "Namazları tamamlandı olarak işaretle",
     "dailyInspiration": "Günün İlhamı"
   },
@@ -158,7 +158,1834 @@
     "shareText": "Metin Olarak Paylaş",
     "shareImage": "Resim Olarak Paylaş",
     "shareError": "Paylaşım sırasında bir hata oluştu.",
-    "sharingNotAvailable": "Bu cihazda paylaşım desteklenmiyor."
+    "sharingNotAvailable": "Bu cihazda paylaşım desteklenmiyor.",
+    "daily": {
+      "quote_1": {
+        "text": "Bugün yeni bir başlangıç, onu umutla kucakla.",
+        "author": "Kuran",
+        "source": "İnşirah 94:5-6"
+      },
+      "quote_2": {
+        "text": "Sabır, rahatlamanın anahtarıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_3": {
+        "text": "Beni anın ki Ben de sizi anayım.",
+        "author": "Kuran",
+        "source": "Bakara 2:152"
+      },
+      "quote_4": {
+        "text": "İnsanların en hayırlısı, başkalarına en çok fayda sağlayandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Darâkutnî"
+      },
+      "quote_5": {
+        "text": "Şüphesiz Allah, sabredenlerle beraberdir.",
+        "author": "Kuran",
+        "source": "Enfal 8:46"
+      },
+      "quote_6": {
+        "text": "Güzel söz sadakadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_7": {
+        "text": "O, nerede olursanız olun sizinle beraberdir.",
+        "author": "Kuran",
+        "source": "Hadid 57:4"
+      },
+      "quote_8": {
+        "text": "Ya güzel söyle ya da sus.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_9": {
+        "text": "Allah, hiçbir kimseye gücünün yetmeyeceği bir yük yüklemez.",
+        "author": "Kuran",
+        "source": "Bakara 2:286"
+      },
+      "quote_10": {
+        "text": "Müminin gücü, Allah'a tevekkülündedir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_11": {
+        "text": "Şüphesiz ki zorluğun yanında bir kolaylık vardır.",
+        "author": "Kuran",
+        "source": "İnşirah 94:5"
+      },
+      "quote_12": {
+        "text": "İyilik yap ki sana da iyilik gelsin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Ahmed"
+      },
+      "quote_13": {
+        "text": "Sabır ve namazla Allah'tan yardım isteyin.",
+        "author": "Kuran",
+        "source": "Bakara 2:45"
+      },
+      "quote_14": {
+        "text": "Kardeşine gülümsemen sadakadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_15": {
+        "text": "Rahman olan Allah, merhamet edenlere merhamet eder.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Ebu Davud"
+      },
+      "quote_16": {
+        "text": "Şüphesiz Rabbim yakındır ve duaları kabul edendir.",
+        "author": "Kuran",
+        "source": "Hud 11:61"
+      },
+      "quote_17": {
+        "text": "Sabret, çünkü sabrın ancak Allah'ın yardımıyladır.",
+        "author": "Kuran",
+        "source": "Nahl 16:127"
+      },
+      "quote_18": {
+        "text": "Güzel ahlak, kıyamet günü mizanda en ağır basandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Ebu Davud"
+      },
+      "quote_19": {
+        "text": "Bana dua edin ki size icabet edeyim.",
+        "author": "Kuran",
+        "source": "Mümin 40:60"
+      },
+      "quote_20": {
+        "text": "Azığın en hayırlısı takvadır.",
+        "author": "Kuran",
+        "source": "Bakara 2:197"
+      },
+      "quote_21": {
+        "text": "Kim bir müminin sıkıntısını giderirse, Allah da onun sıkıntısını giderir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_22": {
+        "text": "Allah'ın rahmetinden ümit kesmeyin.",
+        "author": "Kuran",
+        "source": "Zümer 39:53"
+      },
+      "quote_23": {
+        "text": "Güçlü olan, öfkesine hakim olandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_24": {
+        "text": "İman edenler, Allah'ı anmakla kalpleri huzur bulur.",
+        "author": "Kuran",
+        "source": "Ra'd 13:28"
+      },
+      "quote_25": {
+        "text": "Kim iyilik yaparsa, o kendi nefsi içindir.",
+        "author": "Kuran",
+        "source": "Fussilet 41:46"
+      },
+      "quote_26": {
+        "text": "İşleri kolaylaştırın, zorlaştırmayın.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_27": {
+        "text": "Allah, plancıların en hayırlısıdır.",
+        "author": "Kuran",
+        "source": "Enfal 8:30"
+      },
+      "quote_28": {
+        "text": "Allah'ın en sevdiği amel, az da olsa devamlı olanıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_29": {
+        "text": "Şükrederseniz, elbette size nimetimi artırırım.",
+        "author": "Kuran",
+        "source": "İbrahim 14:7"
+      },
+      "quote_30": {
+        "text": "Şüphesiz Allah, iyilik yapanları sever.",
+        "author": "Kuran",
+        "source": "Bakara 2:195"
+      },
+      "quote_31": {
+        "text": "Sizin en hayırlınız, ahlakı en güzel olanınızdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_32": {
+        "text": "Hidayete uyanların üzerine selam olsun.",
+        "author": "Kuran",
+        "source": "Taha 20:47"
+      },
+      "quote_33": {
+        "text": "Yumuşaklık, değdiği her şeyi süsler.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_34": {
+        "text": "Rahmetim her şeyi kuşatmıştır.",
+        "author": "Kuran",
+        "source": "A'raf 7:156"
+      },
+      "quote_35": {
+        "text": "Allah'tan sakın ki O da seni korusun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_36": {
+        "text": "Allah yumuşak olandır ve yumuşaklığı sever.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_37": {
+        "text": "Bana bir adım atarsan, sana on adım atarım.",
+        "author": "Hadis-i Kudsi",
+        "source": "Sahih Buhari"
+      },
+      "quote_38": {
+        "text": "Kalpteki hüzün ancak zikirle gider.",
+        "author": "İbn Teymiyye",
+        "source": "Mecmu'ul Fetava"
+      },
+      "quote_39": {
+        "text": "En hayırlı zenginlik, nefis zenginliğidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_40": {
+        "text": "Affetmeyi esas al ve cahillerden yüz çevir.",
+        "author": "Kuran",
+        "source": "A'raf 7:199"
+      },
+      "quote_41": {
+        "text": "Sabredenlerin mükafatı cennettir.",
+        "author": "Kuran",
+        "source": "Zümer 39:10"
+      },
+      "quote_42": {
+        "text": "Aç olanı doyurun, hasta olanı ziyaret edin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_43": {
+        "text": "Müminler, birbirlerine karşı şefkat ve merhamette tek vücut gibidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_44": {
+        "text": "Kötülüğü en güzel şekilde sav.",
+        "author": "Kuran",
+        "source": "Fussilet 41:34"
+      },
+      "quote_45": {
+        "text": "Kendin için istediğini kardeşin için de iste.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_46": {
+        "text": "Allah katında olan daha hayırlı ve daha kalıcıdır.",
+        "author": "Kuran",
+        "source": "Kasas 28:60"
+      },
+      "quote_47": {
+        "text": "Güzel söz, kökü sağlam güzel bir ağaç gibidir.",
+        "author": "Kuran",
+        "source": "İbrahim 14:24"
+      },
+      "quote_48": {
+        "text": "Müjdeleyin, nefret ettirmeyin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_49": {
+        "text": "Cennet, annelerin ayakları altındadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Nesai"
+      },
+      "quote_50": {
+        "text": "Rabbim asla yanılmaz ve unutmaz.",
+        "author": "Kuran",
+        "source": "Taha 20:52"
+      },
+      "quote_51": {
+        "text": "Kim Allah için tevazu gösterirse, Allah onu yükseltir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_52": {
+        "text": "Allah, tevekkül edenleri sever.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:159"
+      },
+      "quote_53": {
+        "text": "En güzel şifa Kuran'dadır.",
+        "author": "Kuran",
+        "source": "İsra 17:82"
+      },
+      "quote_54": {
+        "text": "Hayâ, imanın bir parçasıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_55": {
+        "text": "Kin, sizi adaletsizliğe sevk etmesin.",
+        "author": "Kuran",
+        "source": "Maide 5:8"
+      },
+      "quote_56": {
+        "text": "İlim, Allah'ın kalbe attığı bir nurdur.",
+        "author": "İmam Malik",
+        "source": "Cami' Beyan'ül İlm"
+      },
+      "quote_57": {
+        "text": "Allah'tan sakının ve doğru söyleyin.",
+        "author": "Kuran",
+        "source": "Ahzab 33:70"
+      },
+      "quote_58": {
+        "text": "Müminler kardeştir, aralarını düzeltin.",
+        "author": "Kuran",
+        "source": "Hucurat 49:10"
+      },
+      "quote_59": {
+        "text": "Merhamet etmeyene merhamet edilmez.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_60": {
+        "text": "Her nefis ölümü tadacak, sonra Bize döndürüleceksiniz.",
+        "author": "Kuran",
+        "source": "Ankebut 29:57"
+      },
+      "quote_61": {
+        "text": "Sizi topraktan yarattık, ona döndüreceğiz, sonra tekrar çıkaracağız.",
+        "author": "Kuran",
+        "source": "Taha 20:55"
+      },
+      "quote_62": {
+        "text": "Çocuklar, cennet çiçeklerindendir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "El-Edebü'l-Müfred"
+      },
+      "quote_63": {
+        "text": "Çocuk için yazılan ilk şey rızkıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_64": {
+        "text": "İnsanı en güzel biçimde yarattık.",
+        "author": "Kuran",
+        "source": "Tin 95:4"
+      },
+      "quote_65": {
+        "text": "Her zorluğun arkasında bir hikmet vardır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_66": {
+        "text": "Hayat, ebedi yurda doğru bir yolculuktur.",
+        "author": "İmam Gazali",
+        "source": "İhya Ulumiddin"
+      },
+      "quote_67": {
+        "text": "Mülk, elinde olan Allah'a ne yücedir.",
+        "author": "Kuran",
+        "source": "Mülk 67:1"
+      },
+      "quote_68": {
+        "text": "O, her an yaratma halindedir.",
+        "author": "Kuran",
+        "source": "Rahman 55:29"
+      },
+      "quote_69": {
+        "text": "Dünya için ebedi yaşayacakmış gibi çalış.",
+        "author": "Hz. Ali",
+        "source": "Nehcü'l Belağa"
+      },
+      "quote_70": {
+        "text": "Bu dünya bir köprüdür, üzerinden geç.",
+        "author": "Geleneksel Hikmet",
+        "source": "İslami"
+      },
+      "quote_71": {
+        "text": "Dünya yeşil ve güzeldir, ona iyi davranın.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_72": {
+        "text": "Kıyamet kopsa bile elinizde fidan varsa onu dikin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Müsned Ahmed"
+      },
+      "quote_73": {
+        "text": "Yer yüzü benim için mescid kılındı.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_74": {
+        "text": "Allah'ın rahmetine umut edin ve iyi işler yapın.",
+        "author": "Kuran",
+        "source": "Kehf 18:110"
+      },
+      "quote_75": {
+        "text": "Beşikten mezara kadar ilim öğrenin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sünen İbn Mace"
+      },
+      "quote_76": {
+        "text": "Kim ilim öğrenmek için bir yola girerse, Allah ona cennet yolunu kolaylaştırır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_77": {
+        "text": "Yaratan Rabbinin adıyla oku.",
+        "author": "Kuran",
+        "source": "Alak 96:1"
+      },
+      "quote_78": {
+        "text": "Alimin mürekkebi, şehidin kanından daha değerlidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_79": {
+        "text": "İlkbahar, doğanın 'Yeniden başla' demesidir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_80": {
+        "text": "Tohum baharı beklerken, ruh uyanışı bekler.",
+        "author": "Mevlana",
+        "source": "Mesnevi"
+      },
+      "quote_81": {
+        "text": "Yenilenme, şükür ve sabırla gelir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_82": {
+        "text": "Allah, tefekkür etmeleri için gece ve gündüzü değiştirir.",
+        "author": "Kuran",
+        "source": "Nur 24:44"
+      },
+      "quote_83": {
+        "text": "Büyüme için hem güneş hem de yağmur gerekir.",
+        "author": "Geleneksel Hikmet",
+        "source": "Atasözü"
+      },
+      "quote_84": {
+        "text": "Ne mutlu ağaçlara, verirler ve almazlar.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_85": {
+        "text": "Doğa, Allah'ın sanat galerisidir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_86": {
+        "text": "Göğe, yere bakın ve yaratılışı düşünün.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:191"
+      },
+      "quote_87": {
+        "text": "Tüm yaratılmış, kendi yoluyla Allah'ı tesbih eder.",
+        "author": "Kuran",
+        "source": "İsra 17:44"
+      },
+      "quote_88": {
+        "text": "Değişen mevsimler bize Allah'tan başka hiçbir şeyin kalıcı olmadığını hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_89": {
+        "text": "Her çiçek, doğada açan bir ruhtur.",
+        "author": "Uyarlanmış Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_90": {
+        "text": "Mart, yeryüzüne ve ruha yenilenme getirir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_91": {
+        "text": "Sabırlı olan, acele edenin kaybettiğini kazanır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_92": {
+        "text": "Allah'a güven ama deveni bağla.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_93": {
+        "text": "Gerçek hacı, yolculuğu onu dönüştürendir.",
+        "author": "Mevlana",
+        "source": "Mesnevi"
+      },
+      "quote_94": {
+        "text": "Namaz, dinin direğidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih"
+      },
+      "quote_95": {
+        "text": "Kim sabah namazını kılarsa Allah'ın koruması altındadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_96": {
+        "text": "Günün iki ucunda namazı kılın.",
+        "author": "Kuran",
+        "source": "Hud 11:114"
+      },
+      "quote_97": {
+        "text": "Namaz nurdur, sadaka burhandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_98": {
+        "text": "Namaza durduğunda Rabbinle konuşursun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_99": {
+        "text": "Kul ile küfür arasında namazı terk etmek vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_100": {
+        "text": "Kıyamet günü ilk sorulacak şey namazdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_101": {
+        "text": "Gözümün nuru namazdadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Nesai"
+      },
+      "quote_102": {
+        "text": "Sabır ve namazla Allah'tan yardım dileyin.",
+        "author": "Kuran",
+        "source": "Bakara 2:153"
+      },
+      "quote_103": {
+        "text": "Allah, kulunun tevbesinden sizin sevindiğinizden daha çok sevinir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_104": {
+        "text": "Tevbe kapısı her zaman açıktır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_105": {
+        "text": "O'na dönmeden önce Allah'a yönel.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_106": {
+        "text": "Rabbinin rahmeti, gazabından daha ağır basar.",
+        "author": "Hadis-i Kudsi",
+        "source": "Sahih Buhari"
+      },
+      "quote_107": {
+        "text": "Allah'ın rahmetinden ümit kesmeyin.",
+        "author": "Kuran",
+        "source": "Yusuf 12:87"
+      },
+      "quote_108": {
+        "text": "Allah'tan başka günahları kim bağışlayabilir?",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:135"
+      },
+      "quote_109": {
+        "text": "Rabbine dön ve O'na teslim ol.",
+        "author": "Kuran",
+        "source": "Zümer 39:54"
+      },
+      "quote_110": {
+        "text": "Allah, bilmeden kötülük yapanların tevbesini kabul eder.",
+        "author": "Kuran",
+        "source": "Nisa 4:17"
+      },
+      "quote_111": {
+        "text": "Ey haddi aşan kullarım, Allah'ın rahmetinden ümit kesmeyin.",
+        "author": "Kuran",
+        "source": "Zümer 39:53"
+      },
+      "quote_112": {
+        "text": "Pişmanlık tevbedir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "İbn Mace"
+      },
+      "quote_113": {
+        "text": "Hata yaptığında, ardından iyi bir amel yap.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_114": {
+        "text": "Samimi tevbe eden, günahı olmayan gibidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "İbn Mace"
+      },
+      "quote_115": {
+        "text": "Günahkarların en hayırlısı, çokça tevbe edenlerdir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_116": {
+        "text": "Şüphesiz iyilikler, kötülükleri giderir.",
+        "author": "Kuran",
+        "source": "Hud 11:114"
+      },
+      "quote_117": {
+        "text": "Kainat, Allah'ın kalemiyle yazılmış bir kitaptır.",
+        "author": "İmam Gazali",
+        "source": "İhya"
+      },
+      "quote_118": {
+        "text": "Nisan yağmurları manevi gelişim getirir.",
+        "author": "Geleneksel Hikmet",
+        "source": "Atasözü"
+      },
+      "quote_119": {
+        "text": "Yaratılış üzerine düşünün, Yaratıcı üzerine değil.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_120": {
+        "text": "Allah'ın ayetleri, düşünenler için her yerdedir.",
+        "author": "Kuran",
+        "source": "Rum 30:21"
+      },
+      "quote_121": {
+        "text": "Göklerde ve yerde ne varsa hepsi O'nundur.",
+        "author": "Kuran",
+        "source": "Bakara 2:255"
+      },
+      "quote_122": {
+        "text": "Amelleriniz bahar çiçekleri kadar güzel olsun.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_123": {
+        "text": "Gecikmeden sadaka verin, çünkü o belanın önünde durur.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_124": {
+        "text": "Kıyamet gününde müminin gölgesi sadakasıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_125": {
+        "text": "Sadaka malı eksiltmez.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_126": {
+        "text": "En hayırlı sadaka, az iken verilendir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_127": {
+        "text": "Kim Allah'a güzel bir borç verecek?",
+        "author": "Kuran",
+        "source": "Hadid 57:11"
+      },
+      "quote_128": {
+        "text": "Ne infak ederseniz, O yerine koyar.",
+        "author": "Kuran",
+        "source": "Sebe 34:39"
+      },
+      "quote_129": {
+        "text": "Yarım hurmayla da olsa kendinizi ateşten koruyun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_130": {
+        "text": "Her iyilik sadakadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_131": {
+        "text": "Üstteki el, alttaki elden hayırlıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_132": {
+        "text": "Akrabayı hakkını verin.",
+        "author": "Kuran",
+        "source": "İsra 17:26"
+      },
+      "quote_133": {
+        "text": "Bir bahçe ol, mezarlık değil.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_134": {
+        "text": "Doğada her yürüyüşte, aradığınızdan çok daha fazlasını alırsınız.",
+        "author": "Uyarlanmış Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_135": {
+        "text": "Yeşil renk ruhu rahatlatır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Gelenek"
+      },
+      "quote_136": {
+        "text": "Allah'ın yağmur indirdiğini görmüyor musunuz?",
+        "author": "Kuran",
+        "source": "Fatır 35:27"
+      },
+      "quote_137": {
+        "text": "Her canlı şeyi sudan yarattık.",
+        "author": "Kuran",
+        "source": "Enbiya 21:30"
+      },
+      "quote_138": {
+        "text": "Su, tüm hayatın kaynağıdır.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_139": {
+        "text": "Göklerin ve yerin yaratılışında müminler için ayetler vardır.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:190"
+      },
+      "quote_140": {
+        "text": "Tüm yaratıklar rızıkları için Allah'a muhtaçtır.",
+        "author": "Kuran",
+        "source": "Hud 11:6"
+      },
+      "quote_141": {
+        "text": "Meyvelere bakın, nasıl meyve verip olgunlaşıyor.",
+        "author": "Kuran",
+        "source": "En'am 6:99"
+      },
+      "quote_142": {
+        "text": "Büyüme yavaş gerçekleşir, kendinize karşı sabırlı olun.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_143": {
+        "text": "Yeryüzü annenizdir, ona nazik davranın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_144": {
+        "text": "Âdemoğullarını şereflendirdik.",
+        "author": "Kuran",
+        "source": "İsra 17:70"
+      },
+      "quote_145": {
+        "text": "Şeref, takva ve imandadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_146": {
+        "text": "Dünyada bir yolcu gibi ol.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_147": {
+        "text": "Bu dünya geçici bir mekandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_148": {
+        "text": "Yarın ölecekmiş gibi ahiret için çalış.",
+        "author": "Hz. Ali",
+        "source": "Hikmet"
+      },
+      "quote_149": {
+        "text": "Her mevsimin bir hikmeti ve amacı vardır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_150": {
+        "text": "Mayıs, açan kalpleri ve yenilenen imanı getirir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_151": {
+        "text": "Sahip olduğunuz nimetler için Allah'a şükredin.",
+        "author": "Kuran",
+        "source": "İbrahim 14:7"
+      },
+      "quote_152": {
+        "text": "Yazın sıcaklığı kucaklanması gereken bir nimettir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_153": {
+        "text": "Yazınızı ibadet ve tefekkürle geçirin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_154": {
+        "text": "Oruç, günahlardan koruyan bir kalkandır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_155": {
+        "text": "Ramazan, bereket ayıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih"
+      },
+      "quote_156": {
+        "text": "Ramazan'da cennet kapıları açılır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_157": {
+        "text": "Kim Ramazan'ı imanla tutarsa, günahları bağışlanır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_158": {
+        "text": "Oruçlunun duası geri çevrilmez.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "İbn Mace"
+      },
+      "quote_159": {
+        "text": "Oruç sadece yemekten değil, kötü amellerden de uzak durmaktır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_160": {
+        "text": "Cennette oruç tutanlar için Reyyan adında bir kapı vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_161": {
+        "text": "Kadir Gecesi bin aydan hayırlıdır.",
+        "author": "Kuran",
+        "source": "Kadir 97:3"
+      },
+      "quote_162": {
+        "text": "Kadir Gecesi muazzam bereketler getirir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_163": {
+        "text": "Kadir Gecesini son on gecede arayın.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_164": {
+        "text": "Ramazan, Kuran ayıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Ahmed"
+      },
+      "quote_165": {
+        "text": "Her nefes alışınız ölüme doğru bir adımdır.",
+        "author": "İmam Gazali",
+        "source": "İhya"
+      },
+      "quote_166": {
+        "text": "Kuran'ı arkadaşınız yapın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_167": {
+        "text": "Kuran, kalplerdeki hastalıklar için şifadır.",
+        "author": "Kuran",
+        "source": "Yunus 10:57"
+      },
+      "quote_168": {
+        "text": "Kuran okuyun ki size şefaatçi olsun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_169": {
+        "text": "Sizin en hayırlınız Kuran öğrenen ve öğretendir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_170": {
+        "text": "Haziran'ın sıcaklığı Allah'ın rahmeti gibi bol ve rahatlatıcıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_171": {
+        "text": "Yaz günleri fazladan ibadet için uzundur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_172": {
+        "text": "Bayram, imanla oruç tutmuş kalplere sevinç getirir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_173": {
+        "text": "Rabbimiz, bizden kabul et, Sen işitensin.",
+        "author": "Kuran",
+        "source": "Bakara 2:127"
+      },
+      "quote_174": {
+        "text": "Allah'ın nimetlerini şükürle kutlayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_175": {
+        "text": "Orucun mükafatı sadece Allah katındadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_176": {
+        "text": "Orucunuzu hurmayla açın, o bereketlidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_177": {
+        "text": "Oruçlunun iftar anında bir sevinci vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_178": {
+        "text": "Allah, amellerinde devamlı olanları sever.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_179": {
+        "text": "Ramazan'dan sonra da iyi amellere devam edin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_180": {
+        "text": "Kabul edilen orucun işareti, devamlı salihliktir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_181": {
+        "text": "Yaz, iman ve karakterde büyüme mevsimidir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_182": {
+        "text": "Temmuz'un sıcağı bize Kıyamet Gününü hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_183": {
+        "text": "Hem bedeninizi hem ruhunuzu nemlendirin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_184": {
+        "text": "Güneş ve ay bir hesaba göre hareket eder.",
+        "author": "Kuran",
+        "source": "Rahman 55:5"
+      },
+      "quote_185": {
+        "text": "Beytullah'a hac, Allah'a karşı bir borçtur.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:97"
+      },
+      "quote_186": {
+        "text": "Hac, ömür boyu bir yolculuktur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_187": {
+        "text": "Hacı, doğduğu gün gibi temiz olarak döner.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_188": {
+        "text": "Lebbeyk Allahümme lebbeyk.",
+        "author": "Telbiye",
+        "source": "Hac"
+      },
+      "quote_189": {
+        "text": "Arafat, haccın ta kendisidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_190": {
+        "text": "Arefe Günü, yılın en hayırlı günüdür.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Müslim"
+      },
+      "quote_191": {
+        "text": "Samimiyetle kurban sizi Allah'a yaklaştırır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_192": {
+        "text": "Allah'a ne onların etleri ne de kanları ulaşır, ancak takvanız ulaşır.",
+        "author": "Kuran",
+        "source": "Hac 22:37"
+      },
+      "quote_193": {
+        "text": "Kurban Bayramı Allah'a teslimiyet kutlamasıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_194": {
+        "text": "İbrahim'in Allah'a güvenini hatırlayın.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_195": {
+        "text": "Gerçek kurban, Allah için sevdiğimizden vazgeçmektir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_196": {
+        "text": "Zilhicce'nin günleri en bereketli günlerdir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_197": {
+        "text": "Bu on günde yapılan iyi ameller Allah'a en sevimli olanıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_198": {
+        "text": "Haccı olmayanlar Arefe Günü oruç tutsun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_199": {
+        "text": "Tekbir sesleri havayı ilahi zikirle doldurur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_200": {
+        "text": "Allahu Ekber, tüm hamd O'na aittir.",
+        "author": "Tekbir",
+        "source": "İslami"
+      },
+      "quote_201": {
+        "text": "Temmuz bize sıcaklık ve sabır öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_202": {
+        "text": "Allah'ı zikretmekte gölge arayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_203": {
+        "text": "Salihler, gölgenin olmadığı günde gölgede olacaklar.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_204": {
+        "text": "Küçük ama devamlı ameller, büyük ama ara sıra yapılanlardan hayırlıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_205": {
+        "text": "Cennetinizi amel amel inşa edin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_206": {
+        "text": "Mümin, cennete kavuşana kadar iyilikten doymaz.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_207": {
+        "text": "Hayırlarda yarışın.",
+        "author": "Kuran",
+        "source": "Bakara 2:148"
+      },
+      "quote_208": {
+        "text": "Temmuz'un uzun günleri, uzun ibadet fırsatlarıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_209": {
+        "text": "Zaman kılıç gibidir, kullan yoksa seni keser.",
+        "author": "İslami Atasözü",
+        "source": "Geleneksel"
+      },
+      "quote_210": {
+        "text": "Zamanınız hayatınızdır, onu akıllıca harcayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_211": {
+        "text": "Her an Allah'a yaklaşma fırsatıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_212": {
+        "text": "Ay biter ama iyi ameller devam eder.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_213": {
+        "text": "Ağustos, yazın manevi çabalarının hasadını getirir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_214": {
+        "text": "Müminler arasındaki birlik, güç kaynağıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_215": {
+        "text": "Allah'ın eli, cemaatledir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_216": {
+        "text": "Hep birlikte Allah'ın ipine sımsıkı sarılın.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:103"
+      },
+      "quote_217": {
+        "text": "Anlaşmazlığa düşmeyin ki gücünüzü kaybetmeyesiniz.",
+        "author": "Kuran",
+        "source": "Enfal 8:46"
+      },
+      "quote_218": {
+        "text": "Hiçbiriniz, kardeşi için kendisi için istediğini istemedikçe iman etmiş olmaz.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_219": {
+        "text": "Müminler, sevgi ve merhametlerinde tek vücut gibidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_220": {
+        "text": "Müminler kardeştir, aralarını düzeltin.",
+        "author": "Kuran",
+        "source": "Hucurat 49:10"
+      },
+      "quote_221": {
+        "text": "Kardeşine zalim de olsa mazlum da olsa yardım et.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_222": {
+        "text": "Müslüman, Müslüman'ın kardeşidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_223": {
+        "text": "En hayırlı ev, yetim çocuğa iyi davranılan evdir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "İbn Mace"
+      },
+      "quote_224": {
+        "text": "Yeryüzündekilere merhamet edin ki göktekiler size merhamet etsin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_225": {
+        "text": "Şefkat, imanın işaretidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_226": {
+        "text": "Güçlü aile bağları bir nimettir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_227": {
+        "text": "Sıla-i rahim yapın, ömrünüzü uzatır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_228": {
+        "text": "Akrabalık bağlarını koparan cennete giremez.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_229": {
+        "text": "Akrabalarınızı ziyaret edin, onlar gelmese bile.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_230": {
+        "text": "Allah'a ve ahiret gününe iman eden misafirine ikram etsin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_231": {
+        "text": "Sizin en hayırlınız, ailesine karşı en hayırlı olanınızdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_232": {
+        "text": "Cennet, annelerin ayakları altındadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Nesai"
+      },
+      "quote_233": {
+        "text": "Babanız, cennetin en hayırlı kapısıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "İbn Mace"
+      },
+      "quote_234": {
+        "text": "Çocuklarınıza şefkat ve adaletla davranın.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Ebu Davud"
+      },
+      "quote_235": {
+        "text": "Komşu hakları İslam'da vurgulanır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_236": {
+        "text": "Komşusu açken tok yatan mümin değildir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "El-Edebü'l-Müfred"
+      },
+      "quote_237": {
+        "text": "Hiçbir iyiliği küçümsemeyin, kardeşinize güler yüzle karşılamak bile iyiliktir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_238": {
+        "text": "Allah'ın en sevdiği insanlar, başkalarına en faydalı olanlardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Taberani"
+      },
+      "quote_239": {
+        "text": "Kim bir müminin dünya sıkıntısını giderirse, Allah da kıyamet günü onun sıkıntılarından birini giderir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_240": {
+        "text": "Ağustos'un bolluğu bize başkalarıyla paylaşmayı hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_241": {
+        "text": "Ver ki kat kat alasın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_242": {
+        "text": "Yaz hasadı şükrü öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_243": {
+        "text": "Yaz biterken, elde edilen gelişimi düşünün.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_244": {
+        "text": "Eylül, sonbaharın hikmetini ve değişimi müjdeler.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_245": {
+        "text": "Değişim tek sabittir, imanla kucaklayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_246": {
+        "text": "Yaprakların dökülmesi bize bırakmayı öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_247": {
+        "text": "Her son, yeni bir başlangıçtır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_248": {
+        "text": "Muharrem, İslami yılın başlangıcıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_249": {
+        "text": "Yeni yıla yenilenmiş niyetlerle başlayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_250": {
+        "text": "Yeni bir İslami yıl, yenilenme zamanıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_251": {
+        "text": "Geçen yılı düşünün ve gelecek yılı planlayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_252": {
+        "text": "Yılın ilk ayı mübarektir.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_253": {
+        "text": "Muharrem'de Allah'a bağlılığınızı yenileyin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_254": {
+        "text": "Aşure Günü, Muharrem'in onuncusudur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_255": {
+        "text": "Aşure'de oruç tutmak önceki yılın günahlarını siler.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_256": {
+        "text": "Aşure Günü oruç tutun ve Yahudilerden farklı olarak bir gün önce veya sonra da tutun.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_257": {
+        "text": "Aşure, Allah'ın Musa'yı kurtardığı günü anma günüdür.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_258": {
+        "text": "Tarihi olaylar bize değerli dersler verir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_259": {
+        "text": "Peygamberlerin imtihanlarını hatırlayın ve sabırlı olun.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_260": {
+        "text": "Aşure büyük bir öneme sahip gündür.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_261": {
+        "text": "Her nimete, büyük küçük, şükredin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_262": {
+        "text": "Şükür, nimetleri çoğaltır.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_263": {
+        "text": "Şükrederseniz, elbette size nimetimi artırırım.",
+        "author": "Kuran",
+        "source": "İbrahim 14:7"
+      },
+      "quote_264": {
+        "text": "Rahatlık ve zorluk zamanlarında Allah'a şükredin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_265": {
+        "text": "Şükür, en güzel tutumdur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_266": {
+        "text": "Nimetlerinizi sayın, sorunlarınızı değil.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_267": {
+        "text": "Şükreden kalp, mucizeler için bir mıknatıstır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_268": {
+        "text": "Şükrünüzü sadece sözle değil, eylemle gösterin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_269": {
+        "text": "İnsanlara şükretmeyen, Allah'a da şükretmez.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_270": {
+        "text": "Şükür, elimizdekileri yeterli kılar.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_271": {
+        "text": "Eylül'ün dersleri bizi önümüzdeki yıla hazırlar.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_272": {
+        "text": "Sonbahar bize değişimin güzel olabileceğini öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_273": {
+        "text": "Yapraklar döküldükçe, sizi ağırlaştıran şeyleri bırakın.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_274": {
+        "text": "Ekim'in ışık ve karanlık dengesi, dengeyi öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_275": {
+        "text": "Hayatın tüm alanlarında denge arayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_276": {
+        "text": "Sizi dengeli bir ümmet yaptık.",
+        "author": "Kuran",
+        "source": "Bakara 2:143"
+      },
+      "quote_277": {
+        "text": "Orta yol, tatmin edici bir hayatın anahtarıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_278": {
+        "text": "İş ve ibadeti, dünya ve ahireti dengeleyin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_279": {
+        "text": "Her hakkı sahibine verin.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_280": {
+        "text": "Orta yol, en hayırlı yoldur.",
+        "author": "İslami Hikmet",
+        "source": "Kuran"
+      },
+      "quote_281": {
+        "text": "Bedeninin senin üzerinde hakkı vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_282": {
+        "text": "Ailenin senin üzerinde hakkı vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_283": {
+        "text": "Rabbinin senin üzerinde hakkı vardır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_284": {
+        "text": "Denge, kalbe huzur getirir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_285": {
+        "text": "Ekim bize soğuk günlere hazırlanmayı hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_286": {
+        "text": "Hazırlık, hikmetin bir parçasıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_287": {
+        "text": "Bugün en iyini yaparak yarına hazırlanın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_288": {
+        "text": "Daha iyi bir gelecek inşa etmek için geçmişi düşünün.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_289": {
+        "text": "Hesaba çekilmeden önce kendinizin hesabını görün.",
+        "author": "Hz. Ömer",
+        "source": "Hikmet"
+      },
+      "quote_290": {
+        "text": "Ahirete hazırlandığınız gibi kışa da hazırlanın.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_291": {
+        "text": "Nefis muhasebesi, nefsi geliştirmeye götürür.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_292": {
+        "text": "Dünden ders al, bugün için yaşa, yarına umut et.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_293": {
+        "text": "Sorgulanan hayat, gelişen hayattır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_294": {
+        "text": "Tefekkür, kalbin lambasıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_295": {
+        "text": "Size verilen nimetleri düşünün.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_296": {
+        "text": "Göklerin ve yerin yaratılışı üzerine derin düşünün.",
+        "author": "Kuran",
+        "source": "Al-i İmran 3:191"
+      },
+      "quote_297": {
+        "text": "Tefekkürde berraklık buluruz.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_298": {
+        "text": "Ekim'in dökülen yaprakları bırakmayı öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_299": {
+        "text": "Kinleri bırakın ve bağışlamayı kucaklayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_300": {
+        "text": "Mevsimlerin değişimi, düşünenler için bir ayettir.",
+        "author": "Kuran",
+        "source": "Casiye 45:5"
+      },
+      "quote_301": {
+        "text": "Gece ve gündüzün dönüşümünde ayetler vardır.",
+        "author": "Kuran",
+        "source": "Bakara 2:164"
+      },
+      "quote_302": {
+        "text": "Etrafınızdaki dünyayı gözlemleyin ve Allah'ın ayetlerini görün.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_303": {
+        "text": "Doğa, Allah'ın sanatıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_304": {
+        "text": "Ekim biterken, kalplerinizi kışın derslerine hazırlayın.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_305": {
+        "text": "Kasım'ın soğuğu hayatın imtihanlarını hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_306": {
+        "text": "İmtihanlar birçok şekilde gelir, onlara sabırla karşı koyun.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_307": {
+        "text": "Zorluk çoğu zaman gizlenmiş bir nimettir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_308": {
+        "text": "Sizi iyi ve kötü ile imtihan ederiz.",
+        "author": "Kuran",
+        "source": "Enbiya 21:35"
+      },
+      "quote_309": {
+        "text": "Bela istemeyin ama gelirse imanla karşılayın.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_310": {
+        "text": "Komşularınızın halini sorun, özellikle soğuk zamanlarda.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_311": {
+        "text": "En hayırlı komşu, komşusuna en iyi davrananıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_312": {
+        "text": "Çevrenizdeki muhtaçlara özen gösterin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_313": {
+        "text": "Hava soğuk olsa da kalbinizi ısıtın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_314": {
+        "text": "Şefkat, en soğuk günleri ısıtır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_315": {
+        "text": "Açları doyurun, muhtaçları giydirin.",
+        "author": "İslami Hikmet",
+        "source": "Hadis"
+      },
+      "quote_316": {
+        "text": "Sadaka verin, günahları söndürür.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_317": {
+        "text": "Kıyamet gününde müminin gölgesi sadakasıdır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_318": {
+        "text": "Hastaları ziyaret edin, bereket artar.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_319": {
+        "text": "Kim bir hastayı ziyaret ederse, cennetin hasadındadır.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_320": {
+        "text": "Kasım bize birbirimize bakmayı öğretir.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_321": {
+        "text": "Kardeşlerinizin yüklerini taşımaya yardım edin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_322": {
+        "text": "En hayırlı ameller, başkalarına rahatlık getiren amellerdir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_323": {
+        "text": "Dayanıklılık, kalbin gücüdür.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_324": {
+        "text": "Zorluklara zarafet ve sabırla dayanın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_325": {
+        "text": "Sabırlı olanlara mükafatları hesapsız verilecektir.",
+        "author": "Kuran",
+        "source": "Zümer 39:10"
+      },
+      "quote_326": {
+        "text": "Sebat, başarıya götürür.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_327": {
+        "text": "Yavaş da olsa ilerlemeye devam edin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_328": {
+        "text": "Kış, dayanıklılık ve iman imtihanıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_329": {
+        "text": "Kışın soğuğu, hayatın imtihanları gibi arındırır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_330": {
+        "text": "Kış, müminin baharıdır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_331": {
+        "text": "Kışın oruç günleri kısa, namaz geceleri uzundur.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_332": {
+        "text": "Soğuk hava, ibadet için bir nimettir.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_333": {
+        "text": "Kasım'ın karanlığı, imanın ışığını daha parlak kılar.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_334": {
+        "text": "Kasım biterken, kararlılığınızı güçlendirin.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_335": {
+        "text": "Aralık, yılı tefekkürle tamamlar.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_336": {
+        "text": "Geçen yıl üzerine düşünün.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_337": {
+        "text": "Bu yıl ne başardınız?",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_338": {
+        "text": "Amellerinizin muhasebesini yapın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_339": {
+        "text": "Değerlendirilme Günü'nden önce kendinizi değerlendirin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_340": {
+        "text": "Hesaba çekilmeden önce kendinizin hesabını görün.",
+        "author": "Hz. Ömer",
+        "source": "Hikmet"
+      },
+      "quote_341": {
+        "text": "Amelleriniz tartılmadan önce tartın.",
+        "author": "Hz. Ömer",
+        "source": "Hikmet"
+      },
+      "quote_342": {
+        "text": "Akıllı kişi, kendini hesaba çekendir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Tirmizi"
+      },
+      "quote_343": {
+        "text": "Bu yıl Allah'a daha mı yaklaştınız?",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_344": {
+        "text": "Başarınızı manevi gelişiminizle ölçün.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_345": {
+        "text": "Başarı mal varlığında değil, imandadır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_346": {
+        "text": "Gerçek zenginlik, ruh zenginliğidir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Buhari"
+      },
+      "quote_347": {
+        "text": "Yılın eksiklikleri için bağışlanma dileyin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_348": {
+        "text": "Samimiyetle tevbe edin ve yeni bir sayfa açın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_349": {
+        "text": "Aralık, yenilenme ve umut zamanıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_350": {
+        "text": "Mübarek Rebiülevvel ayı yaklaşıyor.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_351": {
+        "text": "Peygamberin hayatını ve öğretilerini hatırlayın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_352": {
+        "text": "Sünneti söz ve fiilde takip edin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_353": {
+        "text": "Peygamber, insanlık için en güzel örnektir.",
+        "author": "Kuran",
+        "source": "Ahzab 33:21"
+      },
+      "quote_354": {
+        "text": "Peygamberi örnek alarak sevgiyi gösterin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_355": {
+        "text": "Peygambere bolca salat ü selam gönderin.",
+        "author": "Kuran",
+        "source": "Ahzab 33:56"
+      },
+      "quote_356": {
+        "text": "Kim bana bir kere salat getirirse, Allah ona on kere salat getirir.",
+        "author": "Hz. Muhammed ﷺ",
+        "source": "Sahih Müslim"
+      },
+      "quote_357": {
+        "text": "Aralık'ın soğuğu bize imanın sıcaklığını hatırlatır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_358": {
+        "text": "İman, en soğuk zamanlarda kalbi ısıtır.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_359": {
+        "text": "Yılın sonu, şükür zamanıdır.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      },
+      "quote_360": {
+        "text": "Yıl biterken, istigfar etmeyi artırın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_361": {
+        "text": "Allah'tan daha hayırlı bir yıl dileyin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_362": {
+        "text": "Sizi Allah'a yaklaştıracak kararlar alın.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_363": {
+        "text": "Yeni yılda manevi gelişim için niyetler belirleyin.",
+        "author": "İslami Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_364": {
+        "text": "Yarın, henüz hatası olmayan yeni bir gündür.",
+        "author": "Uyarlanmış Hikmet",
+        "source": "Geleneksel"
+      },
+      "quote_365": {
+        "text": "Yılı şükürle bitirin ve umutla yeniden başlayın.",
+        "author": "İslami Düşünce",
+        "source": "Hikmet"
+      }
+    }
   },
   "friends": {
     "friends": "Arkadaşlar",
@@ -189,6 +2016,11 @@
     "removeFriendConfirm": "{{name}} adlı kişiyi arkadaşlarından kaldırmak istediğine emin misin?",
     "friendRemoved": "Arkadaş başarıyla kaldırıldı",
     "friendsAdded": "arkadaş eklendi",
+    "prayerUpdate": "Namaz Güncellemesi",
+    "streakMilestone": "Seri Başarısı",
+    "completedAllPrayers": "bugün 5 vakit namazı kıldı!",
+    "prayedPrayers": "bugün {{count}} vakit namaz kıldı!",
+    "reachedStreak": "{{days}} günlük seriye ulaştı!",
     "limitReached": "Arkadaş Limiti Doldu",
     "limitReachedMessage": "Aynı anda en fazla {{limit}} arkadaş ekleyebilirsin. Yeni eklemek için bir arkadaş kaldırmalısın.",
     "loadingProfile": "Arkadaş profili yükleniyor...",
@@ -260,7 +2092,10 @@
     "loadingSettings": "Ayarlar yükleniyor...",
     "preparingOptions": "Seçenekleriniz hazırlanıyor",
     "loadingProfile": "Profil yükleniyor...",
-    "fetchingData": "Verileriniz alınıyor"
+    "fetchingData": "Verileriniz alınıyor",
+    "appSettings": "Uygulama Ayarları",
+    "designedBy": "Tasarım ve Geliştirme:",
+    "nonProfitMessage": "İbadetlerinizden kopmamanız için kâr amacı gütmeyen bir girişim."
   },
   "prayerTracker": {
     "title": "Namaz Takibi",
@@ -425,30 +2260,204 @@
   },
   "guides": {
     "title": "İslami Rehberler",
-    "subtitle": "İslam, namaz ve inanç hakkında bilgi edinin",
-    "popular": "POPÜLER",
+    "subtitle": "İnancınızı öğrenin ve yaşayın",
+    "quranSubtitle": "Oku & Öğren",
+    "prayer1": "Namaz (Salat)",
+    "prayerSubtitle": "Namaz Nasıl Kılınır",
+    "wudu1": "Abdest",
+    "wuduSubtitle": "Temizlik Rehberi",
+    "pillars1": "Beş Şart",
+    "pillarsSubtitle": "İslam'ın Temeli",
+    "duas1": "Günlük Dualar",
+    "duasSubtitle": "Önemli Dualar",
+    "ramadan1": "Ramazan",
+    "ramadanSubtitle": "Oruç Rehberi",
+    "hajj1": "Hac & Umre",
+    "hajjSubtitle": "Hac Rehberi",
+    "basics1": "İslam Temelleri",
+    "basicsSubtitle": "Temel İnançlar",
+    "popular": "EN POPÜLER",
+    "quranDescription": "Kuran-ı Kerim'i meal ve tefsir ile okuyun",
     "browseAll": "Tüm Rehberlere Göz Atın",
-    "newToIslam": "İslam'a Yeni misiniz?",
-    "newToIslamText": "Temel bilgileri öğrenmek için başlangıç rehberimizle başlayın",
+    "newToIslam": "İslam'a Yeni mi Başlıyorsunuz?",
+    "newToIslamText": "Temellerle başlayın ve bilginizi adım adım geliştirin",
     "getStarted": "Başlayın",
-    "prayer": "Namaz Nasıl Kılınır",
-    "prayerSubtitle": "Adım adım rehber",
-    "wudu": "Abdest",
-    "wuduSubtitle": "Temizlik rehberi",
-    "pillars": "Beş Şart",
-    "pillarsSubtitle": "İslam'ın temeli",
-    "duas": "Günlük Dualar",
-    "duasSubtitle": "Önemli yakarışlar",
-    "quranSubtitle": "Oku ve öğren",
-    "quranDescription": "Kuran-ı Kerim'i meallerle okuyun ve yer imi ekleyin",
-    "ramadan": "Ramazan",
-    "ramadanSubtitle": "Bereket ayı",
-    "hajj": "Hac & Umre",
-    "hajjSubtitle": "Kutsal hac",
-    "basics": "İslam Temelleri",
-    "basicsSubtitle": "Yeni başlayanlar için",
-    "loadingGuides": "Rehber yükleniyor",
-    "preparingContent": "İçerik hazırlanıyor"
+    "comingSoon": "Yakında",
+    "comingSoonText": "Bu rehber hazırlanıyor. Detaylı içerik için daha sonra tekrar kontrol edin.",
+    "needHelp": "Daha fazla yardıma mı ihtiyacınız var? Topluluk forumumuzu ziyaret edin veya bir imamla iletişime geçin.",
+    "prayerTitle": "Namaz Nasıl Kılınır (Salat)",
+    "prayerDescription": "İslami namazın adım adım tam rehberi",
+    "prerequisites": "Ön Hazırlık",
+    "intention": "Niyet",
+    "opening": "Açılış",
+    "ruku": "Rükû",
+    "sujood": "Secde",
+    "tashahud": "Oturuş (Teşehhüd)",
+    "completion": "Tamamlama",
+    "wuduTitle": "Abdest Nasıl Alınır",
+    "wuduDescription": "Ritüel temizliğin adım adım rehberi",
+    "preparation": "Hazırlık",
+    "obligatorySteps": "Farz Adımlar",
+    "sunnahSteps": "Sünnet Adımlar",
+    "invalidators": "Abdesti Bozan Şeyler",
+    "pillarsTitle": "İslam'ın Beş Şartı",
+    "pillarsDescription": "İslam'daki temel ibadet şekilleri",
+    "shahada": "Şehadet (İman)",
+    "salah": "Namaz",
+    "zakat": "Zekat",
+    "sawm": "Oruç",
+    "hajjPillar": "Hac",
+    "duasTitle": "Günlük Dualar ve Yakarışlar",
+    "duasDescription": "Günlük hayat için önemli dualar",
+    "morning": "Sabah Duaları",
+    "evening": "Akşam Duaları",
+    "mealtime": "Yemek Duaları",
+    "travel": "Yolculuk Duaları",
+    "difficulty": "Sıkıntı Duaları",
+    "gratitude": "Şükür Duaları",
+    "ramadanTitle": "Ramazan Rehberi",
+    "ramadanDescription": "Mübarek Ramazan ayının tam rehberi",
+    "fastingRules": "Oruç Kuralları",
+    "suhoor": "Sahur & İftar",
+    "nightPrayer": "Teravih Namazı",
+    "laylatulQadr": "Kadir Gecesi",
+    "charity": "Ramazan'da Sadaka",
+    "eidPrep": "Bayram Hazırlığı",
+    "hajjTitle": "Hac ve Umre Rehberi",
+    "hajjDescription": "Mekke'ye hac yolculuğunun tam rehberi",
+    "hajjIntro": "Giriş",
+    "ihram": "İhrama Giriş",
+    "tawaf": "Tavaf",
+    "saee": "Say",
+    "arafah": "Arafat Günü",
+    "rituals": "Hac Ritüelleri",
+    "umrahSteps": "Umre Adımları",
+    "basicsTitle": "Yeni Başlayanlar için İslam Temelleri",
+    "basicsDescription": "İslami inanç ve pratiklere giriş",
+    "beliefInAllah": "Allah'a İman",
+    "prophets": "Peygamberler",
+    "holyBooks": "Kutsal Kitaplar",
+    "angels": "Melekler",
+    "dayOfJudgment": "Kıyamet Günü",
+    "destiny": "Kader",
+    "prayer": {
+      "cleanBody": "Abdestli Olun",
+      "cleanBodyDesc": "Namaz kılmadan önce abdest aldığınızdan emin olun. Vücudunuzun temiz olması gerekir.",
+      "cleanPlace": "Temiz Yer",
+      "cleanPlaceDesc": "Temiz bir yüzeyde namaz kılın. Gerekirse seccade kullanın.",
+      "cleanClothes": "Temiz Kıyafet",
+      "cleanClothesDesc": "Avret yerlerini örten temiz ve uygun kıyafetler giyin.",
+      "facingQibla": "Kıbleye Yönelin",
+      "facingQiblaDesc": "Mekke'deki Kabe'ye doğru yönelin. Gerekirse pusula veya kıble uygulaması kullanın.",
+      "makeIntention": "Niyet Edin",
+      "makeIntentionDesc": "Hangi namazı kılacağınızı içinizden sessizce niyet edin. Örneğin: 'Allah için sabah namazı kılmaya niyet ettim.'",
+      "takbir": "Tekbir Getirin",
+      "takbirDesc": "İki elinizi omuz veya kulak hizasına kaldırın ve 'Allahu Ekber' (Allah en büyüktür) deyin. Sonra sağ elinizi sol elinizin üzerine göğsünüze veya göbeğinize koyun.",
+      "fatiha": "Fatiha Okuyun",
+      "fatihaDesc": "Fatiha suresini okuyun, ardından başka bir sure veya Kuran'dan ayetler okuyun.",
+      "rukuPosition": "Rükûa Eğilin",
+      "rukuPositionDesc": "Elleri dizlere koyarak belden öne eğilin. Sırtınızı düz tutun ve 'Sübhane Rabbiyel Azîm' (Yüce Rabbimi tesbih ederim) deyin üç kere.",
+      "sujoodPosition": "Secdeye Varın",
+      "sujoodPositionDesc": "Alnınızı, burnunuzu, iki avucunuzu, iki dizinizi ve ayak parmaklarınızı yere koyun. 'Sübhane Rabbiyel A'la' (Yüce Rabbimi tesbih ederim) deyin üç kere.",
+      "sitting": "Teşehhüd için Oturun",
+      "sittingDesc": "Sol ayağınız üzerinde oturun, sağ ayağınız dik olsun. Ellerinizi uyluklarınıza koyun ve Teşehhüd'ü okuyun.",
+      "tasleem": "Selam Verin",
+      "tasleemDesc": "Başınızı sağa çevirin ve 'Esselamu Aleyküm ve Rahmetullah' deyin, sonra sola dönüp tekrarlayın. Namazınız tamamlanmış olur."
+    },
+    "wudu": {
+      "intention": "Niyet Edin",
+      "intentionDesc": "Temizlenme ve namaz için abdest almaya kalben niyet edin.",
+      "bismillah": "Besmele Çekin",
+      "bismillahDesc": "'Bismillah' (Allah'ın adıyla) diyerek başlayın.",
+      "washHands": "Elleri Yıkayın",
+      "washHandsDesc": "Her iki elinizi bileklere kadar üç kere yıkayın, suyun parmak aralarına ulaştığından emin olun.",
+      "rinseMouth": "Ağzı Çalkalayın",
+      "rinseMouthDesc": "Sağ elinize su alın, ağzınızı üç kere çalkalayın ve tükürün.",
+      "rinseNose": "Burnu Temizleyin",
+      "rinseNoseDesc": "Sağ elinize su alın, burnunuza çekin, sonra sol elinizle üfleyin. Bunu üç kere yapın.",
+      "washFace": "Yüzü Yıkayın",
+      "washFaceDesc": "Saç hattından çeneye, kulaktan kulağa tüm yüzünüzü üç kere yıkayın.",
+      "washArms": "Kolları Yıkayın",
+      "washArmsDesc": "Sağ kolunuzu parmak uçlarından dirseğe kadar üç kere yıkayın, sonra sol kolunuzu aynı şekilde yıkayın.",
+      "wipeHead": "Başı Meshedin",
+      "wipeHeadDesc": "Ellerinizi ıslatın ve başınızı alnınızdan enseye, ardından tekrar öne doğru bir kere meshedin.",
+      "wipeEars": "Kulakları Meshedin",
+      "wipeEarsDesc": "İşaret parmaklarınızla kulak içini, başparmaklarınızla kulak arkasını meshedin.",
+      "washFeet": "Ayakları Yıkayın",
+      "washFeetDesc": "Sağ ayağınızı topuklara kadar üç kere yıkayın, suyun parmak aralarına ulaştığından emin olun. Sonra sol ayağı aynı şekilde yıkayın.",
+      "naturalDischarge": "Doğal Akıntılar",
+      "naturalDischargeDesc": "Tuvalet ihtiyacı, gaz çıkması veya mahrem yerlerden herhangi bir akıntı abdesti bozar.",
+      "sleep": "Derin Uyku",
+      "sleepDesc": "Oturma veya dayanma olmadan uyumak abdesti bozar.",
+      "unconsciousness": "Bilinç Kaybı",
+      "unconsciousnessDesc": "Bayılma, şuur kaybı veya herhangi bir bilinçsizlik hali abdesti bozar."
+    },
+    "pillars": {
+      "shahadaMeaning": "İman Şahadeti",
+      "shahadaMeaningDesc": "Şehadet, Allah'tan başka ilah olmadığına ve Muhammed'in O'nun elçisi olduğuna tanıklıktır. İslam inancının temelidir.",
+      "fivePrayers": "Beş Vakit Namaz",
+      "fivePrayersDesc": "Müslümanlar günde beş farz namaz kılmalıdır: Sabah (fecir), öğle, ikindi, akşam ve yatsı.",
+      "charitableGiving": "Farz Sadaka",
+      "charitableGivingDesc": "Zekat, yılda bir kere servetin %2.5'inin fakirlere ve muhtaçlara verilmesi, malı temizlemek için verilen zorunlu sadakadır.",
+      "ramadanFast": "Ramazan Orucu",
+      "ramadanFastDesc": "Müslümanlar Ramazan ayında şafaktan gün batımına kadar oruç tutmalı, yiyecek, içecek ve cinsel ilişkiden uzak durmalıdır.",
+      "pilgrimage": "Mekke'ye Hac",
+      "pilgrimageDesc": "Hac, her gücü yeten Müslümanın hayatında en az bir kere yapması gereken Mekke'ye ziyarettir."
+    },
+    "duas": {
+      "morningDua": "Sabah Zikri",
+      "morningDuaDesc": "Sabah bunu okuyun: 'Biz sabahladık, mülk Allah'ındır' - günün bereketini ve Allah'ın korumasını dileyin.",
+      "eveningDua": "Akşam Zikri",
+      "eveningDuaDesc": "Akşam bunu okuyun: 'Biz akşamladık, mülk Allah'ındır' - gece boyunca Allah'ın korumasını dileyin.",
+      "beforeEating": "Yemek Öncesi",
+      "beforeEatingDesc": "Yemekten önce 'Bismillah' (Allah'ın adıyla) deyin, Allah'ın nimetlerini ve rızkını hatırlayın.",
+      "afterEating": "Yemek Sonrası",
+      "afterEatingDesc": "Yemekten sonra 'Elhamdülillah' (Hamd Allah'a mahsustur) deyin, yiyecek ve rızık için Allah'a şükredin.",
+      "travelDua": "Yolculuk Duası",
+      "travelDuaDesc": "Yolculuğa başlarken 'Bunu bize boyun eğdirene hamd olsun, yoksa biz buna güç yetiremezdik' deyin."
+    },
+    "ramadan": {
+      "whoMustFast": "Kimler Oruç Tutmalı",
+      "whoMustFastDesc": "Fiziksel ve zihinsel olarak güç yetiren tüm yetişkin Müslümanlar oruç tutmalıdır. Yolcular, hastalar, hamile veya emziren kadınlar, yaşlılar ve âdet gören kadınlar muaftır.",
+      "whatBreaksFast": "Orucu Bozan Şeyler",
+      "whatBreaksFastDesc": "Yemek, içmek, sigara, cinsel ilişki ve kasıtlı kusma orucu bozar. Oruç şafaktan (sabah) gün batımına (akşam) kadardır.",
+      "suhoorTime": "Sahur (Şafak Öncesi Yemek)",
+      "suhoorTimeDesc": "Sabah namazından önce sahur yapın. Peygamber (s.a.v.) sahurun bereketini vurgulamış ve atlanmamasını teşvik etmiştir.",
+      "iftarTime": "İftar (Oruç Açma)",
+      "iftarTimeDesc": "Gün batımında (akşam vaktinde) orucunuzu açın. Peygamber'in (s.a.v.) örneğini takiben hurma ve su ile açmak sünnettir.",
+      "taraweeh": "Teravih Namazı",
+      "taraweehDesc": "Ramazan'da yatsı namazından sonra kılınan özel gece namazları. Sünnet ve çok tavsiye edilir, genellikle ay boyunca tüm Kuran tamamlanır.",
+      "nightOfPower": "Kadir Gecesi",
+      "nightOfPowerDesc": "Bin aydan daha hayırlı olan Kadir Gecesi, muhtemelen Ramazan'ın son 10 gecesinde, özellikle tek gecelerde (21, 23, 25, 27, 29) gelir. İbadeti artırın ve bağışlanma dileyin."
+    },
+    "hajj": {
+      "obligation": "Beşinci Şart",
+      "obligationDesc": "Hac, fiziksel ve maddi gücü yeten her Müslüman için hayatta bir kere farzdır. Zilhicce ayında yapılır.",
+      "ihramClothing": "İhram Kıyafeti",
+      "ihramClothingDesc": "Erkekler iki beyaz dikişsiz bez giyer. Kadınlar yüz ve eller hariç her yeri örten mütevazı kıyafet giyer. Belirlenen yerlerde (mikat) niyetle ihrama girilir.",
+      "ihramRestrictions": "İhram Yasakları",
+      "ihramRestrictionsDesc": "İhramdayken saç ve tırnak kesmek, parfüm kullanmak, avlanmak, cinsel ilişkide bulunmak veya dikilmiş elbise giymek (erkekler için) yasaktır. Kadınlar yüzlerini örtmemelidir.",
+      "circlingKaaba": "Kabe'yi Tavaf",
+      "circlingKaabaDesc": "Kabe'yi Hacer-i Esved'den başlayarak saat yönünün tersine yedi kere tavaf edin. Erkekler tavaf sırasında sağ omuzlarını açabilir (idtiba).",
+      "safaMarwa": "Safa ve Merve Arası Yürümek",
+      "safaMarwaDesc": "Hacer'in oğlu İsmail için su arayışını anarak Safa ve Merve tepeleri arasında yedi kere yürüyerek Sa'y yapın.",
+      "dayOfArafah": "Arafat'ta Vakfe",
+      "dayOfArafahDesc": "Haccın en önemli günü (Zilhicce'nin 9'u). Öğleden gün batımına kadar Arafat Dağı'nda dua ve ibadet ile vakfe yapın. Bunun olmadan hac geçerli olmaz."
+    },
+    "basics": {
+      "tawheed": "Allah'ın Birliği (Tevhid)",
+      "tawheedDesc": "Allah'ın Bir olduğu, ortağı, oğlu veya dengi olmadığı temel inancı. O, her şeyin Yaratıcısı ve Rızık Vereni'dir, tüm ibadete layıktır.",
+      "messengers": "Peygamberler",
+      "messengersDesc": "Müslümanlar Allah'ın gönderdiği tüm peygamberlere inanır: Âdem, Nuh, İbrahim, Musa, İsa ve Muhammed (hepsine selam olsun). Muhammed (s.a.v.) son peygamberdir.",
+      "divineBooks": "Kutsal Kitaplar",
+      "divineBooksDesc": "Müslümanlar Tevrat, Zebur, İncil ve Kuran'a inanır. Kuran son vahiydir ve orijinal haliyle korunmuştur.",
+      "angelsRole": "Melekler",
+      "angelsRoleDesc": "Melekler nurdan yaratılmış ve Allah'a mükemmel şekilde hizmet ederler. Önemli melekler: Vahiy getiren Cebrail, Mikail, İsrafil ve Azrail.",
+      "akhirah": "Ahiret",
+      "akhirahDesc": "Müslümanlar ölümden sonraki hayata inanır. Kıyamet günü, herkes diriltilir ve Allah tarafından yargılanır. Salihler Cennet'e, kötüler Cehennem'e girer.",
+      "qadr": "İlahi Kader",
+      "qadrDesc": "Müslümanlar Allah'ın her şey üzerinde bilgisi ve gücü olduğuna inanır. Seçim özgürlüğümüz varken, Allah'ın bilgisi tüm geçmiş, şimdi ve gelecek olayları kapsar."
+    }
   },
   "quran": {
     "quran": "Kuran",
@@ -511,5 +2520,61 @@
     "missed": "Kılınmadı",
     "onTimePrayers": "Zamanında",
     "latePrayers": "Geç Kılınan"
+  },
+  "notifications": {
+    "prayerReminders": "Namaz Hatırlatıcıları",
+    "completionReminders": "Tamamlama Hatırlatıcıları",
+    "dailyVerse": "Günlük Ayet",
+    "streakReminder": "Seri Hatırlatıcısı",
+    "enablePrayerReminders": "Namaz Vakti Bildirimleri",
+    "prayerRemindersDesc": "Namaz vakitlerinden önce bildirim al",
+    "enableCompletionReminders": "Namaz Tamamlama Hatırlatıcıları",
+    "completionRemindersDesc": "Namazlarımı kaydetmem için beni hatırlat",
+    "enableDailyVerse": "Günlük İlham",
+    "dailyVerseDesc": "Her gün ayetler ve sözler al",
+    "enableStreakReminder": "Seri Koruma",
+    "streakReminderDesc": "Serini korumak için günlük hatırlatma",
+    "jumuahReminder": "Cuma Namazı Hatırlatıcısı",
+    "enableJumuahReminder": "Cuma Namazı Bildirimi",
+    "jumuahReminderDesc": "Cuma namazı için hatırlatma al",
+    "reminderTime": "Hatırlatma zamanı",
+    "reminderAfter": "Sonra hatırlat:",
+    "testNotification": "Test Bildirimi Gönder",
+    "manageNotifications": "Bildirim ayarlarını yönet",
+    "socialNotifications": "Sosyal Bildirimler",
+    "friendRequests": "Arkadaşlık İstekleri",
+    "friendRequestsDesc": "Arkadaşlık isteği geldiğinde bildirim al",
+    "friendPrayers": "Arkadaş Namaz Güncellemeleri",
+    "friendPrayersDesc": "Arkadaşların namaz kıldığında bildirim al",
+    "friendStreaks": "Arkadaş Seri Başarıları",
+    "friendStreaksDesc": "Arkadaşların seri başarısına ulaştığında bildirim al",
+    "prayerReminderTitle": "{{prayer}} Namazına {{minutes}} dakika kaldı",
+    "prayerReminderBody": "Namaz vaktine hazırlan",
+    "completionReminderTitle": "{{prayer}} Namazını kıldın mı?",
+    "completionReminderBody": "Serini korumak için namazını kaydet!",
+    "dailyVerseTitle": "📖 Günlük Ayet",
+    "dailyVerseBody": "Bugünün ilham kaynağın burada. Okumak için aç.",
+    "streakReminderTitle": "🔥 Serini Koru!",
+    "streakReminderBody": "Bugünkü namazlarını kaydetmeyi unutma.",
+    "jumuahReminderTitle": "🕌 Cuma Namazı Vakti",
+    "jumuahReminderBody": "Cuma namazına hazırlan. Camiye gidelim!",
+    "friendRequestReceived": "👥 Yeni Arkadaşlık İsteği",
+    "friendRequestAccepted": "✅ Arkadaşlık İsteği Kabul Edildi",
+    "friendPrayer3": "🕌 Arkadaşınız bugün 3 namaz kıldı!",
+    "friendPrayer5": "🌟 Arkadaşınız bugün 5 namazı da kıldı!",
+    "friendStreak7": "🔥 Arkadaşınız 7 günlük seriye ulaştı!",
+    "friendStreak30": "⭐ Arkadaşınız 30 günlük seriye ulaştı!",
+    "friendStreak100": "💎 Arkadaşınız 100 günlük seriye ulaştı!",
+    "friendStreak365": "🏆 Arkadaşınız 365 günlük seriye ulaştı!"
+  },
+  "settings": {
+    "notifications": "Bildirim Ayarları"
+  },
+  "tabs": {
+    "home": "Ana Sayfa",
+    "tracker": "Takip",
+    "qibla": "Kıble",
+    "guides": "Öğren",
+    "profile": "Profil"
   }
 }

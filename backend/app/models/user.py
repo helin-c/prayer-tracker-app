@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, Index
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, Index, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -13,13 +13,7 @@ class UserRole(enum.Enum):
 
 class User(Base):
     """
-    User model with authentication, profile, and prayer tracking.
-    
-    Features:
-    - Role-based access control (USER/ADMIN)
-    - Profile information (phone, location, language)
-    - Prayer tracking relationships
-    - Timezone-aware timestamps
+    User model with authentication, profile, prayer tracking AND notifications.
     """
     __tablename__ = "users"
     
@@ -38,6 +32,24 @@ class User(Base):
     phone = Column(String(50), nullable=True)
     location = Column(String(255), nullable=True)
     preferred_language = Column(String(10), default="en", nullable=False)
+
+    # ========================================================================
+    # 🔔 PUSH NOTIFICATIONS & SETTINGS (YENİ EKLENEN KISIM)
+    # ========================================================================
+    
+    # Expo Push Token (Mobil cihazdan gelen token)
+    push_token = Column(String(255), nullable=True, index=True)
+    
+    # Notification Preferences (JSON olarak saklıyoruz, böylece ileride yeni tipler eklemek kolay olur)
+    # friend_requests: Arkadaşlık isteği geldiğinde veya kabul edildiğinde (Tip 1 ve 2)
+    # friend_prayers: Arkadaş 3+ namaz kıldığında (Tip 3)
+    # friend_streaks: Arkadaş streak yaptığında (Tip 4)
+    notification_preferences = Column(JSON, nullable=False, default=lambda: {
+    "friend_requests": True,
+    "friend_prayers": True,
+    "friend_streaks": True,
+    "daily_reminders": True 
+    })
     
     # Timestamps (timezone-aware)
     created_at = Column(
@@ -62,7 +74,7 @@ class User(Base):
         "PrayerLog",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="dynamic"  # For efficient queries on large datasets
+        lazy="dynamic"
     )
     
     # Prayer streak (one-to-one)
@@ -100,9 +112,6 @@ class User(Base):
     def to_dict(self, include_prayer_stats: bool = False):
         """
         Convert to dictionary for JSON serialization.
-        
-        Args:
-            include_prayer_stats: Include prayer statistics if True
         """
         data = {
             "id": self.id,
@@ -114,6 +123,9 @@ class User(Base):
             "phone": self.phone,
             "location": self.location,
             "preferred_language": self.preferred_language,
+            # Push ve Bildirim ayarlarını da frontende gönderiyoruz
+            "push_token": self.push_token,
+            "notification_preferences": self.notification_preferences,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None,

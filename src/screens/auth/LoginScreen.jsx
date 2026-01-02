@@ -1,23 +1,23 @@
-// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/auth/LoginScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/auth/LoginScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView, // <-- Added
-  Platform,             // <-- Added
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Alert,
   TouchableOpacity,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
+
+// ✅ Import Store and Selectors
+import { useAuthStore, selectAuthIsLoading } from '../../store/authStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -30,8 +30,9 @@ export const LoginScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
 
-  // isLoading now controls the button spinner, not full screen loading
-  const { login, isLoading } = useAuthStore();
+  // ✅ OPTIMIZED: Use selectors to avoid unnecessary re-renders
+  const isLoading = useAuthStore(selectAuthIsLoading);
+  const login = useAuthStore((state) => state.login);
 
   const updateField = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -66,7 +67,7 @@ export const LoginScreen = ({ navigation }) => {
     const result = await login(cleanData);
 
     if (result.success) {
-      // Success handled by auth store
+      // Success handled by auth store (navigation state change)
     } else {
       Alert.alert(
         t('auth.errors.loginFailed'),
@@ -168,8 +169,6 @@ export const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container logic since Layout handles it
-  
   keyboardView: {
     flex: 1,
   },

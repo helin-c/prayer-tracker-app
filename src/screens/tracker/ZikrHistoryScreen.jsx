@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -12,7 +12,6 @@ import {
   Alert,
   ActivityIndicator, 
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
@@ -21,8 +20,8 @@ import { enUS, tr } from 'date-fns/locale';
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// STORE IMPORTS
-import { useTasbihStore } from '../../store/tasbihStore';
+// ✅ IMPORT Store and Selectors
+import { useTasbihStore, selectSessions } from '../../store/tasbihStore';
 
 // COMPONENT IMPORTS
 import {
@@ -106,13 +105,15 @@ const HistorySkeleton = () => {
 // ============================================================================
 export const ZikrHistoryScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
-  const {
-    sessions,
-    deleteSession,
-    clearAllSessions,
-    continueSession,
-    loadSessions,
-  } = useTasbihStore();
+  
+  // ✅ OPTIMIZED: Use selectors for state
+  const sessions = useTasbihStore(selectSessions);
+  
+  // Actions
+  const deleteSession = useTasbihStore(state => state.deleteSession);
+  const clearAllSessions = useTasbihStore(state => state.clearAllSessions);
+  const continueSession = useTasbihStore(state => state.continueSession);
+  const loadSessions = useTasbihStore(state => state.loadSessions);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isClearing, setIsClearing] = useState(false);

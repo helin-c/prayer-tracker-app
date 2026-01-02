@@ -18,7 +18,7 @@
     "hour": "hour",
     "minute": "minute",
     "second": "second",
-    "pleaseWait" :"Please wait...",
+    "pleaseWait": "Please wait...",
     "viewAll": "View All",
     "notice": "Notice"
   },
@@ -158,7 +158,1834 @@
     "shareText": "Share as Text",
     "shareImage": "Share as Image",
     "shareError": "An error occurred while sharing.",
-    "sharingNotAvailable": "Sharing is not available on this device."
+    "sharingNotAvailable": "Sharing is not available on this device.",
+    "daily": {
+      "quote_1": {
+        "text": "Today is a new beginning, embrace it with hope.",
+        "author": "Quran",
+        "source": "Al-Inshirah 94:5-6"
+      },
+      "quote_2": {
+        "text": "Patience is the key to relief.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_3": {
+        "text": "Remember Me, and I will remember you.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:152"
+      },
+      "quote_4": {
+        "text": "The best of people benefit others most.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Daraqutni"
+      },
+      "quote_5": {
+        "text": "Indeed, Allah is with those who are patient.",
+        "author": "Quran",
+        "source": "Al-Anfal 8:46"
+      },
+      "quote_6": {
+        "text": "A kind word is charity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_7": {
+        "text": "He is with you wherever you are.",
+        "author": "Quran",
+        "source": "Al-Hadid 57:4"
+      },
+      "quote_8": {
+        "text": "Speak good or remain silent.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_9": {
+        "text": "Allah does not burden a soul beyond its capacity.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:286"
+      },
+      "quote_10": {
+        "text": "The believer's strength is in trust in Allah.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_11": {
+        "text": "So truly where there is hardship, there is also ease.",
+        "author": "Quran",
+        "source": "Al-Inshirah 94:5"
+      },
+      "quote_12": {
+        "text": "Do good and goodness will come to you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ahmad"
+      },
+      "quote_13": {
+        "text": "Seek help through patience and prayer.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:45"
+      },
+      "quote_14": {
+        "text": "Your smile to your brother is charity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_15": {
+        "text": "The Most Merciful shows mercy to the merciful.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Abu Dawud"
+      },
+      "quote_16": {
+        "text": "Indeed, my Lord is near and responsive.",
+        "author": "Quran",
+        "source": "Hud 11:61"
+      },
+      "quote_17": {
+        "text": "Be patient, for your patience is only by Allah's help.",
+        "author": "Quran",
+        "source": "An-Nahl 16:127"
+      },
+      "quote_18": {
+        "text": "Good character is the heaviest thing on the Scale.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Abu Dawud"
+      },
+      "quote_19": {
+        "text": "Call upon Me, I will respond to you.",
+        "author": "Quran",
+        "source": "Ghafir 40:60"
+      },
+      "quote_20": {
+        "text": "The best provision is righteousness.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:197"
+      },
+      "quote_21": {
+        "text": "Whoever relieves a believer's distress, Allah will relieve his.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_22": {
+        "text": "Do not despair of the mercy of Allah.",
+        "author": "Quran",
+        "source": "Az-Zumar 39:53"
+      },
+      "quote_23": {
+        "text": "The strong one is who controls himself in anger.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_24": {
+        "text": "Those who believe find rest in remembrance of Allah.",
+        "author": "Quran",
+        "source": "Ar-Ra'd 13:28"
+      },
+      "quote_25": {
+        "text": "Whoever does good, it is for their own soul.",
+        "author": "Quran",
+        "source": "Fussilat 41:46"
+      },
+      "quote_26": {
+        "text": "Make things easy, not difficult.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_27": {
+        "text": "Allah is the best of planners.",
+        "author": "Quran",
+        "source": "Al-Anfal 8:30"
+      },
+      "quote_28": {
+        "text": "The most beloved deeds are those done consistently.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_29": {
+        "text": "When you are grateful, I will increase you.",
+        "author": "Quran",
+        "source": "Ibrahim 14:7"
+      },
+      "quote_30": {
+        "text": "Verily, Allah loves those who do good.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:195"
+      },
+      "quote_31": {
+        "text": "The best among you are those with the best character.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_32": {
+        "text": "Peace be upon those who follow guidance.",
+        "author": "Quran",
+        "source": "Ta-Ha 20:47"
+      },
+      "quote_33": {
+        "text": "Gentleness adorns everything it touches.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_34": {
+        "text": "My mercy encompasses all things.",
+        "author": "Quran",
+        "source": "Al-A'raf 7:156"
+      },
+      "quote_35": {
+        "text": "Be mindful of Allah, and He will protect you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_36": {
+        "text": "Allah is gentle and loves gentleness.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_37": {
+        "text": "Take one step towards Me, I will take ten towards you.",
+        "author": "Hadith Qudsi",
+        "source": "Sahih Bukhari"
+      },
+      "quote_38": {
+        "text": "In the heart there is sadness that only dhikr removes.",
+        "author": "Ibn Taymiyyah",
+        "source": "Majmu' Fatawa"
+      },
+      "quote_39": {
+        "text": "The best richness is the richness of the soul.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_40": {
+        "text": "Hold to forgiveness and turn away from the ignorant.",
+        "author": "Quran",
+        "source": "Al-A'raf 7:199"
+      },
+      "quote_41": {
+        "text": "The reward of patience is Paradise.",
+        "author": "Quran",
+        "source": "Az-Zumar 39:10"
+      },
+      "quote_42": {
+        "text": "Feed the hungry and visit the sick.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_43": {
+        "text": "Believers are like one body in mutual compassion.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_44": {
+        "text": "Repel evil with what is better.",
+        "author": "Quran",
+        "source": "Fussilat 41:34"
+      },
+      "quote_45": {
+        "text": "Love for your brother what you love for yourself.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_46": {
+        "text": "What is with Allah is better and everlasting.",
+        "author": "Quran",
+        "source": "Al-Qasas 28:60"
+      },
+      "quote_47": {
+        "text": "Good words are like a good tree with firm roots.",
+        "author": "Quran",
+        "source": "Ibrahim 14:24"
+      },
+      "quote_48": {
+        "text": "Give glad tidings and do not repel people.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_49": {
+        "text": "Paradise lies under the feet of mothers.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "An-Nasa'i"
+      },
+      "quote_50": {
+        "text": "My Lord never errs or forgets.",
+        "author": "Quran",
+        "source": "Ta-Ha 20:52"
+      },
+      "quote_51": {
+        "text": "Whoever humbles themselves for Allah, He will elevate them.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_52": {
+        "text": "Allah loves those who trust in Him.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:159"
+      },
+      "quote_53": {
+        "text": "The best cure is in the Quran.",
+        "author": "Quran",
+        "source": "Al-Isra 17:82"
+      },
+      "quote_54": {
+        "text": "Modesty is part of faith.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_55": {
+        "text": "Do not let hatred make you unjust.",
+        "author": "Quran",
+        "source": "Al-Ma'idah 5:8"
+      },
+      "quote_56": {
+        "text": "Knowledge is a light that Allah casts into the heart.",
+        "author": "Imam Malik",
+        "source": "Jami' Bayan al-Ilm"
+      },
+      "quote_57": {
+        "text": "Keep your duty to Allah and speak truthfully.",
+        "author": "Quran",
+        "source": "Al-Ahzab 33:70"
+      },
+      "quote_58": {
+        "text": "The believers are brothers, so make peace between them.",
+        "author": "Quran",
+        "source": "Al-Hujurat 49:10"
+      },
+      "quote_59": {
+        "text": "Whoever is not merciful will not be shown mercy.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_60": {
+        "text": "Every soul shall taste death, then to Us you return.",
+        "author": "Quran",
+        "source": "Al-Ankabut 29:57"
+      },
+      "quote_61": {
+        "text": "We created you from earth, to it you return, then brought forth again.",
+        "author": "Quran",
+        "source": "Ta-Ha 20:55"
+      },
+      "quote_62": {
+        "text": "Children are among the flowers of Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Al-Adab al-Mufrad"
+      },
+      "quote_63": {
+        "text": "The first thing written for the child is their provision.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_64": {
+        "text": "We created man in the best form.",
+        "author": "Quran",
+        "source": "At-Tin 95:4"
+      },
+      "quote_65": {
+        "text": "Behind every hardship is wisdom.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_66": {
+        "text": "Life is a journey towards the eternal home.",
+        "author": "Imam Al-Ghazali",
+        "source": "Ihya Ulum al-Din"
+      },
+      "quote_67": {
+        "text": "Blessed is He in whose hand is dominion over all things.",
+        "author": "Quran",
+        "source": "Al-Mulk 67:1"
+      },
+      "quote_68": {
+        "text": "Every day He is in a different state of glory.",
+        "author": "Quran",
+        "source": "Ar-Rahman 55:29"
+      },
+      "quote_69": {
+        "text": "Work for this life as if you'll live forever.",
+        "author": "Ali ibn Abi Talib",
+        "source": "Nahjul Balagha"
+      },
+      "quote_70": {
+        "text": "This world is a bridge, so pass over it.",
+        "author": "Traditional Wisdom",
+        "source": "Islamic"
+      },
+      "quote_71": {
+        "text": "The world is green and beautiful, treat it with care.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_72": {
+        "text": "Plant a tree even if the Hour is at hand.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Musnad Ahmad"
+      },
+      "quote_73": {
+        "text": "The earth has been made a place of prayer for me.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_74": {
+        "text": "Hope in Allah's mercy and work righteousness.",
+        "author": "Quran",
+        "source": "Al-Kahf 18:110"
+      },
+      "quote_75": {
+        "text": "Seek knowledge from the cradle to the grave.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sunan Ibn Majah"
+      },
+      "quote_76": {
+        "text": "Whoever travels a path seeking knowledge, Allah eases their way to Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_77": {
+        "text": "Read in the name of your Lord who created.",
+        "author": "Quran",
+        "source": "Al-Alaq 96:1"
+      },
+      "quote_78": {
+        "text": "The ink of the scholar is more sacred than the blood of the martyr.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_79": {
+        "text": "Spring is nature's way of saying, 'Begin again.'",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_80": {
+        "text": "As the seed awaits spring, the soul awaits awakening.",
+        "author": "Rumi",
+        "source": "Masnavi"
+      },
+      "quote_81": {
+        "text": "Renewal comes with gratitude and patience.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_82": {
+        "text": "Allah alternates the night and day for reflection.",
+        "author": "Quran",
+        "source": "An-Nur 24:44"
+      },
+      "quote_83": {
+        "text": "Growth requires both sunshine and rain.",
+        "author": "Traditional Wisdom",
+        "source": "Proverb"
+      },
+      "quote_84": {
+        "text": "Blessed are the trees, for they give and do not take.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_85": {
+        "text": "Nature is Allah's art gallery.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_86": {
+        "text": "Look at the sky, the earth, and contemplate creation.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:191"
+      },
+      "quote_87": {
+        "text": "All creation glorifies Allah in its own way.",
+        "author": "Quran",
+        "source": "Al-Isra 17:44"
+      },
+      "quote_88": {
+        "text": "The changing seasons remind us that nothing is permanent but Allah.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_89": {
+        "text": "Every flower is a soul blossoming in nature.",
+        "author": "Adapted Wisdom",
+        "source": "Traditional"
+      },
+      "quote_90": {
+        "text": "March brings renewal to the earth and the soul.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_91": {
+        "text": "The patient one achieves what the hasty one misses.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_92": {
+        "text": "Trust in Allah, but tie your camel.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_93": {
+        "text": "The true pilgrim is one whose journey transforms them.",
+        "author": "Rumi",
+        "source": "Masnavi"
+      },
+      "quote_94": {
+        "text": "Prayer is the pillar of religion.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih"
+      },
+      "quote_95": {
+        "text": "Whoever prays Fajr is under Allah's protection.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_96": {
+        "text": "Maintain prayer at the two ends of the day.",
+        "author": "Quran",
+        "source": "Hud 11:114"
+      },
+      "quote_97": {
+        "text": "Prayer is light, charity is proof.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_98": {
+        "text": "When you stand for prayer, you converse with your Lord.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_99": {
+        "text": "Between man and disbelief is abandoning prayer.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_100": {
+        "text": "The first matter judged on Judgment Day is prayer.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_101": {
+        "text": "The coolness of my eyes is in prayer.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "An-Nasa'i"
+      },
+      "quote_102": {
+        "text": "Seek help through patience and prayer.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:153"
+      },
+      "quote_103": {
+        "text": "Allah is more joyful at repentance than you would be.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_104": {
+        "text": "The door of repentance is always open.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_105": {
+        "text": "Turn to Allah before you return to Him.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_106": {
+        "text": "Your Lord's mercy outweighs His anger.",
+        "author": "Hadith Qudsi",
+        "source": "Sahih Bukhari"
+      },
+      "quote_107": {
+        "text": "Do not lose hope in Allah's mercy.",
+        "author": "Quran",
+        "source": "Yusuf 12:87"
+      },
+      "quote_108": {
+        "text": "Who can forgive sins except Allah?",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:135"
+      },
+      "quote_109": {
+        "text": "Return to your Lord and submit to Him.",
+        "author": "Quran",
+        "source": "Az-Zumar 39:54"
+      },
+      "quote_110": {
+        "text": "Allah accepts the repentance of those who do evil ignorantly.",
+        "author": "Quran",
+        "source": "An-Nisa 4:17"
+      },
+      "quote_111": {
+        "text": "O My servants who transgressed, do not despair of Allah's mercy.",
+        "author": "Quran",
+        "source": "Az-Zumar 39:53"
+      },
+      "quote_112": {
+        "text": "Regret is repentance.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ibn Majah"
+      },
+      "quote_113": {
+        "text": "When you make a mistake, follow it with a good deed.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_114": {
+        "text": "A sincere repenter is like one who has no sin.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ibn Majah"
+      },
+      "quote_115": {
+        "text": "The best of sinners are those who constantly repent.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_116": {
+        "text": "Indeed, good deeds remove bad deeds.",
+        "author": "Quran",
+        "source": "Hud 11:114"
+      },
+      "quote_117": {
+        "text": "The universe is a book written by the pen of God.",
+        "author": "Imam Al-Ghazali",
+        "source": "Ihya"
+      },
+      "quote_118": {
+        "text": "April showers bring spiritual growth.",
+        "author": "Traditional Wisdom",
+        "source": "Proverb"
+      },
+      "quote_119": {
+        "text": "Reflect on creation, not on the Creator.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_120": {
+        "text": "The signs of Allah are everywhere for those who reflect.",
+        "author": "Quran",
+        "source": "Ar-Rum 30:21"
+      },
+      "quote_121": {
+        "text": "To Him belongs whatever is in the heavens and the earth.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:255"
+      },
+      "quote_122": {
+        "text": "May your deeds be as beautiful as spring blossoms.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_123": {
+        "text": "Give charity without delay, for it stands in the way of calamity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_124": {
+        "text": "The believer's shade on Judgment Day will be their charity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_125": {
+        "text": "Charity does not decrease wealth.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_126": {
+        "text": "The best charity is that given when you have little.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_127": {
+        "text": "Who will lend Allah a goodly loan?",
+        "author": "Quran",
+        "source": "Al-Hadid 57:11"
+      },
+      "quote_128": {
+        "text": "Whatever you spend, He will replace it.",
+        "author": "Quran",
+        "source": "Saba 34:39"
+      },
+      "quote_129": {
+        "text": "Protect yourself from the Fire even with half a date.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_130": {
+        "text": "Every act of kindness is charity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_131": {
+        "text": "The upper hand is better than the lower hand.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_132": {
+        "text": "Give to the near of kin their due.",
+        "author": "Quran",
+        "source": "Al-Isra 17:26"
+      },
+      "quote_133": {
+        "text": "Be a garden, not a graveyard.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_134": {
+        "text": "In every walk with nature, one receives far more than they seek.",
+        "author": "Adapted Wisdom",
+        "source": "Traditional"
+      },
+      "quote_135": {
+        "text": "The green color relaxes the soul.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tradition"
+      },
+      "quote_136": {
+        "text": "Do you not see that Allah sends down rain?",
+        "author": "Quran",
+        "source": "Fatir 35:27"
+      },
+      "quote_137": {
+        "text": "And We made from water every living thing.",
+        "author": "Quran",
+        "source": "Al-Anbiya 21:30"
+      },
+      "quote_138": {
+        "text": "Water is the source of all life.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_139": {
+        "text": "In the creation of heavens and earth are signs for believers.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:190"
+      },
+      "quote_140": {
+        "text": "All creatures depend on Allah for their sustenance.",
+        "author": "Quran",
+        "source": "Hud 11:6"
+      },
+      "quote_141": {
+        "text": "Look at the fruits when they bear fruit and ripen.",
+        "author": "Quran",
+        "source": "Al-An'am 6:99"
+      },
+      "quote_142": {
+        "text": "Growth happens slowly, be patient with yourself.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_143": {
+        "text": "The earth is your mother, treat her gently.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_144": {
+        "text": "We have honored the children of Adam.",
+        "author": "Quran",
+        "source": "Al-Isra 17:70"
+      },
+      "quote_145": {
+        "text": "Honor is in righteousness and faith.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_146": {
+        "text": "Be in this world as if you are a stranger.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_147": {
+        "text": "This world is a temporary abode.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_148": {
+        "text": "Work for the Hereafter as if you die tomorrow.",
+        "author": "Ali ibn Abi Talib",
+        "source": "Wisdom"
+      },
+      "quote_149": {
+        "text": "Every season has its wisdom and purpose.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_150": {
+        "text": "May brings blooming hearts and renewed faith.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_151": {
+        "text": "Thank Allah for the blessings you have.",
+        "author": "Quran",
+        "source": "Ibrahim 14:7"
+      },
+      "quote_152": {
+        "text": "Summer's warmth is a blessing to embrace.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_153": {
+        "text": "Spend your summer in worship and reflection.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_154": {
+        "text": "Fasting is a shield from sin.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_155": {
+        "text": "Ramadan is the month of blessings.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih"
+      },
+      "quote_156": {
+        "text": "The gates of Paradise are opened in Ramadan.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_157": {
+        "text": "Whoever fasts Ramadan with faith will be forgiven.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_158": {
+        "text": "The du'a of a fasting person is not rejected.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ibn Majah"
+      },
+      "quote_159": {
+        "text": "Fasting is not just from food, but from bad deeds.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_160": {
+        "text": "There is a gate in Paradise called Ar-Rayyan for those who fast.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_161": {
+        "text": "Lailatul Qadr is better than a thousand months.",
+        "author": "Quran",
+        "source": "Al-Qadr 97:3"
+      },
+      "quote_162": {
+        "text": "The night of power brings immense blessings.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_163": {
+        "text": "Seek Lailatul Qadr in the last ten nights.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_164": {
+        "text": "Ramadan is the month of the Quran.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ahmad"
+      },
+      "quote_165": {
+        "text": "Every breath you take is a step towards death.",
+        "author": "Imam Al-Ghazali",
+        "source": "Ihya"
+      },
+      "quote_166": {
+        "text": "Make the Quran your companion.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_167": {
+        "text": "The Quran is a healing for what is in the hearts.",
+        "author": "Quran",
+        "source": "Yunus 10:57"
+      },
+      "quote_168": {
+        "text": "Recite the Quran for it will intercede for you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_169": {
+        "text": "The best of you are those who learn and teach Quran.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_170": {
+        "text": "June's warmth is like Allah's mercy, abundant and comforting.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_171": {
+        "text": "Summer days are long for extra worship.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_172": {
+        "text": "Eid brings joy to hearts that fasted with faith.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_173": {
+        "text": "Our Lord, accept from us, You are the All-Hearing.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:127"
+      },
+      "quote_174": {
+        "text": "Celebrate Allah's favors with gratitude.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_175": {
+        "text": "The reward for fasting is with Allah alone.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_176": {
+        "text": "Break your fast with dates, for they are blessed.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_177": {
+        "text": "The fasting person has a joy at breaking fast.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_178": {
+        "text": "Allah loves those who are consistent in their deeds.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_179": {
+        "text": "After Ramadan, continue in good deeds.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_180": {
+        "text": "The sign of accepted fasting is continued righteousness.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_181": {
+        "text": "Summer is a season of growth in faith and character.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_182": {
+        "text": "July's heat reminds us of the Day of Judgment.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_183": {
+        "text": "Stay hydrated in body and soul.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_184": {
+        "text": "The sun and moon run according to precise calculation.",
+        "author": "Quran",
+        "source": "Ar-Rahman 55:5"
+      },
+      "quote_185": {
+        "text": "Pilgrimage to the House is a duty owed to Allah.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:97"
+      },
+      "quote_186": {
+        "text": "Hajj is a journey of a lifetime.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_187": {
+        "text": "The pilgrim returns as pure as the day they were born.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_188": {
+        "text": "Here I am, O Allah, here I am.",
+        "author": "Talbiyah",
+        "source": "Hajj"
+      },
+      "quote_189": {
+        "text": "Arafah is the Hajj.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_190": {
+        "text": "The Day of Arafah is the best day of the year.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Muslim"
+      },
+      "quote_191": {
+        "text": "Sacrifice with sincerity brings you closer to Allah.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_192": {
+        "text": "Their meat and blood do not reach Allah, but your piety does.",
+        "author": "Quran",
+        "source": "Al-Hajj 22:37"
+      },
+      "quote_193": {
+        "text": "Eid al-Adha celebrates submission to Allah.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_194": {
+        "text": "Remember Ibrahim's trust in Allah.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_195": {
+        "text": "True sacrifice is giving up what we love for Allah.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_196": {
+        "text": "The days of Dhul Hijjah are the most blessed.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_197": {
+        "text": "Good deeds done in these ten days are most beloved to Allah.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_198": {
+        "text": "Fast on the Day of Arafah if not performing Hajj.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_199": {
+        "text": "Takbir fills the air with divine remembrance.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_200": {
+        "text": "Allah is the Greatest, All praise belongs to Him.",
+        "author": "Takbir",
+        "source": "Islamic"
+      },
+      "quote_201": {
+        "text": "July teaches us about heat and patience.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_202": {
+        "text": "Seek shade in Allah's remembrance.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_203": {
+        "text": "The righteous will be in shade on a day with no shade.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_204": {
+        "text": "Small consistent deeds are better than large sporadic ones.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_205": {
+        "text": "Build your paradise deed by deed.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_206": {
+        "text": "The believer is never satisfied with good until Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_207": {
+        "text": "Compete with each other in good deeds.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:148"
+      },
+      "quote_208": {
+        "text": "July's long days are opportunities for extended worship.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_209": {
+        "text": "Time is like a sword, use it or it will cut you.",
+        "author": "Islamic Proverb",
+        "source": "Traditional"
+      },
+      "quote_210": {
+        "text": "Your time is your life, spend it wisely.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_211": {
+        "text": "Every moment is a chance to draw closer to Allah.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_212": {
+        "text": "The month ends, but good deeds continue.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_213": {
+        "text": "August brings harvest of summer's spiritual efforts.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_214": {
+        "text": "Unity among believers is a source of strength.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_215": {
+        "text": "The hand of Allah is with the community.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_216": {
+        "text": "Hold fast to the rope of Allah, all together.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:103"
+      },
+      "quote_217": {
+        "text": "And do not dispute, lest you lose courage.",
+        "author": "Quran",
+        "source": "Al-Anfal 8:46"
+      },
+      "quote_218": {
+        "text": "None of you believes until he loves for his brother what he loves for himself.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_219": {
+        "text": "The believers, in their love and mercy, are like one body.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_220": {
+        "text": "The believers are brothers, make peace between them.",
+        "author": "Quran",
+        "source": "Al-Hujurat 49:10"
+      },
+      "quote_221": {
+        "text": "Help your brother whether he is an oppressor or oppressed.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_222": {
+        "text": "A Muslim is a brother to another Muslim.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_223": {
+        "text": "The best house is one where an orphan is treated well.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ibn Majah"
+      },
+      "quote_224": {
+        "text": "Show mercy to those on earth, and the One above will show mercy to you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_225": {
+        "text": "Kindness is a mark of faith.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_226": {
+        "text": "The strong bonds of family are a blessing.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_227": {
+        "text": "Maintain ties of kinship, for it increases your lifespan.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_228": {
+        "text": "The one who severs family ties will not enter Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_229": {
+        "text": "Visit your relatives even if they do not visit you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_230": {
+        "text": "Whoever believes in Allah and the Last Day should honor his guest.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_231": {
+        "text": "The best of you are the best to their families.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_232": {
+        "text": "Paradise lies at the feet of your mother.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "An-Nasa'i"
+      },
+      "quote_233": {
+        "text": "Your father is your best gate to Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Ibn Majah"
+      },
+      "quote_234": {
+        "text": "Treat your children with kindness and fairness.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Abu Dawud"
+      },
+      "quote_235": {
+        "text": "The rights of neighbors are emphasized in Islam.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_236": {
+        "text": "He who sleeps with a full stomach while his neighbor is hungry is not a believer.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Al-Adab al-Mufrad"
+      },
+      "quote_237": {
+        "text": "Do not belittle any good deed, even meeting your brother with a cheerful face.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_238": {
+        "text": "The most beloved people to Allah are those most beneficial to others.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tabarani"
+      },
+      "quote_239": {
+        "text": "Whoever removes a worldly hardship from a believer, Allah will remove from him one of the hardships of the Day of Judgment.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_240": {
+        "text": "August's abundance reminds us to share with others.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_241": {
+        "text": "Give and you shall receive manifold.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_242": {
+        "text": "The summer harvest teaches gratitude.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_243": {
+        "text": "As summer ends, reflect on the growth achieved.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_244": {
+        "text": "September signals autumn's wisdom and change.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_245": {
+        "text": "Change is the only constant, embrace it with faith.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_246": {
+        "text": "The fall of leaves teaches us about letting go.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_247": {
+        "text": "Every ending is a new beginning.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_248": {
+        "text": "Muharram marks the beginning of the Islamic year.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_249": {
+        "text": "Start the new year with renewed intentions.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_250": {
+        "text": "A new Islamic year is a time for renewal.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_251": {
+        "text": "Reflect on the past year and plan for the next.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_252": {
+        "text": "The first month of the year is sacred.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_253": {
+        "text": "In Muharram, renew your commitment to Allah.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_254": {
+        "text": "The Day of Ashura is the tenth of Muharram.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_255": {
+        "text": "Fasting on Ashura expiates the sins of the previous year.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_256": {
+        "text": "Fast the Day of Ashura and differ from the Jews by fasting a day before or after.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_257": {
+        "text": "Ashura commemorates the day Allah saved Moses.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_258": {
+        "text": "Historical events teach us valuable lessons.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_259": {
+        "text": "Remember the trials of the prophets and be patient.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_260": {
+        "text": "Ashura is a day of great significance.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_261": {
+        "text": "Be grateful for every blessing, big or small.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_262": {
+        "text": "Gratitude multiplies blessings.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_263": {
+        "text": "If you are grateful, I will surely increase you.",
+        "author": "Quran",
+        "source": "Ibrahim 14:7"
+      },
+      "quote_264": {
+        "text": "Thank Allah in times of ease and hardship.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_265": {
+        "text": "Gratitude is the best attitude.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_266": {
+        "text": "Count your blessings, not your problems.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_267": {
+        "text": "A thankful heart is a magnet for miracles.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_268": {
+        "text": "Show gratitude through action, not just words.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_269": {
+        "text": "The one who does not thank people does not thank Allah.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_270": {
+        "text": "Gratitude turns what we have into enough.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_271": {
+        "text": "September's lessons prepare us for the year ahead.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_272": {
+        "text": "Autumn teaches us that change can be beautiful.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_273": {
+        "text": "As leaves fall, let go of what weighs you down.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_274": {
+        "text": "October's balance of light and dark teaches equilibrium.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_275": {
+        "text": "Seek balance in all aspects of life.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_276": {
+        "text": "We have made you a balanced nation.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:143"
+      },
+      "quote_277": {
+        "text": "Moderation is key to a fulfilling life.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_278": {
+        "text": "Balance work and worship, this world and the next.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_279": {
+        "text": "Give every right its due.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_280": {
+        "text": "The middle path is the best path.",
+        "author": "Islamic Wisdom",
+        "source": "Quran"
+      },
+      "quote_281": {
+        "text": "Your body has rights over you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_282": {
+        "text": "Your family has rights over you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_283": {
+        "text": "Your Lord has rights over you.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_284": {
+        "text": "Balance brings peace to the heart.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_285": {
+        "text": "October reminds us to prepare for colder days.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_286": {
+        "text": "Preparation is part of wisdom.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_287": {
+        "text": "Prepare for tomorrow by doing your best today.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_288": {
+        "text": "Reflect on the past to build a better future.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_289": {
+        "text": "Take account of yourself before you are taken to account.",
+        "author": "Umar ibn Al-Khattab",
+        "source": "Wisdom"
+      },
+      "quote_290": {
+        "text": "Prepare for winter as you prepare for the Hereafter.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_291": {
+        "text": "Self-reflection leads to self-improvement.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_292": {
+        "text": "Learn from yesterday, live for today, hope for tomorrow.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_293": {
+        "text": "The examined life is a life of growth.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_294": {
+        "text": "Contemplation is the lamp of the heart.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_295": {
+        "text": "Reflect on the blessings you've been given.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_296": {
+        "text": "Think deeply about the creation of the heavens and earth.",
+        "author": "Quran",
+        "source": "Ali 'Imran 3:191"
+      },
+      "quote_297": {
+        "text": "In reflection, we find clarity.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_298": {
+        "text": "October's falling leaves teach us about letting go.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_299": {
+        "text": "Let go of grudges and embrace forgiveness.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_300": {
+        "text": "Change of seasons is a sign for those who reflect.",
+        "author": "Quran",
+        "source": "Al-Jathiyah 45:5"
+      },
+      "quote_301": {
+        "text": "In the alternation of night and day are signs.",
+        "author": "Quran",
+        "source": "Al-Baqarah 2:164"
+      },
+      "quote_302": {
+        "text": "Observe the world around you and see Allah's signs.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_303": {
+        "text": "Nature is the art of God.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_304": {
+        "text": "As October ends, prepare your heart for winter's lessons.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_305": {
+        "text": "November's chill reminds us of life's tests.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_306": {
+        "text": "Tests come in many forms, face them with patience.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_307": {
+        "text": "Difficulty is often a blessing in disguise.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_308": {
+        "text": "We test you with good and bad as a trial.",
+        "author": "Quran",
+        "source": "Al-Anbiya 21:35"
+      },
+      "quote_309": {
+        "text": "Do not wish for trials, but if they come, face them with faith.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_310": {
+        "text": "Check on your neighbors, especially in cold times.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_311": {
+        "text": "The best neighbor is the one who is best to their neighbors.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_312": {
+        "text": "Care for those in need around you.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_313": {
+        "text": "Warm your heart even when the weather is cold.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_314": {
+        "text": "Compassion warms the coldest of days.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_315": {
+        "text": "Feed the hungry and clothe those in need.",
+        "author": "Islamic Wisdom",
+        "source": "Hadith"
+      },
+      "quote_316": {
+        "text": "Give charity, for it extinguishes sins.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_317": {
+        "text": "The believer's shade on the Day of Judgment will be their charity.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_318": {
+        "text": "Visit the sick, for it increases blessings.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_319": {
+        "text": "Whoever visits a sick person is in the harvest of Paradise.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_320": {
+        "text": "November teaches us to care for one another.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_321": {
+        "text": "Help carry the burdens of your brothers and sisters.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_322": {
+        "text": "The best deeds are those that bring comfort to others.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_323": {
+        "text": "Endurance is strength of the heart.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_324": {
+        "text": "Endure hardship with grace and patience.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_325": {
+        "text": "The patient will be given their reward without account.",
+        "author": "Quran",
+        "source": "Az-Zumar 39:10"
+      },
+      "quote_326": {
+        "text": "Perseverance leads to success.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_327": {
+        "text": "Keep moving forward, even if slowly.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_328": {
+        "text": "Winter is a test of endurance and faith.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_329": {
+        "text": "The cold of winter purifies like the trials of life.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_330": {
+        "text": "Winter is the believer's spring.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_331": {
+        "text": "In winter, fasting days are short and prayer nights are long.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_332": {
+        "text": "The cold weather is a blessing for worship.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_333": {
+        "text": "November's darkness makes the light of faith shine brighter.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_334": {
+        "text": "As November ends, strengthen your resolve.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_335": {
+        "text": "December brings the year to a close with reflection.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_336": {
+        "text": "Reflect on the year that has passed.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_337": {
+        "text": "What did you accomplish this year?",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_338": {
+        "text": "Take stock of your deeds.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_339": {
+        "text": "Evaluate yourself before the Day of Evaluation.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_340": {
+        "text": "Account yourself before you are accounted.",
+        "author": "Umar ibn Al-Khattab",
+        "source": "Wisdom"
+      },
+      "quote_341": {
+        "text": "Weigh your deeds before they are weighed.",
+        "author": "Umar ibn Al-Khattab",
+        "source": "Wisdom"
+      },
+      "quote_342": {
+        "text": "The wise person is the one who holds themselves accountable.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Tirmidhi"
+      },
+      "quote_343": {
+        "text": "Did you grow closer to Allah this year?",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_344": {
+        "text": "Measure your success by your spiritual growth.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_345": {
+        "text": "Success is not in wealth, but in faith.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_346": {
+        "text": "True wealth is the wealth of the soul.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Bukhari"
+      },
+      "quote_347": {
+        "text": "Seek forgiveness for the year's shortcomings.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_348": {
+        "text": "Repent sincerely and turn over a new leaf.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_349": {
+        "text": "December is a time for renewal and hope.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_350": {
+        "text": "The blessed month of Rabi' al-Awwal approaches.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_351": {
+        "text": "Remember the life and teachings of the Prophet.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_352": {
+        "text": "Follow the Sunnah in word and deed.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_353": {
+        "text": "The Prophet is the best example for humanity.",
+        "author": "Quran",
+        "source": "Al-Ahzab 33:21"
+      },
+      "quote_354": {
+        "text": "Love the Prophet by following his example.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_355": {
+        "text": "Send blessings upon the Prophet abundantly.",
+        "author": "Quran",
+        "source": "Al-Ahzab 33:56"
+      },
+      "quote_356": {
+        "text": "Whoever sends blessings upon me once, Allah sends blessings upon them ten times.",
+        "author": "Prophet Muhammad ﷺ",
+        "source": "Sahih Muslim"
+      },
+      "quote_357": {
+        "text": "December's cold reminds us of the warmth of faith.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_358": {
+        "text": "Faith warms the heart in the coldest of times.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_359": {
+        "text": "The end of the year is a time for gratitude.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      },
+      "quote_360": {
+        "text": "As the year ends, increase in seeking forgiveness.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_361": {
+        "text": "Ask Allah for a better year ahead.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_362": {
+        "text": "Make resolutions that bring you closer to Allah.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_363": {
+        "text": "Set intentions for spiritual growth in the new year.",
+        "author": "Islamic Wisdom",
+        "source": "Traditional"
+      },
+      "quote_364": {
+        "text": "Tomorrow is a new day with no mistakes in it yet.",
+        "author": "Adapted Wisdom",
+        "source": "Traditional"
+      },
+      "quote_365": {
+        "text": "End the year with gratitude and begin anew with hope.",
+        "author": "Islamic Reflection",
+        "source": "Wisdom"
+      }
+    }
   },
   "friends": {
     "friends": "Friends",
@@ -190,6 +2017,11 @@
     "friendRemoved": "Friend removed successfully",
     "friendsAdded": "friends added",
     "limitReached": "Friend Limit Reached",
+    "prayerUpdate": "Prayer Update",
+    "streakMilestone": "Streak Milestone",
+    "completedAllPrayers": "completed all 5 prayers today!",
+    "prayedPrayers": "prayed {{count}} prayers today!",
+    "reachedStreak": "reached a {{days}}-day streak!",
     "limitReachedMessage": "You can only have {{limit}} friends at a time. Please remove a friend before adding a new one.",
     "loadingProfile": "Loading friend profile...",
     "errors": {
@@ -260,7 +2092,10 @@
     "loadingSettings": "Loading Settings...",
     "preparingOptions": "Preparing your options",
     "loadingProfile": "Loading Profile...",
-    "fetchingData": "Fetching your data"
+    "fetchingData": "Fetching your data",
+    "appSettings": "App Settings",
+    "designedBy": "Designed & Built by",
+    "nonProfitMessage": "A non-profit initiative to help you stay connected to your prayers."
   },
   "prayerTracker": {
     "title": "Prayer Tracker",
@@ -417,7 +2252,6 @@
     "delete": "Delete",
     "clearAllHistory": "Clear All History",
     "clearAllConfirm": "This will permanently delete all saved zikr sessions.",
-    
     "empty": {
       "title": "No Saved Sessions",
       "message": "Your saved zikr sessions will appear here.\nStart counting and save your progress!",
@@ -426,30 +2260,204 @@
   },
   "guides": {
     "title": "Islamic Guides",
-    "subtitle": "Learn about Islam, prayer, and faith",
-    "popular": "POPULAR",
+    "subtitle": "Learn and practice your faith",
+    "quranSubtitle": "Read & Study",
+    "prayer1": "Prayer (Salah)",
+    "prayerSubtitle": "Learn How to Pray",
+    "wudu1": "Ablution (Wudu)",
+    "wuduSubtitle": "Purification Guide",
+    "pillars1": "Five Pillars",
+    "pillarsSubtitle": "Foundation of Islam",
+    "duas1": "Daily Duas",
+    "duasSubtitle": "Essential Prayers",
+    "ramadan1": "Ramadan",
+    "ramadanSubtitle": "Fasting Guide",
+    "hajj1": "Hajj & Umrah",
+    "hajjSubtitle": "Pilgrimage Guide",
+    "basics1": "Islam Basics",
+    "basicsSubtitle": "Core Beliefs",
+    "popular": "MOST POPULAR",
+    "quranDescription": "Read the Holy Quran with translations and tafsir",
     "browseAll": "Browse All Guides",
     "newToIslam": "New to Islam?",
-    "newToIslamText": "Start with our beginner's guide to learn the basics",
+    "newToIslamText": "Start with the basics and build your knowledge step by step",
     "getStarted": "Get Started",
-    "prayer": "How to Pray",
-    "prayerSubtitle": "Step-by-step guide",
-    "wudu": "Wudu",
-    "wuduSubtitle": "Purification guide",
-    "pillars": "Five Pillars",
-    "pillarsSubtitle": "Foundation of Islam",
-    "duas": "Daily Duas",
-    "duasSubtitle": "Essential supplications",
-    "quranSubtitle": "Read & learn",
-    "quranDescription": "Read the Holy Quran with translations and bookmarks",
-    "ramadan": "Ramadan",
-    "ramadanSubtitle": "Month of blessing",
-    "hajj": "Hajj & Umrah",
-    "hajjSubtitle": "Sacred pilgrimage",
-    "basics": "Islam Basics",
-    "basicsSubtitle": "For beginners",
-    "loadingGuides": "Loading Guides",
-    "preparingContent": "Preparing Content"
+    "comingSoon": "Coming Soon",
+    "comingSoonText": "This guide is being prepared. Check back later for detailed content.",
+    "needHelp": "Need more help? Visit our community forum or contact an imam for guidance.",
+    "prayerTitle": "How to Pray (Salah)",
+    "prayerDescription": "Complete step-by-step guide to performing Islamic prayer",
+    "prerequisites": "Prerequisites",
+    "intention": "Intention (Niyyah)",
+    "opening": "Opening",
+    "ruku": "Bowing (Ruku)",
+    "sujood": "Prostration (Sujood)",
+    "tashahud": "Sitting (Tashahud)",
+    "completion": "Completion",
+    "wuduTitle": "How to Perform Wudu (Ablution)",
+    "wuduDescription": "Step-by-step guide to ritual purification",
+    "preparation": "Preparation",
+    "obligatorySteps": "Obligatory Steps",
+    "sunnahSteps": "Sunnah Steps",
+    "invalidators": "Things That Invalidate Wudu",
+    "pillarsTitle": "The Five Pillars of Islam",
+    "pillarsDescription": "The fundamental acts of worship in Islam",
+    "shahada": "Shahada (Faith)",
+    "salah": "Salah (Prayer)",
+    "zakat": "Zakat (Charity)",
+    "sawm": "Sawm (Fasting)",
+    "hajjPillar": "Hajj (Pilgrimage)",
+    "duasTitle": "Daily Duas and Supplications",
+    "duasDescription": "Essential prayers for everyday life",
+    "morning": "Morning Duas",
+    "evening": "Evening Duas",
+    "mealtime": "Mealtime Duas",
+    "travel": "Travel Duas",
+    "difficulty": "Duas for Difficulty",
+    "gratitude": "Duas of Gratitude",
+    "ramadanTitle": "Ramadan Guide",
+    "ramadanDescription": "Complete guide to the blessed month of Ramadan",
+    "fastingRules": "Fasting Rules",
+    "suhoor": "Suhoor & Iftar",
+    "nightPrayer": "Night Prayer (Taraweeh)",
+    "laylatulQadr": "Laylatul Qadr",
+    "charity": "Charity in Ramadan",
+    "eidPrep": "Eid Preparation",
+    "hajjTitle": "Hajj and Umrah Guide",
+    "hajjDescription": "Complete guide to the pilgrimage to Makkah",
+    "hajjIntro": "Introduction",
+    "ihram": "Entering Ihram",
+    "tawaf": "Tawaf (Circumambulation)",
+    "saee": "Sa'ee (Walking)",
+    "arafah": "Day of Arafah",
+    "rituals": "Hajj Rituals",
+    "umrahSteps": "Umrah Steps",
+    "basicsTitle": "Islam Basics for Beginners",
+    "basicsDescription": "Introduction to Islamic beliefs and practices",
+    "beliefInAllah": "Belief in Allah",
+    "prophets": "Prophets and Messengers",
+    "holyBooks": "Holy Books",
+    "angels": "Angels",
+    "dayOfJudgment": "Day of Judgment",
+    "destiny": "Divine Destiny (Qadr)",
+    "prayer": {
+      "cleanBody": "Be in state of Wudu",
+      "cleanBodyDesc": "Ensure you have performed ablution (Wudu) before prayer. Your body must be ritually pure.",
+      "cleanPlace": "Clean Place",
+      "cleanPlaceDesc": "Pray on a clean surface. Use a prayer mat if needed.",
+      "cleanClothes": "Clean Clothes",
+      "cleanClothesDesc": "Wear clean, modest clothing that covers the awrah (body parts that must be covered).",
+      "facingQibla": "Face the Qibla",
+      "facingQiblaDesc": "Face toward the Kaaba in Makkah. Use a compass or Qibla app if needed.",
+      "makeIntention": "Make Intention",
+      "makeIntentionDesc": "Silently intend in your heart which prayer you are about to perform. For example: 'I intend to pray Fajr prayer for Allah.'",
+      "takbir": "Say Takbir",
+      "takbirDesc": "Raise both hands to shoulder or ear level and say 'Allahu Akbar' (Allah is the Greatest). Then place your right hand over your left hand on your chest or navel.",
+      "fatiha": "Recite Al-Fatiha",
+      "fatihaDesc": "Recite Surah Al-Fatiha (the opening chapter) followed by another surah or verses from the Quran.",
+      "rukuPosition": "Bow in Ruku",
+      "rukuPositionDesc": "Bend forward at the waist with hands on knees. Keep your back straight and say 'Subhana Rabbiyal Adheem' (Glory to my Lord, the Most Great) three times.",
+      "sujoodPosition": "Prostrate in Sujood",
+      "sujoodPositionDesc": "Place your forehead, nose, both palms, both knees, and toes on the ground. Say 'Subhana Rabbiyal A'la' (Glory to my Lord, the Most High) three times.",
+      "sitting": "Sit for Tashahud",
+      "sittingDesc": "Sit on your left foot with right foot upright. Place hands on thighs and recite the Tashahud.",
+      "tasleem": "Make Tasleem (Salam)",
+      "tasleemDesc": "Turn your head to the right and say 'Assalamu Alaikum Wa Rahmatullah', then to the left and repeat. This completes your prayer."
+    },
+    "wudu": {
+      "intention": "Make Intention",
+      "intentionDesc": "Intend in your heart to perform wudu for the purpose of purification and prayer.",
+      "bismillah": "Say Bismillah",
+      "bismillahDesc": "Begin by saying 'Bismillah' (In the name of Allah).",
+      "washHands": "Wash Hands",
+      "washHandsDesc": "Wash both hands up to the wrists three times, making sure water reaches between the fingers.",
+      "rinseMouth": "Rinse Mouth",
+      "rinseMouthDesc": "Take water in your right hand, rinse your mouth three times, and spit out the water.",
+      "rinseNose": "Rinse Nose",
+      "rinseNoseDesc": "Take water in your right hand, sniff it into your nostrils, then blow it out using your left hand. Do this three times.",
+      "washFace": "Wash Face",
+      "washFaceDesc": "Wash your entire face from the hairline to the chin and from ear to ear, three times.",
+      "washArms": "Wash Arms",
+      "washArmsDesc": "Wash your right arm from fingertips to elbow three times, then do the same with the left arm.",
+      "wipeHead": "Wipe Head",
+      "wipeHeadDesc": "Wet your hands and wipe your head from the forehead to the back of the head and back to the forehead once.",
+      "wipeEars": "Wipe Ears",
+      "wipeEarsDesc": "Use your index fingers to wipe inside your ears and thumbs to wipe behind your ears.",
+      "washFeet": "Wash Feet",
+      "washFeetDesc": "Wash your right foot up to the ankle three times, making sure water reaches between the toes. Then do the same with the left foot.",
+      "naturalDischarge": "Natural Discharge",
+      "naturalDischargeDesc": "Using the bathroom, passing gas, or any discharge from private parts breaks wudu.",
+      "sleep": "Deep Sleep",
+      "sleepDesc": "Sleeping while not seated or leaning against something breaks wudu.",
+      "unconsciousness": "Loss of Consciousness",
+      "unconsciousnessDesc": "Fainting, losing your senses, or any state of unconsciousness breaks wudu."
+    },
+    "pillars": {
+      "shahadaMeaning": "Declaration of Faith",
+      "shahadaMeaningDesc": "The Shahada is the testimony that there is no deity worthy of worship except Allah, and Muhammad is His messenger. It is the foundation of Islamic faith.",
+      "fivePrayers": "Five Daily Prayers",
+      "fivePrayersDesc": "Muslims must perform five obligatory prayers daily: Fajr (dawn), Dhuhr (noon), Asr (afternoon), Maghrib (sunset), and Isha (night).",
+      "charitableGiving": "Obligatory Charity",
+      "charitableGivingDesc": "Zakat is an annual charitable contribution of 2.5% of one's wealth to help the poor and needy, purifying one's wealth.",
+      "ramadanFast": "Fasting in Ramadan",
+      "ramadanFastDesc": "Muslims must fast from dawn to sunset during the month of Ramadan, abstaining from food, drink, and marital relations.",
+      "pilgrimage": "Pilgrimage to Makkah",
+      "pilgrimageDesc": "Hajj is the pilgrimage to Makkah that every able Muslim must perform at least once in their lifetime if they have the means."
+    },
+    "duas": {
+      "morningDua": "Morning Remembrance",
+      "morningDuaDesc": "Recite this in the morning: 'We have entered a new morning and the kingdom belongs to Allah' - seeking Allah's protection and blessings for the day.",
+      "eveningDua": "Evening Remembrance",
+      "eveningDuaDesc": "Recite this in the evening: 'We have entered the evening and the kingdom belongs to Allah' - seeking Allah's protection through the night.",
+      "beforeEating": "Before Eating",
+      "beforeEatingDesc": "Say 'Bismillah' (In the name of Allah) before eating to remember Allah's blessings and provision.",
+      "afterEating": "After Eating",
+      "afterEatingDesc": "Say 'Alhamdulillah' (All praise is for Allah) after eating to thank Allah for the food and sustenance.",
+      "travelDua": "Dua for Travel",
+      "travelDuaDesc": "Say 'Glory to Him who has subjected this to us, and we could never have it (by our efforts)' when beginning a journey."
+    },
+    "ramadan": {
+      "whoMustFast": "Who Must Fast",
+      "whoMustFastDesc": "All adult Muslims who are physically and mentally capable must fast. Exemptions exist for travelers, the sick, pregnant or nursing women, elderly, and menstruating women.",
+      "whatBreaksFast": "What Breaks the Fast",
+      "whatBreaksFastDesc": "Eating, drinking, smoking, sexual relations, and intentional vomiting break the fast. The fast is from dawn (Fajr) until sunset (Maghrib).",
+      "suhoorTime": "Suhoor (Pre-Dawn Meal)",
+      "suhoorTimeDesc": "Eat a pre-dawn meal before Fajr prayer. The Prophet ﷺ emphasized the blessings of suhoor and encouraged Muslims not to skip it.",
+      "iftarTime": "Iftar (Breaking Fast)",
+      "iftarTimeDesc": "Break your fast at sunset (Maghrib time). It is Sunnah to break the fast with dates and water, following the example of the Prophet ﷺ.",
+      "taraweeh": "Taraweeh Prayer",
+      "taraweehDesc": "Special nightly prayers performed during Ramadan after Isha prayer. It is Sunnah and highly recommended, often completing the entire Quran over the month.",
+      "nightOfPower": "Laylatul Qadr",
+      "nightOfPowerDesc": "The Night of Power, better than a thousand months, likely falls in the last 10 nights of Ramadan, particularly on odd nights (21st, 23rd, 25th, 27th, 29th). Increase worship and seek forgiveness."
+    },
+    "hajj": {
+      "obligation": "The Fifth Pillar",
+      "obligationDesc": "Hajj is mandatory once in a lifetime for every Muslim who is physically and financially capable. It takes place during the Islamic month of Dhul-Hijjah.",
+      "ihramClothing": "Ihram Clothing",
+      "ihramClothingDesc": "Men wear two white unstitched cloths. Women wear modest clothing covering everything except face and hands. Enter the state of ihram with intention at designated locations (miqat).",
+      "ihramRestrictions": "Ihram Restrictions",
+      "ihramRestrictionsDesc": "While in ihram, do not cut hair or nails, use perfume, hunt, engage in marital relations, or wear sewn garments (for men). Women should not cover their faces.",
+      "circlingKaaba": "Circling the Kaaba",
+      "circlingKaabaDesc": "Perform tawaf by circling the Kaaba seven times counter-clockwise, starting from the Black Stone. Men may uncover their right shoulder (idtiba) during tawaf.",
+      "safaMarwa": "Walking Between Safa and Marwa",
+      "safaMarwaDesc": "Perform Sa'ee by walking seven times between the hills of Safa and Marwa, commemorating Hajar's search for water for her son Ismail.",
+      "dayOfArafah": "Standing at Arafah",
+      "dayOfArafahDesc": "The most important day of Hajj (9th of Dhul-Hijjah). Stand in prayer and supplication at Mount Arafah from noon until sunset. Hajj is not valid without this."
+    },
+    "basics": {
+      "tawheed": "Oneness of Allah (Tawheed)",
+      "tawheedDesc": "The core belief that Allah is One, without partners, sons, or equals. He is the Creator and Sustainer of everything, worthy of all worship.",
+      "messengers": "The Prophets",
+      "messengersDesc": "Muslims believe in all prophets sent by Allah, including Adam, Noah, Abraham, Moses, Jesus, and Muhammad (peace be upon them all). Muhammad ﷺ is the final prophet.",
+      "divineBooks": "The Holy Books",
+      "divineBooksDesc": "Muslims believe in the Torah (Tawrah), Psalms (Zabur), Gospel (Injeel), and Quran. The Quran is the final revelation, preserved in its original form.",
+      "angelsRole": "The Angels",
+      "angelsRoleDesc": "Angels are created from light and serve Allah perfectly. Notable angels include Jibreel (Gabriel) who brought revelations, Mikael (Michael), Israfil, and the Angel of Death.",
+      "akhirah": "The Hereafter",
+      "akhirahDesc": "Muslims believe in life after death. On the Day of Judgment, all will be resurrected and judged by Allah. The righteous enter Paradise (Jannah) and the wicked enter Hellfire (Jahannam).",
+      "qadr": "Divine Decree",
+      "qadrDesc": "Muslims believe Allah has knowledge and power over everything. While we have free will to choose, Allah's knowledge encompasses all past, present, and future events."
+    }
   },
   "quran": {
     "quran": "Quran",
@@ -506,5 +2514,61 @@
     "partialDay": "Partial Day",
     "missedDay": "Missed Day",
     "futureDay": "Future Day"
+  },
+  "notifications": {
+    "prayerReminders": "Prayer Reminders",
+    "completionReminders": "Completion Reminders",
+    "dailyVerse": "Daily Verse",
+    "streakReminder": "Streak Reminder",
+    "enablePrayerReminders": "Prayer Time Notifications",
+    "prayerRemindersDesc": "Get notified before prayer times",
+    "enableCompletionReminders": "Prayer Completion Reminders",
+    "completionRemindersDesc": "Remind me to log my prayers",
+    "enableDailyVerse": "Daily Inspiration",
+    "dailyVerseDesc": "Receive daily verses and quotes",
+    "enableStreakReminder": "Streak Maintenance",
+    "streakReminderDesc": "Daily reminder to maintain your streak",
+    "jumuahReminder": "Friday Prayer Reminder",
+    "enableJumuahReminder": "Jumuah Prayer Notification",
+    "jumuahReminderDesc": "Get reminded for Friday prayer",
+    "reminderTime": "Reminder time",
+    "reminderAfter": "Remind me after:",
+    "testNotification": "Send Test Notification",
+    "manageNotifications": "Manage Notifications",
+    "socialNotifications": "Social Notifications",
+    "friendRequests": "Friend Requests",
+    "friendRequestsDesc": "Get notified when someone sends you a friend request",
+    "friendPrayers": "Friend Prayer Updates",
+    "friendPrayersDesc": "Get notified when friends complete prayers",
+    "friendStreaks": "Friend Streak Milestones",
+    "friendStreaksDesc": "Get notified when friends reach streak milestones",
+    "prayerReminderTitle": "{{prayer}} Prayer in {{minutes}} minutes",
+    "prayerReminderBody": "It's almost time for prayer. Prepare for salah.",
+    "completionReminderTitle": "Did you pray {{prayer}}?",
+    "completionReminderBody": "Tap to log your prayer and maintain your streak!",
+    "dailyVerseTitle": "📖 Daily Verse",
+    "dailyVerseBody": "Your daily inspiration is here. Open to read today's verse.",
+    "streakReminderTitle": "🔥 Keep Your Streak Going!",
+    "streakReminderBody": "Don't forget to log your prayers today.",
+    "jumuahReminderTitle": "🕌 Jumuah Prayer Time",
+    "jumuahReminderBody": "Get ready for Friday prayer. Let's go to the mosque!",
+    "friendRequestReceived": "👥 New Friend Request",
+    "friendRequestAccepted": "✅ Friend Request Accepted",
+    "friendPrayer3": "🕌 Your friend completed 3 prayers today!",
+    "friendPrayer5": "🌟 Your friend completed all 5 prayers today!",
+    "friendStreak7": "🔥 Your friend reached a 7-day streak!",
+    "friendStreak30": "⭐ Your friend reached a 30-day streak!",
+    "friendStreak100": "💎 Your friend reached a 100-day streak!",
+    "friendStreak365": "🏆 Your friend reached a 365-day streak!"
+  },
+  "settings": {
+    "notifications": "Notification Settings"
+  },
+  "tabs": {
+    "home": "Home",
+    "tracker": "Tracker",
+    "qibla": "Qibla",
+    "guides": "Learn",
+    "profile": "Profile"
   }
 }

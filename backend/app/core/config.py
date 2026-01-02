@@ -1,15 +1,16 @@
 # ============================================================================
-# FILE: backend/app/core/config.py (FIXED)
+# FILE: backend/app/core/config.py (PRODUCTION-READY & SECURE)
 # ============================================================================
 from pydantic_settings import BaseSettings
 from typing import Optional, List
-import os
+import logging
+import sys
 
+logger = logging.getLogger("app.core.config")
 
 class Settings(BaseSettings):
     """
     Application settings loaded from environment variables.
-    
     All settings can be overridden via .env file or environment variables.
     """
     
@@ -26,9 +27,9 @@ class Settings(BaseSettings):
     # ========================================================================
     DATABASE_URL: str
     
-    # Database pool settings (for production)
-    DB_POOL_SIZE: int = 10
-    DB_MAX_OVERFLOW: int = 20
+    # Database pool settings (Optimized for production)
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
     DB_POOL_PRE_PING: bool = True
     DB_ECHO: bool = False  # Set to True for SQL query logging
     
@@ -45,21 +46,42 @@ class Settings(BaseSettings):
     MAX_PASSWORD_LENGTH: int = 72  # bcrypt limitation
     
     # ========================================================================
-    # CORS
+    # CORS (CRITICAL SECURITY SETTINGS)
     # ========================================================================
     BACKEND_CORS_ORIGINS: str = "*"  # Comma-separated string or "*"
     
     def get_cors_origins(self) -> List[str]:
-        """Parse CORS origins from string"""
-        if self.BACKEND_CORS_ORIGINS == "*":
+        """
+        Parse and validate CORS origins.
+        
+        CRITICAL SECURITY CHECK:
+        - In Production: Raises error if set to "*" (wildcard).
+        - In Debug: Allows "*" but logs a warning.
+        """
+        if self.DEBUG and self.BACKEND_CORS_ORIGINS == "*":
+            logger.warning("⚠️  CORS set to '*' (Wildcard) in DEBUG mode. This is unsafe for production.")
             return ["*"]
+            
+        if not self.DEBUG and self.BACKEND_CORS_ORIGINS == "*":
+            # 🛑 FAIL FAST: Do not allow starting production app with wildcard CORS
+            raise ValueError(
+                "SECURITY ERROR: CORS cannot be '*' in production. "
+                "Set BACKEND_CORS_ORIGINS to specific comma-separated domains (e.g., 'https://myapp.com')."
+            )
+            
         return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
     
     # ========================================================================
-    # REDIS (OPTIONAL)
+    # REDIS (REQUIRED FOR PRODUCTION TOKENS)
     # ========================================================================
     REDIS_URL: Optional[str] = None
-    REDIS_CACHE_EXPIRE: int = 3600  # 1 hour default
+    REDIS_CACHE_TTL: int = 3600  # 1 hour default
+    
+    # New Setting: Fail closed ensures security if Redis is down (tokens aren't checked)
+    REDIS_FAIL_CLOSED: bool = True
+    
+    # Token blacklist settings
+    TOKEN_BLACKLIST_ENABLED: bool = True
     
     # ========================================================================
     # PRAYER API SETTINGS
@@ -73,45 +95,63 @@ class Settings(BaseSettings):
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_PER_MINUTE: int = 60
     
+    # Default limits
+    RATE_LIMIT_LOGIN: int = 5  # per minute
+    RATE_LIMIT_REGISTER: int = 3  # per hour
+    RATE_LIMIT_FRIEND_REQUEST: int = 10  # per day
+    RATE_LIMIT_PRAYER_TIMES: int = 60  # per hour
+    RATE_LIMIT_API_DEFAULT: int = 60  # per minute
+    
     # ========================================================================
     # LOGGING
     # ========================================================================
     LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+    # ========================================================================
+    # VALIDATION LOGIC
+    # ========================================================================
+    def validate_production_settings(self):
+        """
+        Validate critical settings for production environments.
+        Returns False if critical security issues are found.
+        """
+        errors = []
+        
+        # 1. Debug Mode Check
+        if self.DEBUG is True:
+            if not self.DATABASE_URL.startswith("sqlite"):
+                 logger.warning("⚠️  DEBUG is True but using a production-like database.")
+
+        # 2. CORS Check (Double check)
+        if not self.DEBUG and self.BACKEND_CORS_ORIGINS == "*":
+            errors.append("CORS allow_origins is set to '*' in production. This is insecure.")
+        
+        # 3. Secret Key Strength
+        if len(self.SECRET_KEY) < 32:
+            errors.append(f"SECRET_KEY is too short ({len(self.SECRET_KEY)} chars). Min 32 required.")
+        
+        # 4. Redis Requirement (Token Blacklisting)
+        if not self.DEBUG and not self.REDIS_URL:
+            errors.append("REDIS_URL is missing. Token blacklisting (logout) will not work in production.")
+        
+        # Log all errors found
+        if errors:
+            logger.error("❌ PRODUCTION CONFIGURATION ERRORS:")
+            for err in errors:
+                logger.error(f"   - {err}")
+            return False
+            
+        return True
     
     class Config:
         env_file = ".env"
         case_sensitive = True
-        extra = "allow"  # Allow extra fields from .env
+        extra = "allow"
 
 
 # Create global settings instance
 settings = Settings()
 
-
-# ============================================================================
-# SETTINGS VALIDATION
-# ============================================================================
-def validate_settings():
-    """Validate critical settings on startup"""
-    errors = []
-    
-    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
-        errors.append("SECRET_KEY must be at least 32 characters long")
-    
-    if not settings.DATABASE_URL:
-        errors.append("DATABASE_URL is required")
-    
-    if settings.MIN_PASSWORD_LENGTH < 8:
-        errors.append("MIN_PASSWORD_LENGTH must be at least 8")
-    
-    if errors:
-        raise ValueError(f"Configuration errors: {', '.join(errors)}")
-
-
-# Run validation on import
-try:
-    validate_settings()
-except ValueError as e:
-    # Don't crash on import - let the app handle it
-    import logging
-    logging.error(str(e))
+# Run basic validation on import
+if not settings.SECRET_KEY:
+    raise ValueError("SECRET_KEY is required in .env file")

@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/quran/QuranSurahListScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/quran/QuranSurahListScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -12,11 +12,19 @@ import {
   TextInput,
   ImageBackground,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
+
+// ✅ IMPORT Store and Selectors
+import { 
+  useQuranStore, 
+  selectQuranData, 
+  selectLastRead, 
+  selectBookmarks, 
+  selectQuranIsInitialized, 
+  selectQuranIsLoading 
+} from '../../store/quranStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -113,14 +121,17 @@ const QuranListSkeleton = () => {
 // ============================================================================
 export const QuranSurahListScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const {
-    quranData,
-    lastRead,
-    bookmarks,
-    initialize,
-    isInitialized,
-    isLoading,
-  } = useQuranStore();
+  
+  // ✅ OPTIMIZED: Use selectors for state
+  const quranData = useQuranStore(selectQuranData);
+  const lastRead = useQuranStore(selectLastRead);
+  const bookmarks = useQuranStore(selectBookmarks);
+  const isInitialized = useQuranStore(selectQuranIsInitialized);
+  const isLoading = useQuranStore(selectQuranIsLoading);
+  
+  // Actions
+  const initialize = useQuranStore(state => state.initialize);
+
   const [searchQuery, setSearchQuery] = useState('');
 
   // Initialize store on mount
@@ -298,7 +309,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    // Removed transparent bg
   },
   backButton: {
     width: 40,

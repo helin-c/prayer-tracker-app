@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/store/friendsStore.js
+// FILE: src/store/friendsStore.js (OPTIMIZED)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
@@ -14,6 +14,14 @@ export const useFriendsStore = create((set, get) => ({
     max_limit: 5,
     can_add_more: true,
   },
+  
+  // Notification Preferences
+  notificationPreferences: {
+    friend_requests: true,
+    friend_prayers: true,
+    friend_streaks: true,
+  },
+  
   isLoading: false,
   error: null,
 
@@ -56,6 +64,41 @@ export const useFriendsStore = create((set, get) => ({
     } catch (error) {
       console.error('Fetch friends count error:', error);
       // Don't throw, just log
+    }
+  },
+
+  // ============================================================================
+  // FETCH NOTIFICATION PREFERENCES
+  // ============================================================================
+  fetchNotificationPreferences: async () => {
+    try {
+      const response = await api.get('/users/me');
+      
+      if (response.data.notification_preferences) {
+        set({ 
+          notificationPreferences: response.data.notification_preferences 
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching notification preferences:', error);
+    }
+  },
+
+  // ============================================================================
+  // UPDATE NOTIFICATION PREFERENCES
+  // ============================================================================
+  updateNotificationPreferences: async (preferences) => {
+    try {
+      await api.put('/users/me', {
+        notification_preferences: preferences
+      });
+      
+      set({ notificationPreferences: preferences });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+      return { success: false, error: error.message };
     }
   },
 
@@ -244,7 +287,24 @@ export const useFriendsStore = create((set, get) => ({
       max_limit: 5,
       can_add_more: true,
     },
+    notificationPreferences: {
+      friend_requests: true,
+      friend_prayers: true,
+      friend_streaks: true,
+    },
     isLoading: false,
     error: null,
   }),
 }));
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const friends = useFriendsStore(selectFriends);
+// ============================================================================
+export const selectFriends = (state) => state.friends;
+export const selectPendingRequests = (state) => state.pendingRequests;
+export const selectSentRequests = (state) => state.sentRequests;
+export const selectFriendsCount = (state) => state.friendsCount;
+export const selectNotificationPreferences = (state) => state.notificationPreferences;
+export const selectFriendsIsLoading = (state) => state.isLoading;
+export const selectFriendsError = (state) => state.error;

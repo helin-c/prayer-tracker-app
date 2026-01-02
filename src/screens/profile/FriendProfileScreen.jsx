@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/friends/FriendProfileScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/friends/FriendProfileScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -13,11 +13,12 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useFriendsStore } from '../../store/friendsStore';
 import { format, startOfWeek } from 'date-fns';
+
+// ✅ IMPORT Store
+import { useFriendsStore } from '../../store/friendsStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -147,7 +148,10 @@ const FriendSkeleton = () => {
 export const FriendProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { friend } = route.params;
-  const { getFriendWeekPrayers, removeFriend } = useFriendsStore();
+  
+  // ✅ OPTIMIZED: Select specific actions to prevent unnecessary re-renders
+  const getFriendWeekPrayers = useFriendsStore(state => state.getFriendWeekPrayers);
+  const removeFriend = useFriendsStore(state => state.removeFriend);
 
   const [weekData, setWeekData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -356,7 +360,6 @@ export const FriendProfileScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container and safeArea since Layout handles them
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -385,7 +388,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  // ... [Rest of the styles remain exactly the same] ...
   profileCard: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -398,7 +400,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  // ...
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -423,7 +424,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#DC3545',
   },
-  // Add other styles back here (avatar, name, email, statsRow, etc.)
   avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#00A86B', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   avatarText: { fontSize: 36, fontWeight: 'bold', color: '#FFF' },
   name: { fontSize: 24, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 4 },

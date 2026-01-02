@@ -1,8 +1,9 @@
 # ============================================================================
-# FILE: backend/app/api/v1/endpoints/users.py
+# FILE: backend/app/api/v1/endpoints/users.py (ASYNC PRODUCTION READY)
 # ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession  # ✅ CHANGED
+from sqlalchemy.future import select             # ✅ CHANGED
 from typing import List
 import logging
 
@@ -16,6 +17,8 @@ from app.schemas.user import (
     PasswordChange,
     MessageResponse
 )
+from app.services.push_notification_service import push_service
+from app.core.rate_limiter import rate_limit
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -27,58 +30,33 @@ logger = logging.getLogger(__name__)
 @router.get(
     "/me",
     response_model=UserResponse,
-    summary="Get current user profile",
-    description="Retrieve authenticated user's profile information"
+    summary="Get current user profile"
 )
 async def get_current_user_profile(
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get current user's profile information.
-    
-    **Requires:**
-    - Valid access token
-    
-    **Returns:**
-    - Complete user profile data
-    """
+    """Get current user's profile information."""
     return current_user
 
 
 # ============================================================================
-# UPDATE USER PROFILE
+# UPDATE USER PROFILE (ASYNC)
 # ============================================================================
 @router.put(
     "/me",
     response_model=UserResponse,
     summary="Update user profile",
-    description="Update authenticated user's profile information"
+    dependencies=[Depends(rate_limit(10, 60, by_user=True))]
 )
 async def update_user_profile(
     user_update: UserUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)  # ✅ CHANGED
 ):
-    """
-    Update current user's profile.
-    
-    **Updatable Fields:**
-    - full_name: User's full name
-    - phone: Phone number
-    - location: User's location
-    - preferred_language: Language preference (en, tr, etc.)
-    
-    **Returns:**
-    - Updated user profile
-    
-    **Raises:**
-    - 500: Server error during update
-    """
+    """Update current user's profile."""
     try:
-        # Track if any updates were made
         updated = False
         
-        # Update fields if provided
         if user_update.full_name is not None:
             current_user.full_name = user_update.full_name.strip()
             updated = True
@@ -96,17 +74,17 @@ async def update_user_profile(
             updated = True
         
         if updated:
-            db.commit()
-            db.refresh(current_user)
+            # Need to merge/add to session to ensure it's tracked for async commit
+            db.add(current_user)
+            await db.commit()  # ✅ Async Commit
+            await db.refresh(current_user)  # ✅ Async Refresh
             logger.info(f"User profile updated: {current_user.email}")
-        else:
-            logger.info(f"No changes made to profile: {current_user.email}")
         
         return current_user
         
     except Exception as e:
-        db.rollback()
-        logger.error(f"Profile update error for {current_user.email}: {str(e)}")
+        await db.rollback()
+        logger.error(f"Profile update error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update profile"
@@ -114,56 +92,61 @@ async def update_user_profile(
 
 
 # ============================================================================
-# CHANGE PASSWORD
+# SAVE PUSH TOKEN (ASYNC)
+# ============================================================================
+@router.post(
+    "/me/push-token",
+    summary="Save push token",
+    dependencies=[Depends(rate_limit(5, 60, by_user=True))]
+)
+async def save_push_token(
+    push_token: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Save user's Expo push token."""
+    try:
+        if not push_token.startswith('ExponentPushToken['):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Invalid push token format")
+        
+        current_user.push_token = push_token
+        db.add(current_user)
+        await db.commit()
+        
+        logger.info(f"✅ Push token saved for user {current_user.id}")
+        return {"message": "Push token saved successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error saving push token: {e}")
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to save push token")
+
+
+# ============================================================================
+# CHANGE PASSWORD (ASYNC)
 # ============================================================================
 @router.post(
     "/me/change-password",
     response_model=MessageResponse,
     summary="Change password",
-    description="Change user's password with current password verification"
+    dependencies=[Depends(rate_limit(3, 3600, by_user=True))]
 )
 async def change_password(
     password_change: PasswordChange,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    Change user's password.
-    
-    **Process:**
-    - Verifies current password
-    - Validates new password strength
-    - Updates password hash
-    
-    **Requirements:**
-    - Current password must be correct
-    - New password must be different
-    - New password must meet strength requirements
-    
-    **Returns:**
-    - Success message
-    
-    **Raises:**
-    - 400: Invalid current password or weak new password
-    - 500: Server error
-    """
+    """Change user's password."""
     try:
         # Verify current password
-        if not verify_password(
-            password_change.current_password,
-            current_user.hashed_password
-        ):
+        if not verify_password(password_change.current_password, current_user.hashed_password):
             logger.warning(f"Failed password change attempt: {current_user.email}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Current password is incorrect"
-            )
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
         
-        # Check new password is different
-        if verify_password(
-            password_change.new_password,
-            current_user.hashed_password
-        ):
+        # Check new password
+        if verify_password(password_change.new_password, current_user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="New password must be different from current password"
@@ -171,7 +154,9 @@ async def change_password(
         
         # Update password
         current_user.hashed_password = get_password_hash(password_change.new_password)
-        db.commit()
+        
+        db.add(current_user)
+        await db.commit()
         
         logger.info(f"Password changed successfully for user: {current_user.email}")
         return MessageResponse(message="Password changed successfully")
@@ -179,8 +164,8 @@ async def change_password(
     except HTTPException:
         raise
     except Exception as e:
-        db.rollback()
-        logger.error(f"Password change error for {current_user.email}: {str(e)}")
+        await db.rollback()
+        logger.error(f"Password change error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to change password"
@@ -188,120 +173,76 @@ async def change_password(
 
 
 # ============================================================================
-# GET USERS LIST (OPTIONAL - for admin or browse features)
+# GET USERS LIST (ASYNC)
 # ============================================================================
 @router.get(
     "/",
     response_model=List[UserResponse],
-    summary="Get users list",
-    description="Get paginated list of users (requires authentication)"
+    summary="Get users list"
 )
 async def get_users(
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
-    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get list of users (paginated).
-    
-    **Query Parameters:**
-    - skip: Offset for pagination (default: 0)
-    - limit: Number of records (default: 100, max: 100)
-    
-    **Returns:**
-    - List of user profiles
-    
-    **Note:**
-    - Only returns active users
-    - Can be restricted to admin users if needed
-    """
-    users = db.query(User)\
-        .filter(User.is_active == True)\
-        .offset(skip)\
-        .limit(limit)\
-        .all()
-    
-    return users
+    """Get list of users (paginated)."""
+    try:
+        query = select(User).filter(User.is_active == True).offset(skip).limit(limit)
+        result = await db.execute(query)
+        return result.scalars().all()
+    except Exception as e:
+        logger.error(f"Error getting users list: {e}")
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to get users")
 
 
 # ============================================================================
-# GET USER BY ID
+# GET USER BY ID (ASYNC)
 # ============================================================================
 @router.get(
     "/{user_id}",
     response_model=UserResponse,
-    summary="Get user by ID",
-    description="Get specific user's profile by ID"
+    summary="Get user by ID"
 )
 async def get_user_by_id(
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get user profile by ID.
-    
-    **Path Parameters:**
-    - user_id: Target user's ID
-    
-    **Returns:**
-    - User profile information
-    
-    **Raises:**
-    - 404: User not found
-    """
-    user = db.query(User).filter(User.id == user_id).first()
+    """Get user profile by ID."""
+    result = await db.execute(select(User).filter(User.id == user_id))
+    user = result.scalars().first()
     
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
     
     return user
 
 
 # ============================================================================
-# DELETE ACCOUNT
+# DELETE ACCOUNT (ASYNC)
 # ============================================================================
 @router.delete(
     "/me",
     response_model=MessageResponse,
-    summary="Delete account",
-    description="Delete user account and all associated data"
+    summary="Delete account"
 )
 async def delete_account(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    Delete user account.
-    
-    **WARNING:**
-    - This action is irreversible
-    - Deletes user and all associated data (prayers, streaks, etc.)
-    - Uses database CASCADE to clean up related records
-    
-    **Returns:**
-    - Success message
-    
-    **Raises:**
-    - 500: Server error during deletion
-    """
+    """Delete user account."""
     try:
         email = current_user.email
-        
-        # Hard delete user (cascade will handle related data)
-        db.delete(current_user)
-        db.commit()
+        await db.delete(current_user)  # ✅ Async Delete
+        await db.commit()
         
         logger.warning(f"User account permanently deleted: {email}")
         return MessageResponse(message="Account deleted successfully")
         
     except Exception as e:
-        db.rollback()
-        logger.error(f"Account deletion error for {current_user.email}: {str(e)}")
+        await db.rollback()
+        logger.error(f"Account deletion error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete account"
@@ -309,42 +250,29 @@ async def delete_account(
 
 
 # ============================================================================
-# DEACTIVATE ACCOUNT (Soft Delete Alternative)
+# DEACTIVATE ACCOUNT (ASYNC)
 # ============================================================================
 @router.post(
     "/me/deactivate",
     response_model=MessageResponse,
-    summary="Deactivate account",
-    description="Deactivate account (soft delete - can be reactivated)"
+    summary="Deactivate account"
 )
 async def deactivate_account(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    Deactivate user account (soft delete).
-    
-    **Note:**
-    - Account can be reactivated by contacting support
-    - Data is preserved
-    - User cannot login while deactivated
-    
-    **Returns:**
-    - Success message
-    
-    **Raises:**
-    - 500: Server error
-    """
+    """Deactivate user account (soft delete)."""
     try:
         current_user.is_active = False
-        db.commit()
+        db.add(current_user)
+        await db.commit()
         
         logger.info(f"User account deactivated: {current_user.email}")
         return MessageResponse(message="Account deactivated successfully")
         
     except Exception as e:
-        db.rollback()
-        logger.error(f"Account deactivation error for {current_user.email}: {str(e)}")
+        await db.rollback()
+        logger.error(f"Account deactivation error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to deactivate account"

@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/store/authStore.js (COMPLETELY FIXED)
+// FILE: src/store/authStore.js (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
@@ -359,7 +359,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Response interceptor for token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -417,3 +416,13 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const user = useAuthStore(selectUser);
+// ============================================================================
+export const selectUser = (state) => state.user;
+export const selectIsAuthenticated = (state) => state.isAuthenticated;
+export const selectAuthIsLoading = (state) => state.isLoading;
+export const selectAuthError = (state) => state.error;
+export const selectAccessToken = (state) => state.accessToken;

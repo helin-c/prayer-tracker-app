@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/home/HomeScreen.jsx (SKELETON LOADING ADDED)
+// FILE: src/screens/home/HomeScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
@@ -17,7 +17,6 @@ import {
   FlatList,
   Animated,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -26,9 +25,20 @@ import { LinearGradient } from 'expo-linear-gradient';
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-import { useAuthStore } from '../../store/authStore';
-import { usePrayerStore } from '../../store/prayerStore';
-import { useFriendsStore } from '../../store/friendsStore';
+// STORES & SELECTORS
+import { useAuthStore, selectUser } from '../../store/authStore';
+import { 
+  usePrayerStore, 
+  selectPrayerTimes, 
+  selectLocation, 
+  selectPrayerIsLoading, 
+  selectPrayerError 
+} from '../../store/prayerStore';
+import { 
+  useFriendsStore, 
+  selectFriends 
+} from '../../store/friendsStore';
+
 import { CircularPrayerCard } from '../../components/prayers/CircularPrayerCard';
 import { formatIslamicDate } from '../../utils/timeUtils';
 import { DailyQuoteCard } from '../../components/quotes/DailyQuoteCard';
@@ -147,19 +157,24 @@ const HomeSkeleton = () => {
 // ============================================================================
 export const HomeScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
-  const { user } = useAuthStore();
-  const {
-    prayerTimes,
-    location,
-    isLoading, // Comes from PrayerStore
-    error,
-    fetchWithCurrentLocation,
-    loadSavedLocation,
-    clearError,
-    isCacheValid,
-  } = usePrayerStore();
+  
+  // ✅ OPTIMIZED: Use selectors
+  const user = useAuthStore(selectUser);
+  
+  const prayerTimes = usePrayerStore(selectPrayerTimes);
+  const location = usePrayerStore(selectLocation);
+  const isLoading = usePrayerStore(selectPrayerIsLoading);
+  const error = usePrayerStore(selectPrayerError);
+  
+  // Actions can be selected or destructured (methods are stable)
+  const fetchWithCurrentLocation = usePrayerStore(state => state.fetchWithCurrentLocation);
+  const loadSavedLocation = usePrayerStore(state => state.loadSavedLocation);
+  const clearError = usePrayerStore(state => state.clearError);
+  const isCacheValid = usePrayerStore(state => state.isCacheValid);
 
-  const { friends, fetchFriends } = useFriendsStore();
+  // Friends Store
+  const friends = useFriendsStore(selectFriends);
+  const fetchFriends = useFriendsStore(state => state.fetchFriends);
 
   const [refreshing, setRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -322,15 +337,13 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     // WRAPPED IN SCREEN LAYOUT
-    // We pass noPaddingBottom={true} because the ScrollView has its own contentContainer padding
-    // to handle the TabBar space
     <ScreenLayout noPaddingBottom={true}>
       
       {shouldShowSkeleton ? (
-        // SKELETON LOADING STATE (Only shows until we have data)
+        // SKELETON LOADING STATE
         <HomeSkeleton />
       ) : (
-        // ACTUAL CONTENT (Only renders when we have Prayer Times)
+        // ACTUAL CONTENT
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -574,17 +587,12 @@ export const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container background since Layout handles it
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingBottom: 40,
   },
-
-  // ============================================================================
-  // TOP SECTION - GREETING, LOCATION & DATE COMBINED
-  // ============================================================================
   topSection: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -616,10 +624,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     letterSpacing: 0.5,
   },
-
-  // ============================================================================
-  // LOCATION & DATE ROW
-  // ============================================================================
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -657,17 +661,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     flex: 1,
   },
-
-  // ============================================================================
-  // CIRCULAR PRAYER CARD
-  // ============================================================================
   mainCardContainer: {
     marginTop: 0,
   },
-
-  // ============================================================================
-  // PRAYER TRACKER REMINDER
-  // ============================================================================
   trackerNotification: {
     marginHorizontal: 20,
     marginTop: 24,
@@ -756,10 +752,6 @@ const styles = StyleSheet.create({
     bottom: -20,
     left: 40,
   },
-
-  // ============================================================================
-  // FRIENDS SECTION - VERTICAL LIST
-  // ============================================================================
   friendsSection: {
     marginTop: 28,
     marginBottom: 12,
@@ -868,10 +860,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FF8C42',
   },
-
-  // ============================================================================
-  // DAILY INSPIRATION QUOTE
-  // ============================================================================
   quoteSection: {
     paddingHorizontal: 20,
     marginTop: 28,
@@ -899,10 +887,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     letterSpacing: 0.5,
   },
-
-  // ============================================================================
-  // ERROR BANNER
-  // ============================================================================
   errorBanner: {
     marginHorizontal: 20,
     marginTop: 16,
@@ -929,10 +913,6 @@ const styles = StyleSheet.create({
   errorClose: {
     padding: 4,
   },
-
-  // ============================================================================
-  // EMPTY STATE
-  // ============================================================================
   emptyState: {
     marginHorizontal: 20,
     marginTop: 40,

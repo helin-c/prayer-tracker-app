@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/store/quranStore.js
+// FILE: src/store/quranStore.js (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import { create } from 'zustand';
 import { storage } from '../services/storage';
@@ -346,3 +346,15 @@ export const useQuranStore = create((set, get) => ({
     }
   },
 }));
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const bookmarks = useQuranStore(selectBookmarks);
+// ============================================================================
+export const selectBookmarks = (state) => state.bookmarks;
+export const selectLastRead = (state) => state.lastRead;
+export const selectHighlights = (state) => state.highlights;
+export const selectQuranSettings = (state) => state.settings;
+export const selectQuranData = (state) => state.quranData;
+export const selectQuranIsLoading = (state) => state.isLoading;
+export const selectQuranIsInitialized = (state) => state.isInitialized;

@@ -1,6 +1,5 @@
-// @ts-nocheck
 // ============================================================================
-// FILE: src/screens/profile/SettingsScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/profile/SettingsScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -12,9 +11,10 @@ import {
   Alert,
   ActivityIndicator, 
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+
+// ✅ IMPORT Store
 import { useAuthStore } from '../../store/authStore';
 
 // IMPORT THE NEW LAYOUT
@@ -22,7 +22,9 @@ import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { logout } = useAuthStore();
+  
+  // ✅ OPTIMIZED: Select specific action
+  const logout = useAuthStore(state => state.logout);
 
   // İşlem durumları
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -52,6 +54,11 @@ export const SettingsScreen = ({ navigation }) => {
   const handleChangePassword = () => {
     if (isLoggingOut || isDeleting) return;
     navigation.navigate('ChangePassword');
+  };
+
+  const handleNotificationSettings = () => {
+    if (isLoggingOut || isDeleting) return;
+    navigation.navigate('NotificationSettings');
   };
 
   const handleDeleteAccount = () => {
@@ -94,6 +101,31 @@ export const SettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.content}>
+        
+        {/* App Settings Section (NEW) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('profile.appSettings')}</Text>
+
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={handleNotificationSettings}
+            disabled={isLoggingOut || isDeleting}
+          >
+            <View style={styles.settingLeft}>
+              <Ionicons name="notifications-outline" size={24} color="#6F9C8C" />
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingText}>
+                  {t('settings.notifications')}
+                </Text>
+                <Text style={styles.settingDescription}>
+                  {t('notifications.manageNotifications')}
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#CCC" />
+          </TouchableOpacity>
+        </View>
+
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.accountInfo')}</Text>
@@ -177,7 +209,6 @@ export const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -204,11 +235,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
+    fontSize: 14,
+    color: '#1A1A1A',
     marginBottom: 12,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   settingItem: {
     flexDirection: 'row',
@@ -254,7 +285,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DC3545',
     marginTop: 20,
-    height: 56, // Fixed height to prevent resizing
+    marginBottom: 40,
+    height: 56,
   },
   logoutText: {
     fontSize: 16,

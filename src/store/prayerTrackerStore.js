@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/store/prayerTrackerStore.js
+// FILE: src/store/prayerTrackerStore.js (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
@@ -280,3 +280,14 @@ export const usePrayerTrackerStore = create((set, get) => ({
     return day?.completion_percentage || 0;
   },
 }));
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const dayPrayers = usePrayerTrackerStore(selectDayPrayers);
+// ============================================================================
+export const selectDayPrayers = (state) => state.dayPrayers;
+export const selectWeekPrayers = (state) => state.weekPrayers;
+export const selectPeriodStats = (state) => state.periodStats;
+export const selectTrackerIsLoading = (state) => state.isLoading;
+export const selectTrackerError = (state) => state.error;
+export const selectTrackerLastFetched = (state) => state.lastFetched;

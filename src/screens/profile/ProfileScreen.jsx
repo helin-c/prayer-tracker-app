@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/profile/ProfileScreen.jsx (FIXED DATA LOADING)
+// FILE: src/screens/profile/ProfileScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
-  ActivityIndicator, 
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -21,10 +21,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 // STORE IMPORTS
-import { useAuthStore } from '../../store/authStore';
-import { useFriendsStore } from '../../store/friendsStore';
-import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
-import { usePrayerStore } from '../../store/prayerStore';
+import { useAuthStore, selectUser } from '../../store/authStore';
+import {
+  useFriendsStore,
+  selectFriends,
+  selectPendingRequests,
+  selectFriendsIsLoading,
+} from '../../store/friendsStore';
+import {
+  usePrayerTrackerStore,
+  selectPeriodStats,
+  selectTrackerIsLoading,
+} from '../../store/prayerTrackerStore';
+import { usePrayerStore, selectLocation } from '../../store/prayerStore';
 
 // COMPONENT IMPORTS
 import {
@@ -34,36 +43,92 @@ import {
 } from '../../components/loading/SkeletonLoader';
 
 // ... [ProfileSkeleton remains exactly the same] ...
-const ProfileSkeleton = () => { 
+const ProfileSkeleton = () => {
   const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
   return (
     <View style={{ padding: 20 }}>
       {/* Header Skeleton */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 24,
+        }}
+      >
         <SkeletonLine width={120} height={32} style={skeletonStyle} />
         <SkeletonCircle size={40} style={skeletonStyle} />
       </View>
       {/* Profile Card Skeleton */}
-      <View style={{ padding: 24, alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.3)', marginBottom: 20 }}>
-        <SkeletonCircle size={100} style={{ ...skeletonStyle, marginBottom: 16 }} />
-        <SkeletonLine width={180} height={24} style={{ ...skeletonStyle, marginBottom: 8 }} />
-        <SkeletonLine width={140} height={16} style={{ ...skeletonStyle, marginBottom: 20 }} />
-        <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 20 }}>
+      <View
+        style={{
+          padding: 24,
+          alignItems: 'center',
+          borderRadius: 20,
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          marginBottom: 20,
+        }}
+      >
+        <SkeletonCircle
+          size={100}
+          style={{ ...skeletonStyle, marginBottom: 16 }}
+        />
+        <SkeletonLine
+          width={180}
+          height={24}
+          style={{ ...skeletonStyle, marginBottom: 8 }}
+        />
+        <SkeletonLine
+          width={140}
+          height={16}
+          style={{ ...skeletonStyle, marginBottom: 20 }}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-around',
+            marginBottom: 20,
+          }}
+        >
           {[1, 2, 3].map((i) => (
             <View key={i} style={{ alignItems: 'center' }}>
-              <SkeletonLine width={30} height={24} style={{ ...skeletonStyle, marginBottom: 4 }} />
+              <SkeletonLine
+                width={30}
+                height={24}
+                style={{ ...skeletonStyle, marginBottom: 4 }}
+              />
               <SkeletonLine width={50} height={12} style={skeletonStyle} />
             </View>
           ))}
         </View>
         <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
-          <SkeletonLoader width="48%" height={44} borderRadius={12} style={skeletonStyle} />
-          <SkeletonLoader width="48%" height={44} borderRadius={12} style={skeletonStyle} />
+          <SkeletonLoader
+            width="48%"
+            height={44}
+            borderRadius={12}
+            style={skeletonStyle}
+          />
+          <SkeletonLoader
+            width="48%"
+            height={44}
+            borderRadius={12}
+            style={skeletonStyle}
+          />
         </View>
       </View>
-      <SkeletonLine width={100} height={20} style={{ ...skeletonStyle, marginBottom: 12 }} />
+      <SkeletonLine
+        width={100}
+        height={20}
+        style={{ ...skeletonStyle, marginBottom: 12 }}
+      />
       {[1, 2].map((i) => (
-        <SkeletonLoader key={i} width="100%" height={80} borderRadius={12} style={{ ...skeletonStyle, marginBottom: 12 }} />
+        <SkeletonLoader
+          key={i}
+          width="100%"
+          height={80}
+          borderRadius={12}
+          style={{ ...skeletonStyle, marginBottom: 12 }}
+        />
       ))}
     </View>
   );
@@ -71,30 +136,32 @@ const ProfileSkeleton = () => {
 
 export const ProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { user, logout } = useAuthStore();
-  const {
-    friends,
-    pendingRequests,
-    fetchFriends,
-    fetchPendingRequests,
-    // Renamed isLoading to isFriendsLoading to avoid conflict
-    isLoading: isFriendsLoading,
-  } = useFriendsStore();
-  
-  const { 
-    periodStats, 
-    fetchPeriodStats,
-    // Renamed isLoading to isStatsLoading
-    isLoading: isStatsLoading 
-  } = usePrayerTrackerStore();
-  
-  const { location } = usePrayerStore();
+
+  // ✅ OPTIMIZED: Use selectors
+  const user = useAuthStore(selectUser);
+  const logout = useAuthStore((state) => state.logout);
+
+  const friends = useFriendsStore(selectFriends);
+  const pendingRequests = useFriendsStore(selectPendingRequests);
+  const isFriendsLoading = useFriendsStore(selectFriendsIsLoading);
+  const fetchFriends = useFriendsStore((state) => state.fetchFriends);
+  const fetchPendingRequests = useFriendsStore(
+    (state) => state.fetchPendingRequests
+  );
+
+  const periodStats = usePrayerTrackerStore(selectPeriodStats);
+  const isStatsLoading = usePrayerTrackerStore(selectTrackerIsLoading);
+  const fetchPeriodStats = usePrayerTrackerStore(
+    (state) => state.fetchPeriodStats
+  );
+
+  const location = usePrayerStore(selectLocation);
 
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Use a local loading state for initial mount
   const [initialMountLoading, setInitialMountLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false); 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -108,7 +175,7 @@ export const ProfileScreen = ({ navigation }) => {
         fetchFriends(),
         fetchPendingRequests(),
         // Ensure we explicitly fetch 'week' stats on load
-        fetchPeriodStats('week'), 
+        fetchPeriodStats('week'),
       ]);
     } catch (error) {
       console.error('Error loading profile data:', error);
@@ -179,15 +246,14 @@ export const ProfileScreen = ({ navigation }) => {
   // 1. Initial mount is happening
   // 2. OR Stats are loading AND we don't have stats data yet
   // 3. OR Friends are loading AND we don't have friends data yet
-  const shouldShowSkeleton = 
-    initialMountLoading || 
-    (isStatsLoading && !periodStats) || 
+  const shouldShowSkeleton =
+    initialMountLoading ||
+    (isStatsLoading && !periodStats) ||
     (isFriendsLoading && !friends);
 
   return (
     // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
-      
       {shouldShowSkeleton ? (
         <ProfileSkeleton />
       ) : (
@@ -261,9 +327,10 @@ export const ProfileScreen = ({ navigation }) => {
                 <View style={styles.statItem}>
                   <Text style={styles.statValue}>
                     {/* Ensure completion_rate exists, default to 0 */}
-                    {periodStats?.completion_rate !== undefined 
-                      ? Math.round(periodStats.completion_rate) 
-                      : 0}%
+                    {periodStats?.completion_rate !== undefined
+                      ? Math.round(periodStats.completion_rate)
+                      : 0}
+                    %
                   </Text>
                   <Text style={styles.statLabel}>
                     {t('profile.completion')}
@@ -581,8 +648,22 @@ export const ProfileScreen = ({ navigation }) => {
 
           {/* Version */}
           <Text style={styles.versionText}>{t('profile.version')} 1.0.0</Text>
-          
-          <View style={{height: 20}} />
+
+          {/* CinkoTech Footer */}
+          <View style={styles.footerContainer}>
+            <View style={styles.footerDivider} />
+
+            <Text style={styles.footerBrand}>
+              {t('profile.designedBy')}{' '}
+              <Text style={styles.cinkoTechHighlight}>CinkoTech</Text>
+            </Text>
+
+            <Text style={styles.footerMessage}>
+              {t('profile.nonProfitMessage')}
+            </Text>
+          </View>
+
+          <View style={{ height: 40 }} />
         </ScrollView>
       )}
     </ScreenLayout>
@@ -590,7 +671,6 @@ export const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since layout handles background
   scrollView: { flex: 1 },
   scrollContent: { padding: 20, paddingBottom: 40 },
   header: {
@@ -942,5 +1022,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1A1A1A',
     fontWeight: '600',
+  },
+  footerContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+  footerDivider: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 16,
+  },
+  footerBrand: {
+    fontSize: 13,
+    color: '#1A1A1A',
+    fontWeight: '600',
+    marginBottom: 6,
+    letterSpacing: 0.5,
+  },
+  cinkoTechHighlight: {
+    color: '#00A86B',
+    fontWeight: '800',
+  },
+  footerMessage: {
+    fontSize: 11,
+    color: '#1A1A1A',
+    textAlign: 'center',
+    lineHeight: 16,
+    fontStyle: 'italic',
   },
 });

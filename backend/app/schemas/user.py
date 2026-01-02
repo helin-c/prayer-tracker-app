@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/schemas/user.py
+# FILE: backend/app/schemas/user.py (FIXED)
 # ============================================================================
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
@@ -29,9 +29,28 @@ class UserCreate(UserBase):
     @field_validator('password')
     @classmethod
     def validate_password_strength(cls, v: str) -> str:
-        """Validate password strength with multiple criteria"""
+        """
+        Validate password strength.
+        
+        Requirements:
+        - Min 8 chars
+        - At least 1 uppercase
+        - At least 1 lowercase
+        - At least 1 digit
+        - (Special characters are optional)
+        """
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
+        
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+            
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+            
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one digit')
+            
         return v
     
     model_config = {
@@ -160,6 +179,16 @@ class PasswordChange(BaseModel):
         """Validate new password strength"""
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
+            
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+            
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+            
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one digit')
+            
         return v
     
     model_config = {

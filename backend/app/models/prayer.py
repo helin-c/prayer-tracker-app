@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/models/prayer.py (FIXED - FLOAT COORDINATES)
+# FILE: backend/app/models/prayer.py (FIXED - ADDED INDEXES)
 # ============================================================================
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
@@ -48,6 +48,10 @@ class PrayerLog(Base):
         Index('idx_user_date', 'user_id', 'prayer_date'),
         Index('idx_user_completed', 'user_id', 'completed'),
         Index('idx_prayer_date_range', 'user_id', 'prayer_date', 'completed'),
+        
+        # ✅ NEW: Optimized index for streak calculation (user_id + completed + date)
+        # Allows DB to quickly filter completed prayers and order by date
+        Index('idx_streak_calc', 'user_id', 'completed', 'prayer_date'),
     )
     
     def __repr__(self):

@@ -1,34 +1,51 @@
 {
   "expo": {
-    "name": "prayer-tracker-app",
-    "slug": "prayer-tracker-app",
+    "name": "My Salah",
+    "slug": "my-salahs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#5BA895", 
+    "backgroundColor": "#5BA895",
     "newArchEnabled": true,
+    
+
     "plugins": [
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Prayer Tracker to use your location for accurate prayer times."
+          "locationAlwaysAndWhenInUsePermission": "My Salah needs your location to show accurate prayer times."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#5BA895",
+          "sounds": ["./assets/sounds/azan.mp3"],
+          "mode": "production"
         }
       ],
       "expo-asset"
     ],
+
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#5BA895"
     },
+
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.mysalahs.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to show accurate prayer times."
+        "NSLocationWhenInUseUsageDescription": "My Salah uses your location to calculate accurate prayer times based on your city.",
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
+
     "android": {
+      "package": "com.mysalahs.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#5BA895"
@@ -39,9 +56,17 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ]
+        "ACCESS_FINE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ],
+      "notification": {
+        "icon": "./assets/notification-icon.png",
+        "color": "#5BA895"
+      }
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     }

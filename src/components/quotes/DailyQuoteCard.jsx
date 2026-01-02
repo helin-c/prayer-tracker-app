@@ -18,40 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
+import { getDayOfYear, isLeapYear } from '../../utils/quoteGenerator';
 
-// Sample quotes - replace with your API/database
-const DAILY_QUOTES = [
-  {
-    id: 1,
-    text: 'The best among you are those who have the best manners and character.',
-    author: 'Prophet Muhammad (PBUH)',
-    source: 'Sahih Bukhari',
-  },
-  {
-    id: 2,
-    text: 'Do not lose hope, nor be sad.',
-    author: 'Quran',
-    source: 'Surah Al-Imran 3:139',
-  },
-  {
-    id: 3,
-    text: 'Verily, with hardship comes ease.',
-    author: 'Quran',
-    source: 'Surah Ash-Sharh 94:6',
-  },
-  {
-    id: 4,
-    text: 'The strong person is not the one who can wrestle someone else down. The strong person is the one who can control himself when he is angry.',
-    author: 'Prophet Muhammad (PBUH)',
-    source: 'Sahih Bukhari',
-  },
-  {
-    id: 5,
-    text: 'And He is with you wherever you are.',
-    author: 'Quran',
-    source: 'Surah Al-Hadid 57:4',
-  },
-];
 
 export const DailyQuoteCard = () => {
   const { t } = useTranslation();
@@ -64,12 +32,23 @@ export const DailyQuoteCard = () => {
   }, []);
 
   const loadDailyQuote = () => {
-    // Get quote based on day of year for consistency
-    const dayOfYear = Math.floor(
-      (new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000
-    );
-    const quoteIndex = dayOfYear % DAILY_QUOTES.length;
-    setDailyQuote(DAILY_QUOTES[quoteIndex]);
+    const today = new Date();
+    const dayOfYear = getDayOfYear(today);
+    const currentYear = today.getFullYear();
+    
+    let adjustedDay = dayOfYear;
+    if (!isLeapYear(currentYear) && dayOfYear > 59) {
+      adjustedDay = dayOfYear - 1;
+    }
+    
+    const quoteIndex = Math.min(365, Math.max(1, adjustedDay));
+    const quoteKey = `quote_${quoteIndex}`;
+    
+    setDailyQuote({
+      text: t(`quotes.daily.${quoteKey}.text`),
+      author: t(`quotes.daily.${quoteKey}.author`),
+      source: t(`quotes.daily.${quoteKey}.source`),
+    });
   };
 
   const handleShare = async () => {
@@ -179,8 +158,8 @@ export const DailyQuoteCard = () => {
                     </View>
                   </View>
                   <View style={styles.appNameContainer}>
-                    <Text style={styles.appName}>Salah Tracker</Text>
-                    <Text style={styles.appTagline}>Track Your Journey</Text>
+                    <Text style={styles.appName}>My Salah</Text>
+                    <Text style={styles.appTagline}>Prayer Tracker</Text>
                   </View>
                 </View>
               </View>

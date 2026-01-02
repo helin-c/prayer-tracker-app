@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/PrayerCalendarScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/tracker/PrayerCalendarScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -14,7 +14,6 @@ import {
   Dimensions,
   Modal,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
@@ -23,9 +22,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// STORE IMPORTS
-import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
-import { useAuthStore } from '../../store/authStore';
+// ✅ IMPORT Store and Selectors
+import { 
+  usePrayerTrackerStore, 
+  selectTrackerIsLoading 
+} from '../../store/prayerTrackerStore';
+import { useAuthStore, selectUser } from '../../store/authStore';
 
 // COMPONENT IMPORTS
 import {
@@ -127,8 +129,11 @@ const CalendarSkeleton = () => {
 // ============================================================================
 export const PrayerCalendarScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
-  const { fetchWeekPrayers, isLoading } = usePrayerTrackerStore();
+  
+  // ✅ OPTIMIZED: Use selectors
+  const user = useAuthStore(selectUser);
+  const isLoading = usePrayerTrackerStore(selectTrackerIsLoading);
+  const fetchWeekPrayers = usePrayerTrackerStore(state => state.fetchWeekPrayers);
 
   const [calendarData, setCalendarData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -742,7 +747,6 @@ export const PrayerCalendarScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container logic since Layout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',

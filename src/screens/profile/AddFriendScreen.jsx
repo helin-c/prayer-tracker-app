@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/friends/AddFriendScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/friends/AddFriendScreen.jsx (UPDATED BUTTON STYLE)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -12,21 +12,28 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useFriendsStore } from '../../store/friendsStore';
+// ✅ ADDED: LinearGradient import
+import { LinearGradient } from 'expo-linear-gradient';
+
+// ✅ IMPORT Store and Selectors
+import { useFriendsStore, selectFriendsCount } from '../../store/friendsStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const AddFriendScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { sendFriendRequest, friendsCount, fetchFriendsCount } =
-    useFriendsStore();
-  const [email, setEmail] = useState('');
+  
+  // ✅ OPTIMIZED: Use selectors
+  const friendsCount = useFriendsStore(selectFriendsCount);
+  
+  // Actions
+  const sendFriendRequest = useFriendsStore(state => state.sendFriendRequest);
+  const fetchFriendsCount = useFriendsStore(state => state.fetchFriendsCount);
 
-  // İstek gönderme durumu
+  const [email, setEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
@@ -74,6 +81,8 @@ export const AddFriendScreen = ({ navigation }) => {
     }
   };
 
+  const isButtonDisabled = !friendsCount.can_add_more || isSending;
+
   return (
     // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
@@ -108,7 +117,7 @@ export const AddFriendScreen = ({ navigation }) => {
           <Ionicons
             name={friendsCount.can_add_more ? 'information-circle' : 'warning'}
             size={20}
-            color={friendsCount.can_add_more ? '#00A86B' : '#FF6B35'}
+            color={friendsCount.can_add_more ? '#00A86B' : '#4A9B87'}
           />
           <Text
             style={[
@@ -144,27 +153,30 @@ export const AddFriendScreen = ({ navigation }) => {
           editable={friendsCount.can_add_more && !isSending}
         />
 
+        {/* ✅ NEW: Gradient Send Button */}
         <TouchableOpacity
-          style={[
-            styles.sendButton,
-            (!friendsCount.can_add_more || isSending) &&
-              styles.sendButtonDisabled,
-          ]}
+          style={styles.sendButtonWrapper}
           onPress={handleSendRequest}
-          disabled={!friendsCount.can_add_more || isSending}
+          disabled={isButtonDisabled}
+          activeOpacity={0.8}
         >
-          {isSending ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : (
-            <>
-              <Ionicons name="send" size={20} color="#FFF" />
-              <Text style={styles.sendButtonText}>
-                {friendsCount.can_add_more
-                  ? t('friends.sendRequest')
-                  : t('friends.limitReached')}
-              </Text>
-            </>
-          )}
+          <LinearGradient
+            colors={isButtonDisabled ? ['#999', '#777'] : ['#5BA895', '#4A9B87']}
+            style={styles.sendButton}
+          >
+            {isSending ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Ionicons name="send" size={20} color="#FFF" />
+                <Text style={styles.sendButtonText}>
+                  {friendsCount.can_add_more
+                    ? t('friends.sendRequest')
+                    : t('friends.limitReached')}
+                </Text>
+              </>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </ScreenLayout>
@@ -172,7 +184,6 @@ export const AddFriendScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since Layout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -209,7 +220,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#1A1A1A',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -217,8 +228,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E8F5E9',
-    padding: 12,
+    backgroundColor: '#',
+    padding: 2,
     borderRadius: 8,
     marginBottom: 16,
     gap: 8,
@@ -258,25 +269,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    marginBottom: 16, // Added margin bottom for spacing
+  },
+  
+  // ✅ NEW: Button Styles
+  sendButtonWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#00A86B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
   sendButton: {
     flexDirection: 'row',
-    backgroundColor: '#00A86B',
-    padding: 16,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 16,
     gap: 8,
-    marginTop: 16,
-    height: 56, // Fixed height
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#BDBDBD',
-    opacity: 0.6,
+    height: 56,
   },
   sendButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700', 
   },
 });

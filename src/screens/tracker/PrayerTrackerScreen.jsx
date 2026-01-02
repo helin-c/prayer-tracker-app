@@ -1,8 +1,8 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (FIXED DATA LOADING & FUTURE DATE BLOCK)
+// FILE: src/screens/tracker/PrayerTrackerScreen.jsx (IMPROVED AUTO-SCROLL)
 // ============================================================================
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,8 +23,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// STORE IMPORTS
-import { usePrayerTrackerStore } from '../../store/prayerTrackerStore';
+// IMPORT Store and Selectors
+import {
+  usePrayerTrackerStore,
+  selectDayPrayers,
+  selectWeekPrayers,
+  selectTrackerIsLoading,
+  selectTrackerError,
+} from '../../store/prayerTrackerStore';
 import { useTasbihStore } from '../../store/tasbihStore';
 
 // COMPONENT IMPORTS
@@ -37,6 +43,12 @@ import {
 
 const { width } = Dimensions.get('window');
 
+// 📐 Sabitler: Scroll hesaplaması için gerekli
+const DAY_ITEM_WIDTH = 50; // Daire genişliği
+const DAY_ITEM_MARGIN = 8; // marginHorizontal (8 sol + 8 sağ = 16)
+const TOTAL_ITEM_WIDTH = DAY_ITEM_WIDTH + DAY_ITEM_MARGIN * 2; // 66px
+const SCREEN_CENTER = width / 2; // Ekranın merkezi
+
 const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 export const PRAYER_ICONS = {
   Fajr: 'cloudy-night-outline',
@@ -46,39 +58,148 @@ export const PRAYER_ICONS = {
   Isha: 'moon',
 };
 
-// ... [TrackerSkeleton remains the same] ...
-const TrackerSkeleton = () => { /* ... skeleton code ... */ return <View /> };
+const TrackerSkeleton = () => {
+  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+
+  return (
+    <View style={{ padding: 20 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 24,
+        }}
+      >
+        <View>
+          <SkeletonLine
+            width={150}
+            height={32}
+            style={{ ...skeletonStyle, marginBottom: 8 }}
+          />
+          <SkeletonLine width={200} height={16} style={skeletonStyle} />
+        </View>
+        <SkeletonCircle size={50} style={skeletonStyle} />
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 24,
+        }}
+      >
+        {[...Array(7)].map((_, i) => (
+          <View key={i} style={{ alignItems: 'center' }}>
+            <SkeletonLine
+              width={20}
+              height={12}
+              style={{ ...skeletonStyle, marginBottom: 8 }}
+            />
+            <SkeletonCircle size={40} style={skeletonStyle} />
+          </View>
+        ))}
+      </View>
+      <SkeletonLoader
+        width="100%"
+        height={160}
+        borderRadius={20}
+        style={{ ...skeletonStyle, marginBottom: 24 }}
+      />
+      {[1, 2, 3, 4, 5].map((i) => (
+        <SkeletonLoader
+          key={i}
+          width="100%"
+          height={80}
+          borderRadius={16}
+          style={{ ...skeletonStyle, marginBottom: 12 }}
+        />
+      ))}
+    </View>
+  );
+};
 
 export const PrayerTrackerScreen = ({ navigation }) => {
   const { t } = useTranslation();
+
+  const dayPrayers = usePrayerTrackerStore(selectDayPrayers);
+  const weekPrayers = usePrayerTrackerStore(selectWeekPrayers);
+  const isLoading = usePrayerTrackerStore(selectTrackerIsLoading);
+  const error = usePrayerTrackerStore(selectTrackerError);
+
+  const fetchDayPrayers = usePrayerTrackerStore(
+    (state) => state.fetchDayPrayers
+  );
+  const fetchWeekPrayers = usePrayerTrackerStore(
+    (state) => state.fetchWeekPrayers
+  );
+  const trackPrayer = usePrayerTrackerStore((state) => state.trackPrayer);
+  const loadSessions = useTasbihStore((state) => state.loadSessions);
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDates, setWeekDates] = useState([]);
   const [selectedPrayer, setSelectedPrayer] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [processingAction, setProcessingAction] = useState(null); 
+  const [processingAction, setProcessingAction] = useState(null);
 
-  const { loadSessions } = useTasbihStore();
-  const {
-    dayPrayers,
-    weekPrayers,
-    isLoading, 
-    error,
-    fetchDayPrayers,
-    fetchWeekPrayers,
-    trackPrayer,
-  } = usePrayerTrackerStore();
+  // ✅ Scroll Ref
+  const scrollViewRef = useRef(null);
+  const hasScrolledInitially = useRef(false); // İlk scroll yapıldı mı kontrolü
 
   useEffect(() => {
     generateWeekDates();
     loadSessions();
-    loadData(); 
+    loadData();
   }, []);
 
   useEffect(() => {
     loadData();
+    // ✅ Tarih değiştiğinde otomatik kaydır
+    scrollToSelectedDate();
   }, [selectedDate]);
+
+  // ✅ Week dates oluşturulduğunda ilk scroll'u yap
+  useEffect(() => {
+    if (weekDates.length > 0 && !hasScrolledInitially.current) {
+      // Hafta yüklendikten sonra bugünü merkeze al
+      setTimeout(() => {
+        scrollToSelectedDate(false); // İlk yükleme, animasyon olmasın
+        hasScrolledInitially.current = true;
+      }, 100); // DOM render edildikten sonra scroll yap
+    }
+  }, [weekDates]);
+
+  // ✅ İYİLEŞTİRİLMİŞ Otomatik Kaydırma Fonksiyonu
+  const scrollToSelectedDate = (animated = true) => {
+    if (weekDates.length === 0 || !scrollViewRef.current) {
+      return;
+    }
+
+    const selectedIndex = weekDates.findIndex(
+      (d) => d.toDateString() === selectedDate.toDateString()
+    );
+
+    if (selectedIndex === -1) {
+      return;
+    }
+
+    // ✅ Seçili günün X pozisyonunu hesapla
+    const itemCenterPosition =
+      selectedIndex * TOTAL_ITEM_WIDTH + TOTAL_ITEM_WIDTH / 2;
+
+    // ✅ Ekranın ortasına getirmek için offset hesapla
+    const targetScrollX = itemCenterPosition - SCREEN_CENTER;
+
+    // ✅ Sınırları kontrol et (negatif veya maksimumdan fazla olmasın)
+    const maxScrollX = weekDates.length * TOTAL_ITEM_WIDTH - width;
+    const finalScrollX = Math.max(0, Math.min(targetScrollX, maxScrollX));
+
+    // ✅ Scroll yap
+    scrollViewRef.current.scrollTo({
+      x: finalScrollX,
+      animated: animated,
+    });
+  };
 
   const loadData = async () => {
     if (!dayPrayers) setInitialLoading(true);
@@ -86,7 +207,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       const dateStr = formatDate(selectedDate);
       const currentDay = selectedDate.getDay();
       const monday = new Date(selectedDate);
-      const dayDiff = currentDay === 0 ? 6 : currentDay - 1; 
+      const dayDiff = currentDay === 0 ? 6 : currentDay - 1;
       monday.setDate(selectedDate.getDate() - dayDiff);
       const weekStartStr = formatDate(monday);
 
@@ -129,10 +250,18 @@ export const PrayerTrackerScreen = ({ navigation }) => {
 
   const formatDisplayDate = (date) => {
     const months = [
-      t('prayerTracker.months.jan'), t('prayerTracker.months.feb'), t('prayerTracker.months.mar'),
-      t('prayerTracker.months.apr'), t('prayerTracker.months.may'), t('prayerTracker.months.jun'),
-      t('prayerTracker.months.jul'), t('prayerTracker.months.aug'), t('prayerTracker.months.sep'),
-      t('prayerTracker.months.oct'), t('prayerTracker.months.nov'), t('prayerTracker.months.dec'),
+      t('prayerTracker.months.jan'),
+      t('prayerTracker.months.feb'),
+      t('prayerTracker.months.mar'),
+      t('prayerTracker.months.apr'),
+      t('prayerTracker.months.may'),
+      t('prayerTracker.months.jun'),
+      t('prayerTracker.months.jul'),
+      t('prayerTracker.months.aug'),
+      t('prayerTracker.months.sep'),
+      t('prayerTracker.months.oct'),
+      t('prayerTracker.months.nov'),
+      t('prayerTracker.months.dec'),
     ];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
@@ -142,28 +271,23 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return date.toDateString() === today.toDateString();
   };
 
-  // Helper to check if a date is in the future
   const isFutureDate = (date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
-    
     return checkDate > today;
   };
 
   const handlePrayerPress = (prayer) => {
-    // BLOCK FUTURE DATES: Don't allow opening modal if selected date is in future
     if (isFutureDate(selectedDate)) {
-        Alert.alert(t('common.notice'), t('prayerTracker.futureDateLocked'));
-        return;
+      Alert.alert(t('common.notice'), t('prayerTracker.futureDateLocked'));
+      return;
     }
     setSelectedPrayer(prayer);
     setModalVisible(true);
   };
 
-  // ... [handlePrayerAction, getCompletionPercentage, CircularProgress remain same] ...
   const handlePrayerAction = async (actionType) => {
     if (!selectedPrayer) return;
     setProcessingAction(actionType);
@@ -181,7 +305,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
       setModalVisible(false);
       setTimeout(() => loadData(), 200);
     } catch (err) {
-      Alert.alert(t('tasbih.alerts.error'), 'Failed to track prayer. Please try again.');
+      Alert.alert(
+        t('tasbih.alerts.error'),
+        'Failed to track prayer. Please try again.'
+      );
     } finally {
       setProcessingAction(null);
     }
@@ -199,84 +326,130 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     return (
       <View style={styles.circularProgress}>
         <Svg width={size} height={size}>
-          <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#E0E0E0" strokeWidth={strokeWidth} fill="none" />
           <Circle
-            cx={size / 2} cy={size / 2} r={radius} stroke="#5BA895" strokeWidth={strokeWidth} fill="none"
-            strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-            strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="#E0E0E0"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="#5BA895"
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - progress}
+            strokeLinecap="round"
+            rotation="-90"
+            origin={`${size / 2}, ${size / 2}`}
           />
         </Svg>
         <View style={styles.circularProgressText}>
           <Text style={styles.percentageText}>{Math.round(percentage)}%</Text>
-          <Text style={styles.percentageLabel}>{t('prayerTracker.complete')}</Text>
+          <Text style={styles.percentageLabel}>
+            {t('prayerTracker.complete')}
+          </Text>
         </View>
       </View>
     );
   };
 
   const WeekDayCircle = ({ date, percentage }) => {
-    const size = 50;
+    const size = DAY_ITEM_WIDTH;
     const strokeWidth = 4;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const progress = (percentage / 100) * circumference;
     const today = isToday(date);
     const isSelected = date.toDateString() === selectedDate.toDateString();
-    
-    // Check if this specific day is in the future
     const isFuture = isFutureDate(date);
 
     const weekDayLabels = [
-      t('prayerTracker.weekDays.monday'), t('prayerTracker.weekDays.tuesday'),
-      t('prayerTracker.weekDays.wednesday'), t('prayerTracker.weekDays.thursday'),
-      t('prayerTracker.weekDays.friday'), t('prayerTracker.weekDays.saturday'),
+      t('prayerTracker.weekDays.monday'),
+      t('prayerTracker.weekDays.tuesday'),
+      t('prayerTracker.weekDays.wednesday'),
+      t('prayerTracker.weekDays.thursday'),
+      t('prayerTracker.weekDays.friday'),
+      t('prayerTracker.weekDays.saturday'),
       t('prayerTracker.weekDays.sunday'),
     ];
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
-            styles.weekDayContainer,
-            // Add visual cue for future dates (optional: reduce opacity)
-            isFuture && { opacity: 0.5 } 
-        ]} 
+          styles.weekDayContainer,
+          isSelected && styles.weekDayContainerSelected, 
+        ]}
         onPress={() => {
-            // Allow selecting future dates to SEE them (e.g. empty state), 
-            // but the actions are blocked in handlePrayerPress.
-            // OR prevent selection entirely:
-            if (isFuture) {
-                 Alert.alert(t('common.notice'), t('prayerTracker.futureDateLocked'));
-                 return;
-            }
-            setSelectedDate(date);
-        }} 
+          if (isFuture) {
+            Alert.alert(
+              t('common.notice'),
+              t('prayerTracker.futureDateLocked')
+            );
+            return;
+          }
+          setSelectedDate(date);
+        }}
         activeOpacity={0.7}
       >
-        <Text style={[styles.weekDayName, today && styles.todayText]}>
+        {/* Gün İsmi */}
+        <Text
+          style={[
+            styles.weekDayName,
+            today && styles.todayText,
+            isSelected && styles.selectedDayNameText,
+          ]}
+        >
           {weekDayLabels[date.getDay() === 0 ? 6 : date.getDay() - 1]}
         </Text>
-        <View style={styles.weekDayCircle}>
+
+        {/* Daire ve İlerleme */}
+        <View
+          style={[
+            styles.weekDayCircle,
+            isFuture && styles.weekDayCircleFuture,
+            isSelected && styles.weekDayCircleSelected,
+          ]}
+        >
           <Svg width={size} height={size}>
-            <Circle 
-                cx={size / 2} cy={size / 2} r={radius} 
-                stroke={isFuture ? "#F0F0F0" : "#E0E0E0"} 
-                strokeWidth={strokeWidth} 
-                fill={isSelected ? '#5BA895' : '#FFF'} 
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke={isFuture ? '#F5F5F5' : '#EAEAEA'}
+              strokeWidth={strokeWidth}
+              fill={isSelected ? '#5BA895' : '#FFF'}
             />
             {percentage > 0 && !isFuture && (
               <Circle
-                cx={size / 2} cy={size / 2} r={radius} stroke="#5BA895" strokeWidth={strokeWidth} fill="none"
-                strokeDasharray={circumference} strokeDashoffset={circumference - progress}
-                strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke={isSelected ? '#FFF' : '#5BA895'}
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference - progress}
+                strokeLinecap="round"
+                rotation="-90"
+                origin={`${size / 2}, ${size / 2}`}
+                opacity={isSelected ? 0.5 : 1}
               />
             )}
           </Svg>
-          <Text style={[
-              styles.weekDayDate, 
+
+          <Text
+            style={[
+              styles.weekDayDate,
               isSelected && styles.todayDateText,
-              isFuture && styles.futureDateText // Optional style for future text
-          ]}>
-              {date.getDate()}
+              isFuture && styles.futureDateText,
+            ]}
+          >
+            {date.getDate()}
           </Text>
         </View>
       </TouchableOpacity>
@@ -297,14 +470,19 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     );
   }
 
-  // Check if currently selected date is in future for disabling the list
   const isSelectedDateFuture = isFutureDate(selectedDate);
 
   if (error && !dayPrayers) {
     return (
       <ScreenLayout>
         <View style={styles.errorContainer}>
-          {/* Error View Code... */}
+          <View style={styles.errorContent}>
+            <Ionicons name="alert-circle-outline" size={48} color="#DC3545" />
+            <Text style={styles.errorText}>{t('common.error')}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+              <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScreenLayout>
     );
@@ -317,7 +495,11 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#5BA895" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#5BA895"
+          />
         }
       >
         {/* Header */}
@@ -332,7 +514,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={[
+                'rgba(255, 255, 255, 0.95)',
+                'rgba(255, 255, 255, 0.95)',
+              ]}
               style={styles.calendarButton}
             >
               <Ionicons name="calendar-outline" size={28} color="#5BA895" />
@@ -340,14 +525,30 @@ export const PrayerTrackerScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Week Calendar */}
+        {/* ✅ Week Calendar with Improved Auto-Scroll */}
         <View style={styles.weekCalendar}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weekScrollContent}>
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.weekScrollContent}
+            decelerationRate="fast" // ✅ Daha akıcı scroll
+            snapToInterval={TOTAL_ITEM_WIDTH} // ✅ Günlere snap yapma (opsiyonel)
+            snapToAlignment="center" // ✅ Merkeze snap (opsiyonel)
+          >
             {weekDates.map((date, index) => {
               const dateStr = formatDate(date);
-              const dayData = weekPrayers?.days?.find((d) => d.date === dateStr);
+              const dayData = weekPrayers?.days?.find(
+                (d) => d.date === dateStr
+              );
               const percentage = dayData?.completion_percentage || 0;
-              return <WeekDayCircle key={index} date={date} percentage={percentage} />;
+              return (
+                <WeekDayCircle
+                  key={index}
+                  date={date}
+                  percentage={percentage}
+                />
+              );
             })}
           </ScrollView>
         </View>
@@ -375,7 +576,9 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         </View>
 
         {/* Prayer List */}
-        <View style={[styles.prayerList, isSelectedDateFuture && { opacity: 0.5 }]}>
+        <View
+          style={[styles.prayerList, isSelectedDateFuture && { opacity: 0.5 }]}
+        >
           <Text style={styles.sectionTitle}>
             {isToday(selectedDate)
               ? t('prayerTracker.todaysPrayers')
@@ -386,7 +589,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             <TouchableOpacity
               key={index}
               style={styles.prayerCardWrapper}
-              // Disable press if date is in future
               onPress={() => !isSelectedDateFuture && handlePrayerPress(prayer)}
               activeOpacity={isSelectedDateFuture ? 1 : 0.7}
             >
@@ -395,8 +597,14 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                   prayer.completed
                     ? ['rgba(240, 255, 244, 0.95)', 'rgba(240, 255, 244, 0.95)']
                     : prayer.id && !prayer.completed
-                      ? ['rgba(255, 235, 238, 0.95)', 'rgba(255, 235, 238, 0.95)']
-                      : ['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']
+                      ? [
+                          'rgba(255, 235, 238, 0.95)',
+                          'rgba(255, 235, 238, 0.95)',
+                        ]
+                      : [
+                          'rgba(255, 255, 255, 0.95)',
+                          'rgba(255, 255, 255, 0.95)',
+                        ]
                 }
                 style={styles.prayerCard}
               >
@@ -406,56 +614,81 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                       styles.prayerIcon,
                       prayer.completed && styles.prayerIconCompleted,
                       prayer.id && !prayer.completed && styles.prayerIconMissed,
-                      isSelectedDateFuture && { backgroundColor: '#F0F0F0' } // Grey out icon if future
+                      isSelectedDateFuture && { backgroundColor: '#F0F0F0' },
                     ]}
                   >
                     <Ionicons
                       name={PRAYER_ICONS[prayer.prayer_name]}
                       size={24}
                       color={
-                        isSelectedDateFuture ? '#CCC' :
-                        (prayer.completed || (prayer.id && !prayer.completed) ? '#FFF' : '#5BA895')
+                        isSelectedDateFuture
+                          ? '#CCC'
+                          : prayer.completed || (prayer.id && !prayer.completed)
+                            ? '#FFF'
+                            : '#5BA895'
                       }
                     />
                   </View>
                   <View>
-                    <Text style={[styles.prayerName, isSelectedDateFuture && { color: '#999' }]}>
-                        {getPrayerName(prayer.prayer_name)}
+                    <Text
+                      style={[
+                        styles.prayerName,
+                        isSelectedDateFuture && { color: '#999' },
+                      ]}
+                    >
+                      {getPrayerName(prayer.prayer_name)}
                     </Text>
-                    {/* Status Labels */}
                     {!isSelectedDateFuture && (
-                        <>
-                            {prayer.completed && prayer.on_time && (
-                            <Text style={styles.onTimeLabel}>{t('prayerTracker.status.onTime')}</Text>
-                            )}
-                            {prayer.completed && !prayer.on_time && (
-                            <Text style={styles.lateLabel}>{t('prayerTracker.status.late')}</Text>
-                            )}
-                            {prayer.id && !prayer.completed && (
-                            <Text style={styles.missedLabel}>{t('prayerTracker.status.missed')}</Text>
-                            )}
-                        </>
+                      <>
+                        {prayer.completed && prayer.on_time && (
+                          <Text style={styles.onTimeLabel}>
+                            {t('prayerTracker.status.onTime')}
+                          </Text>
+                        )}
+                        {prayer.completed && !prayer.on_time && (
+                          <Text style={styles.lateLabel}>
+                            {t('prayerTracker.status.late')}
+                          </Text>
+                        )}
+                        {prayer.id && !prayer.completed && (
+                          <Text style={styles.missedLabel}>
+                            {t('prayerTracker.status.missed')}
+                          </Text>
+                        )}
+                      </>
                     )}
                   </View>
                 </View>
                 <View style={styles.prayerCardRight}>
                   {!isSelectedDateFuture && (
-                      <>
-                        {prayer.completed ? (
-                            <View style={styles.completedBadge}>
-                            <Ionicons name="checkmark-circle" size={28} color="#5BA895" />
-                            </View>
-                        ) : prayer.id && !prayer.completed ? (
-                            <View style={styles.missedBadge}>
-                            <Ionicons name="close-circle" size={28} color="#DC3545" />
-                            </View>
-                        ) : (
-                            <Ionicons name="chevron-forward" size={24} color="#1A1A1A" />
-                        )}
-                      </>
+                    <>
+                      {prayer.completed ? (
+                        <View style={styles.completedBadge}>
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={28}
+                            color="#5BA895"
+                          />
+                        </View>
+                      ) : prayer.id && !prayer.completed ? (
+                        <View style={styles.missedBadge}>
+                          <Ionicons
+                            name="close-circle"
+                            size={28}
+                            color="#DC3545"
+                          />
+                        </View>
+                      ) : (
+                        <Ionicons
+                          name="chevron-forward"
+                          size={24}
+                          color="#1A1A1A"
+                        />
+                      )}
+                    </>
                   )}
                   {isSelectedDateFuture && (
-                      <Ionicons name="lock-closed" size={20} color="#CCC" />
+                    <Ionicons name="lock-closed" size={20} color="#CCC" />
                   )}
                 </View>
               </LinearGradient>
@@ -467,15 +700,16 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="leaf-outline" size={20} color="#5BA895" />
-            <Text style={styles.sectionTitle}>{t('prayerTracker.afterPrayerRemembrance')}</Text>
+            <Text style={styles.sectionTitle}>
+              {t('prayerTracker.afterPrayerRemembrance')}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.tasbihCardWrapper}
             onPress={() => navigation.navigate('Tasbih')}
             activeOpacity={0.7}
           >
-             {/* ... Tasbih Card Content ... */}
-             <LinearGradient
+            <LinearGradient
               colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
               style={styles.tasbihCard}
             >
@@ -489,16 +723,32 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               </View>
 
               <View style={styles.tasbihContent}>
-                <Text style={styles.tasbihTitle}>{t('prayerTracker.digitalTasbih')}</Text>
-                <Text style={styles.tasbihSubtitle}>{t('prayerTracker.countDhikr')}</Text>
+                <Text style={styles.tasbihTitle}>
+                  {t('prayerTracker.digitalTasbih')}
+                </Text>
+                <Text style={styles.tasbihSubtitle}>
+                  {t('prayerTracker.countDhikr')}
+                </Text>
                 <View style={styles.tasbihBadges}>
                   <View style={styles.tasbihBadge}>
-                    <Ionicons name="bookmark-outline" size={14} color="#1A1A1A" />
-                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.saveProgress')}</Text>
+                    <Ionicons
+                      name="bookmark-outline"
+                      size={14}
+                      color="#1A1A1A"
+                    />
+                    <Text style={styles.tasbihBadgeText}>
+                      {t('prayerTracker.saveProgress')}
+                    </Text>
                   </View>
                   <View style={styles.tasbihBadge}>
-                    <Ionicons name="trending-up-outline" size={14} color="#1A1A1A" />
-                    <Text style={styles.tasbihBadgeText}>{t('prayerTracker.trackHistory')}</Text>
+                    <Ionicons
+                      name="trending-up-outline"
+                      size={14}
+                      color="#1A1A1A"
+                    />
+                    <Text style={styles.tasbihBadgeText}>
+                      {t('prayerTracker.trackHistory')}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -510,39 +760,51 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         <StatsSection />
       </ScrollView>
 
-      {/* Modal ... */}
+      {/* Modal */}
       <Modal
         visible={modalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => !processingAction && setModalVisible(false)}
       >
-         {/* ... Modal Content ... */}
-         <View style={styles.modalOverlay}>
+        <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {selectedPrayer && getPrayerName(selectedPrayer.prayer_name)}
               </Text>
-              <TouchableOpacity onPress={() => !processingAction && setModalVisible(false)}>
-                <Ionicons name="close" size={28} color={processingAction ? '#CCC' : '#666'} />
+              <TouchableOpacity
+                onPress={() => !processingAction && setModalVisible(false)}
+              >
+                <Ionicons
+                  name="close"
+                  size={28}
+                  color={processingAction ? '#CCC' : '#666'}
+                />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>{t('prayerTracker.modal.markAs')}</Text>
+            <Text style={styles.modalSubtitle}>
+              {t('prayerTracker.modal.markAs')}
+            </Text>
 
             <TouchableOpacity
               style={styles.modalButtonWrapper}
               onPress={() => handlePrayerAction('ontime')}
               disabled={processingAction !== null}
             >
-              <LinearGradient colors={['#5BA895', '#4A9B87']} style={styles.modalButton}>
+              <LinearGradient
+                colors={['#5BA895', '#4A9B87']}
+                style={styles.modalButton}
+              >
                 {processingAction === 'ontime' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="time" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneOnTime')}</Text>
+                    <Text style={styles.modalButtonText}>
+                      {t('prayerTracker.modal.doneOnTime')}
+                    </Text>
                   </>
                 )}
               </LinearGradient>
@@ -553,13 +815,18 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               onPress={() => handlePrayerAction('done')}
               disabled={processingAction !== null}
             >
-              <LinearGradient colors={['#3498DB', '#2E86C1']} style={styles.modalButton}>
+              <LinearGradient
+                colors={['#3498DB', '#2E86C1']}
+                style={styles.modalButton}
+              >
                 {processingAction === 'done' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.doneLate')}</Text>
+                    <Text style={styles.modalButtonText}>
+                      {t('prayerTracker.modal.doneLate')}
+                    </Text>
                   </>
                 )}
               </LinearGradient>
@@ -570,13 +837,18 @@ export const PrayerTrackerScreen = ({ navigation }) => {
               onPress={() => handlePrayerAction('missed')}
               disabled={processingAction !== null}
             >
-              <LinearGradient colors={['#DC3545', '#C82333']} style={styles.modalButton}>
+              <LinearGradient
+                colors={['#DC3545', '#C82333']}
+                style={styles.modalButton}
+              >
                 {processingAction === 'missed' ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <>
                     <Ionicons name="close-circle" size={24} color="#FFF" />
-                    <Text style={styles.modalButtonText}>{t('prayerTracker.modal.missed')}</Text>
+                    <Text style={styles.modalButtonText}>
+                      {t('prayerTracker.modal.missed')}
+                    </Text>
                   </>
                 )}
               </LinearGradient>
@@ -589,7 +861,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since ScreenLayout handles bg
   scrollView: {
     flex: 1,
   },
@@ -637,16 +908,27 @@ const styles = StyleSheet.create({
   },
   weekScrollContent: {
     paddingVertical: 8,
+    paddingHorizontal: 12, // ✅ Yanlara biraz padding ekledik
   },
   weekDayContainer: {
     alignItems: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: DAY_ITEM_MARGIN,
+    width: DAY_ITEM_WIDTH,
+    // ✅ Seçili güne transform efekti
+    transition: 'transform 0.2s ease',
+  },
+  weekDayContainerSelected: {
+    transform: [{ translateY: -4 }], // ✅ Yukarı kaldır
   },
   weekDayName: {
     fontSize: 12,
     color: '#666',
     marginBottom: 8,
     fontWeight: '600',
+  },
+  selectedDayNameText: {
+    color: '#5BA895',
+    fontWeight: 'bold',
   },
   todayText: {
     color: '#5BA895',
@@ -655,6 +937,19 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
+    width: DAY_ITEM_WIDTH,
+    height: DAY_ITEM_WIDTH,
+    borderRadius: DAY_ITEM_WIDTH / 2,
+  },
+  weekDayCircleSelected: {
+    shadowColor: '#5BA895',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  weekDayCircleFuture: {
+    opacity: 0.6,
   },
   weekDayDate: {
     position: 'absolute',
@@ -666,7 +961,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   futureDateText: {
-    color: '#999', // Grey text for future dates
+    color: '#CCC',
   },
   todaySection: {
     borderRadius: 20,
@@ -733,10 +1028,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1A1A1A',
     marginBottom: 12,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
   },
   prayerCardWrapper: {
     borderRadius: 16,
@@ -867,19 +1158,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#2D6856',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 5,
+    padding: 20,
   },
-  errorGradient: {
-    width: '100%',
-    padding: 24,
+  errorContent: {
     alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   errorText: {
     fontSize: 16,
@@ -890,17 +1180,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   retryButton: {
-    borderRadius: 8,
-    overflow: 'hidden',
-    shadowColor: '#2D6856',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  retryButtonGradient: {
+    backgroundColor: '#5BA895',
     paddingHorizontal: 32,
     paddingVertical: 12,
+    borderRadius: 8,
   },
   retryButtonText: {
     color: '#FFF',

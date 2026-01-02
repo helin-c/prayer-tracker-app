@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/friends/FriendRequestScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/friends/FriendRequestScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -11,10 +11,15 @@ import {
   Alert,
   ActivityIndicator, 
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useFriendsStore } from '../../store/friendsStore';
+
+// ✅ IMPORT Store and Selectors
+import { 
+  useFriendsStore, 
+  selectFriendsCount, 
+  selectFriendsIsLoading 
+} from '../../store/friendsStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -80,13 +85,15 @@ const RequestSkeleton = () => {
 export const FriendRequestScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { request } = route.params;
-  const {
-    acceptFriendRequest,
-    rejectFriendRequest,
-    friendsCount,
-    fetchFriendsCount,
-    isLoading,
-  } = useFriendsStore();
+  
+  // ✅ OPTIMIZED: Use selectors
+  const friendsCount = useFriendsStore(selectFriendsCount);
+  const isLoading = useFriendsStore(selectFriendsIsLoading);
+  
+  // Actions
+  const acceptFriendRequest = useFriendsStore(state => state.acceptFriendRequest);
+  const rejectFriendRequest = useFriendsStore(state => state.rejectFriendRequest);
+  const fetchFriendsCount = useFriendsStore(state => state.fetchFriendsCount);
 
   // İşlem durumları
   const [isProcessing, setIsProcessing] = useState(false);

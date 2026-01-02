@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/profile/EditProfileScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/profile/EditProfileScreen.jsx (UPDATED BUTTON STYLE)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -13,10 +13,13 @@ import {
   Alert,
   ActivityIndicator, 
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../store/authStore';
+// ✅ ADDED: LinearGradient import
+import { LinearGradient } from 'expo-linear-gradient';
+
+// ✅ IMPORT Store and Selectors
+import { useAuthStore, selectUser } from '../../store/authStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -29,7 +32,9 @@ const LANGUAGES = [
 
 export const EditProfileScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
-  const { user, updateProfile } = useAuthStore();
+  
+  const user = useAuthStore(selectUser);
+  const updateProfile = useAuthStore(state => state.updateProfile);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -38,7 +43,6 @@ export const EditProfileScreen = ({ navigation }) => {
     preferred_language: 'en',
   });
 
-  // Kaydetme işlemi durumu
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -61,6 +65,11 @@ export const EditProfileScreen = ({ navigation }) => {
       const result = await updateProfile(formData);
 
       if (result.success) {
+        // ✅ Anında dil değişimi (UX iyileştirmesi)
+        if (formData.preferred_language !== i18n.language) {
+          await i18n.changeLanguage(formData.preferred_language);
+        }
+
         Alert.alert(t('common.success'), t('profile.profileUpdated'), [
           {
             text: t('common.done'),
@@ -88,7 +97,6 @@ export const EditProfileScreen = ({ navigation }) => {
   };
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
       {/* Header */}
       <View style={styles.header}>
@@ -217,20 +225,26 @@ export const EditProfileScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Save Button with Spinner */}
+        {/* ✅ NEW: Gradient Save Button (Matching ChangePassword Style) */}
         <TouchableOpacity
-          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+          style={styles.saveButtonWrapper}
           onPress={handleSave}
           disabled={isSaving}
+          activeOpacity={0.8}
         >
-          {isSaving ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </>
-          )}
+          <LinearGradient
+            colors={isSaving ? ['#999', '#777'] : ['#5BA895', '#4A9B87']}
+            style={styles.saveButton}
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#FFF" />
+                <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+              </>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         {/* Discard Button */}
@@ -254,7 +268,6 @@ export const EditProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since ScreenLayout handles background
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -302,15 +315,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
     paddingHorizontal: 16,
+    height: 56, // Fixed height for input container
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    padding: 16,
     fontSize: 16,
     color: '#1A1A1A',
+    height: '100%',
   },
 
   // Language Selection
@@ -369,26 +383,31 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Buttons
+  // ✅ NEW: Button Styles (Matching ChangePasswordScreen)
+  saveButtonWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#00A86B',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
+    paddingVertical: 16,
     gap: 8,
-    height: 56, // Fixed height to prevent resizing when spinner appears
-  },
-  saveButtonDisabled: {
-    opacity: 0.7,
+    height: 56,
   },
   saveButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700', // Bold text like in ChangePassword
   },
+  
   discardButton: {
     alignItems: 'center',
     padding: 16,

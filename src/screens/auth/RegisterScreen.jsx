@@ -1,23 +1,24 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/auth/RegisterScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/auth/RegisterScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView, // <-- Added
-  Platform,             // <-- Added
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Alert,
   TouchableOpacity,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../store/authStore';
 import { Button, Input } from '../../components/common';
+
+// ✅ Import Store and Selectors
+import { useAuthStore, selectAuthIsLoading } from '../../store/authStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -39,8 +40,9 @@ export const RegisterScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
 
-  // Use isLoading for button spinner only
-  const { register, isLoading } = useAuthStore();
+  // ✅ OPTIMIZED: Use selectors to avoid unnecessary re-renders
+  const isLoading = useAuthStore(selectAuthIsLoading);
+  const register = useAuthStore((state) => state.register);
 
   const updateField = (field, value) => {
     setFormData({ ...formData, [field]: value });

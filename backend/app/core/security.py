@@ -1,233 +1,208 @@
 # ============================================================================
-# FILE: backend/app/core/security.py
+# FILE: backend/app/core/security.py (PRODUCTION-READY)
 # ============================================================================
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Set
 from jose import JWTError, jwt
 import bcrypt
+import re
+import secrets
 from app.core.config import settings
+from app.core.redis import redis_client  # ✅ ADDED: Redis client
 import logging
 
 logger = logging.getLogger(__name__)
 
+# ❌ REMOVED: _token_blacklist (In-memory storage is not stateless/scalable)
 
 # ============================================================================
-# PASSWORD HASHING
+# PASSWORD VALIDATION & HASHING
 # ============================================================================
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify a plain password against a hashed password using bcrypt.
+
+def validate_password_strength(password: str) -> tuple[bool, Optional[str]]:
+    """Validate password strength with comprehensive checks."""
+    if len(password) < settings.MIN_PASSWORD_LENGTH:
+        return False, f"Password must be at least {settings.MIN_PASSWORD_LENGTH} characters"
     
-    Args:
-        plain_password: The plain text password to verify
-        hashed_password: The hashed password to compare against
-        
-    Returns:
-        bool: True if password matches, False otherwise
-    """
+    if len(password.encode('utf-8')) > settings.MAX_PASSWORD_LENGTH:
+        return False, f"Password too long (max {settings.MAX_PASSWORD_LENGTH} bytes)"
+    
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter"
+    
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter"
+    
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least one digit"
+    
+    common_passwords = {'password', '12345678', 'qwerty123', 'password123'}
+    if password.lower() in common_passwords:
+        return False, "Password is too common"
+    
+    return True, None
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain password against a hashed password."""
     try:
-        return bcrypt.checkpw(
-            plain_password.encode('utf-8'),
-            hashed_password.encode('utf-8')
-        )
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
     except Exception as e:
         logger.error(f"Password verification error: {e}")
         return False
 
 
 def get_password_hash(password: str) -> str:
-    """
-    Hash a password using bcrypt.
+    """Hash a password using bcrypt."""
+    is_valid, error_msg = validate_password_strength(password)
+    if not is_valid:
+        raise ValueError(error_msg)
     
-    Args:
-        password: Plain text password to hash
-        
-    Returns:
-        str: Hashed password
-        
-    Raises:
-        ValueError: If password is too long or invalid
-    """
     try:
-        # Validate password length
-        if len(password) < settings.MIN_PASSWORD_LENGTH:
-            raise ValueError(f"Password must be at least {settings.MIN_PASSWORD_LENGTH} characters")
-        
-        # Truncate password to 72 bytes if needed (bcrypt limitation)
-        if len(password.encode('utf-8')) > settings.MAX_PASSWORD_LENGTH:
-            password = password[:settings.MAX_PASSWORD_LENGTH]
-            logger.warning("Password truncated to 72 characters (bcrypt limit)")
-        
-        # Generate salt and hash
-        salt = bcrypt.gensalt()
+        salt = bcrypt.gensalt(rounds=12)
         hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed.decode('utf-8')
-    
     except Exception as e:
         logger.error(f"Password hashing error: {e}")
         raise ValueError("Failed to hash password")
 
 
 # ============================================================================
-# JWT TOKEN GENERATION
+# TOKEN BLACKLIST MANAGEMENT (CENTRALIZED & REDIS-BASED)
 # ============================================================================
-def create_access_token(
-    data: Dict[str, Any],
-    expires_delta: Optional[timedelta] = None
-) -> str:
+
+def blacklist_token_jti(jti: str, ttl_seconds: int, user_id: int) -> bool:
     """
-    Create JWT access token.
+    Add token JTI to Redis blacklist.
     
     Args:
-        data: Payload data to encode (usually contains user_id)
-        expires_delta: Custom expiration time (optional)
+        jti: JWT ID from token
+        ttl_seconds: Time to live (should match token expiry)
+        user_id: User ID for audit trail
         
     Returns:
-        str: Encoded JWT token
+        bool: True if successfully blacklisted
     """
-    to_encode = data.copy()
+    if not settings.TOKEN_BLACKLIST_ENABLED:
+        return True
+
+    try:
+        # Key format: blacklist:jti:{jti_string}
+        redis_client.setex(
+            name=f"blacklist:jti:{jti}",
+            time=ttl_seconds,
+            value=str(user_id)
+        )
+        logger.info(f"Token JTI blacklisted: {jti[:8]}... for user {user_id}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to blacklist token: {e}")
+        # Return False to let caller decide (e.g. return 500 error)
+        return False
+
+
+def is_token_blacklisted(jti: str) -> bool:
+    """
+    Check if token JTI is in Redis blacklist.
     
-    # Set expiration time
+    Args:
+        jti: JWT ID to check
+        
+    Returns:
+        bool: True if blacklisted
+    """
+    if not settings.TOKEN_BLACKLIST_ENABLED:
+        return False
+
+    try:
+        return redis_client.exists(f"blacklist:jti:{jti}")
+    except Exception as e:
+        logger.error(f"Blacklist check failed: {e}")
+        
+        # FAIL CLOSED: If Redis is down in production, deny access to be safe
+        if settings.REDIS_FAIL_CLOSED and not settings.DEBUG:
+            logger.critical("Redis down in production: Failing closed (denying auth)")
+            raise  # Will be caught by caller
+            
+        return False
+
+
+# ============================================================================
+# JWT TOKEN GENERATION
+# ============================================================================
+
+def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+    """Create JWT access token with JTI."""
+    to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
-    # Add standard claims
+    # Generate unique JTI
+    jti = secrets.token_urlsafe(32)
+    
     to_encode.update({
         "exp": expire,
         "iat": datetime.utcnow(),
-        "type": "access"
+        "type": "access",
+        "jti": jti
     })
     
-    # Encode token
-    encoded_jwt = jwt.encode(
-        to_encode,
-        settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM
-    )
-    
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def create_refresh_token(data: Dict[str, Any]) -> str:
-    """
-    Create JWT refresh token with longer expiration.
-    
-    Args:
-        data: Payload data to encode (usually contains user_id)
-        
-    Returns:
-        str: Encoded JWT refresh token
-    """
+    """Create JWT refresh token with JTI."""
     to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    jti = secrets.token_urlsafe(32)
     
-    # Refresh tokens have longer expiration
-    expire = datetime.utcnow() + timedelta(
-        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
-    )
-    
-    # Add standard claims
     to_encode.update({
         "exp": expire,
         "iat": datetime.utcnow(),
-        "type": "refresh"
+        "type": "refresh",
+        "jti": jti
     })
     
-    # Encode token
-    encoded_jwt = jwt.encode(
-        to_encode,
-        settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM
-    )
-    
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 # ============================================================================
 # JWT TOKEN VALIDATION
 # ============================================================================
-def decode_token(token: str) -> Optional[Dict[str, Any]]:
+
+def decode_token(token: str, check_blacklist: bool = True) -> Optional[Dict[str, Any]]:
     """
     Decode and validate JWT token.
-    
-    Args:
-        token: JWT token string to decode
-        
-    Returns:
-        dict: Decoded payload if valid, None if invalid
+    Optionally checks blacklist using JTI.
     """
     try:
-        payload = jwt.decode(
-            token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        
+        if check_blacklist:
+            jti = payload.get("jti")
+            if not jti:
+                logger.warning("Token missing JTI claim")
+                return None
+                
+            # Use centralized blacklist check
+            try:
+                if is_token_blacklisted(jti):
+                    logger.warning(f"Attempted use of blacklisted token JTI: {jti[:8]}...")
+                    return None
+            except Exception:
+                # Redis failed and we are failing closed
+                return None
+        
         return payload
     
     except jwt.ExpiredSignatureError:
         logger.warning("Token has expired")
         return None
-    
     except jwt.JWTClaimsError:
         logger.warning("Invalid token claims")
         return None
-    
     except JWTError as e:
         logger.error(f"JWT decode error: {e}")
         return None
-
-
-def verify_token_type(payload: Dict[str, Any], expected_type: str) -> bool:
-    """
-    Verify that token is of expected type (access or refresh).
-    
-    Args:
-        payload: Decoded JWT payload
-        expected_type: Expected token type ("access" or "refresh")
-        
-    Returns:
-        bool: True if token type matches, False otherwise
-    """
-    token_type = payload.get("type")
-    return token_type == expected_type
-
-
-# ============================================================================
-# TOKEN UTILITIES
-# ============================================================================
-def create_token_pair(user_id: int) -> Dict[str, str]:
-    """
-    Create both access and refresh tokens for a user.
-    
-    Args:
-        user_id: User ID to encode in tokens
-        
-    Returns:
-        dict: Dictionary containing access_token and refresh_token
-    """
-    token_data = {"sub": str(user_id)}
-    
-    return {
-        "access_token": create_access_token(token_data),
-        "refresh_token": create_refresh_token(token_data),
-        "token_type": "bearer"
-    }
-
-
-def get_token_expiry(token: str) -> Optional[datetime]:
-    """
-    Get expiration datetime from token.
-    
-    Args:
-        token: JWT token string
-        
-    Returns:
-        datetime: Token expiration time, None if invalid
-    """
-    payload = decode_token(token)
-    if payload and "exp" in payload:
-        return datetime.fromtimestamp(payload["exp"])
-    return None

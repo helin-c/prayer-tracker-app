@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/tracker/StatsSection.jsx (IMPROVED PERIOD SELECTOR)
+// FILE: src/components/tracker/StatsSection.jsx 
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {

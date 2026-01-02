@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/quran/QuranBookmarksScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/quran/QuranBookmarksScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useEffect } from 'react';
 import {
@@ -11,11 +11,17 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
+
+// ✅ IMPORT Store and Selectors
+import { 
+  useQuranStore, 
+  selectBookmarks, 
+  selectQuranIsLoading, 
+  selectQuranIsInitialized 
+} from '../../store/quranStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
@@ -99,15 +105,17 @@ const BookmarksSkeleton = () => {
 // ============================================================================
 export const QuranBookmarksScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const {
-    bookmarks,
-    removeBookmark,
-    getSurah,
-    getAyah,
-    initialize,
-    isLoading,
-    isInitialized,
-  } = useQuranStore();
+  
+  // ✅ OPTIMIZED: Use selectors for state
+  const bookmarks = useQuranStore(selectBookmarks);
+  const isLoading = useQuranStore(selectQuranIsLoading);
+  const isInitialized = useQuranStore(selectQuranIsInitialized);
+
+  // Actions (stable functions)
+  const removeBookmark = useQuranStore(state => state.removeBookmark);
+  const getSurah = useQuranStore(state => state.getSurah);
+  const getAyah = useQuranStore(state => state.getAyah);
+  const initialize = useQuranStore(state => state.initialize);
 
   // Initialize store when screen is focused
   useFocusEffect(
@@ -262,7 +270,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    // Removed transparent bg
   },
   backButton: {
     width: 40,

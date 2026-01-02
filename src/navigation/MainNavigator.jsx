@@ -1,12 +1,10 @@
-// ============================================================================
-// FILE: src/navigation/MainNavigator.jsx
-// ============================================================================
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { ROUTES } from './routes';
 
-// Import screens and navigators
+// Screens
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { QiblaScreen } from '../screens/qibla/QiblaScreen';
 import { TrackerNavigator } from './TrackerNavigator';
@@ -16,9 +14,10 @@ import { GuidesNavigator } from './GuidesNavigator';
 const Tab = createBottomTabNavigator();
 
 export const MainNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
-      // 👇 Tab'lerin oturduğu alanın şeffaf olması için bu çok önemli:
       sceneContainerStyle={{ backgroundColor: 'transparent' }}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -45,39 +44,36 @@ export const MainNavigator = () => {
           paddingBottom: 4,
           paddingTop: 4,
           height: 65,
-          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Tab bar arkası hafif dolu olsun
-          borderTopWidth: 0, // Çizgiyi kaldır modern görünüm için
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderTopWidth: 0,
           elevation: 0,
         },
-        lazy: false, 
-        unmountOnBlur: false, 
-        freezeOnBlur: false, 
       })}
     >
       <Tab.Screen
         name={ROUTES.HOME}
         component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
+        options={{ tabBarLabel: t('tabs.home') }}
       />
       <Tab.Screen
         name={ROUTES.PRAYER_TRACKER}
         component={TrackerNavigator}
-        options={{ tabBarLabel: 'Tracker' }}
+        options={{ tabBarLabel: t('tabs.tracker') }}
       />
       <Tab.Screen
         name={ROUTES.QIBLA}
         component={QiblaScreen}
-        options={{ tabBarLabel: 'Qibla' }}
+        options={{ tabBarLabel: t('tabs.qibla') }}
       />
       <Tab.Screen
         name={ROUTES.GUIDES}
         component={GuidesNavigator}
-        options={{ tabBarLabel: 'Learn' }}
+        options={{ tabBarLabel: t('tabs.guides') }}
       />
       <Tab.Screen
         name={ROUTES.PROFILE}
         component={ProfileNavigator}
-        options={{ tabBarLabel: 'Profile' }}
+        options={{ tabBarLabel: t('tabs.profile') }}
       />
     </Tab.Navigator>
   );

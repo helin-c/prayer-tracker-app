@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.core.database import Base
 
 # Import all model modules so Alembic can detect them
-from app.models import user, prayer  
+from app.models import user, prayer, friendship
 
 # Alembic Config
 config = context.config

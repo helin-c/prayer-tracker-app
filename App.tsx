@@ -1,16 +1,22 @@
 // ============================================================================
 // FILE: App.tsx
 // ============================================================================
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { I18nextProvider } from 'react-i18next';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainerRef } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
 
 // Services & Config
 import i18n from './src/i18n';
 import { preloadImages } from './src/utils/imagePreloader';
+import { notificationService } from './src/services/notificationService';
+
+// Components
+import { ErrorBoundary } from './src/components/common/ErrorBoundary'; // ✅ Import Added
 
 // Navigation
 import { AppNavigator } from './src/navigation/AppNavigator';
@@ -20,26 +26,42 @@ import { useAuthStore } from './src/store/authStore';
 import { useSettingsStore } from './src/store/settingsStore';
 import { useTasbihStore } from './src/store/tasbihStore';
 
-// Gereksiz sarı uyarıları production'da gizle
-LogBox.ignoreLogs(['Require cycle:']); 
+// Notifications Stores
+import { useNotificationStore } from './src/store/notificationStore';
+import { usePrayerStore } from './src/store/prayerStore';
 
-// Splash Screen'in otomatik kapanmasını engelle (Biz manuel kapatacağız)
+// Hide unnecessary warnings in production
+LogBox.ignoreLogs(['Require cycle:']);
+
+// Prevent Splash Screen from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+  
+  // Navigation Reference
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
 
   // Store actions
   const { initialize: initAuth } = useAuthStore();
   const { initialize: initSettings } = useSettingsStore();
   const { loadSessions: initTasbih } = useTasbihStore();
 
+  // Notification store actions
+  const initializeNotifications = useNotificationStore((state) => state.initialize);
+  const schedulePrayerNotifications = useNotificationStore(
+    (state) => state.schedulePrayerNotifications
+  );
+
+  // Prayer times
+  const prayerTimes = usePrayerStore((state) => state.prayerTimes);
+
   useEffect(() => {
     async function prepare() {
       try {
-        // 1. Kritik İşlemleri Paralel Başlat
+        // Initialize Critical Processes in Parallel
         const initPromises = [
-          // Dil Yüklemesi
+          // Language Loading
           new Promise<void>((resolve) => {
             if (i18n.isInitialized) {
               resolve();
@@ -51,42 +73,62 @@ export default function App() {
               i18n.on('initialized', onInit);
             }
           }),
-          // Resimlerin Önbelleğe Alınması
+
+          // Image Preloading
           preloadImages(),
-          // Store'ların Başlatılması (Auth, Settings, Data)
+
+          // Store Initializations
           initAuth(),
           initSettings(),
           initTasbih(),
+
+          // Initialize Notification Infrastructure
+          initializeNotifications(),
         ];
 
-        // Hepsini bekle (Maksimum 8 saniye timeout koyduk)
+        // Wait for all (Max 8 seconds timeout)
         await Promise.race([
           Promise.all(initPromises),
-          // 👇 DÜZELTİLEN SATIR BURASI: 'resolve' parametresi eklendi
-          new Promise((resolve) => setTimeout(() => resolve(null), 8000)) 
+          new Promise((resolve) => setTimeout(() => resolve(null), 8000)),
         ]);
-
       } catch (e) {
         console.warn('App initialization warning:', e);
-        // Hata olsa bile uygulamayı açmaya çalış, kullanıcı takılı kalmasın
       } finally {
         setAppIsReady(true);
       }
     }
 
     prepare();
+  }, [initAuth, initSettings, initTasbih, initializeNotifications]);
+
+  // Handle Notification Taps (Navigation Logic is in AppNavigator, but this listener exists for compatibility)
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      response => {
+        // Just logging here, navigation is handled in AppNavigator or via linking
+        // If you rely on manual navigation handling, ensure it doesn't conflict with AppNavigator logic
+      }
+    );
+
+    return () => subscription.remove();
   }, []);
 
-  // Root View Layout olduğunda Splash Screen'i gizle
+  // Schedule prayer notifications when times are available
+  useEffect(() => {
+    if (prayerTimes) {
+      schedulePrayerNotifications(prayerTimes);
+    }
+  }, [prayerTimes, schedulePrayerNotifications]);
+
+  // Hide Splash Screen on Layout
   const onLayoutRootView = useCallback(async () => {
     if (appIsReady) {
-      // Animasyonlu bir geçiş istenirse burada yapılabilir ama native hide yeterlidir
       await SplashScreen.hideAsync();
     }
   }, [appIsReady]);
 
   if (!appIsReady) {
-    return null; // Splash screen hala görünür durumda
+    return null;
   }
 
   return (
@@ -94,7 +136,9 @@ export default function App() {
       <I18nextProvider i18n={i18n}>
         <StatusBar style="auto" />
         <View style={styles.container}>
-          <AppNavigator />
+          <ErrorBoundary>
+            <AppNavigator /> 
+          </ErrorBoundary>
         </View>
       </I18nextProvider>
     </SafeAreaProvider>
@@ -104,6 +148,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4A9B87', // Theme background color ile eşleşmeli
+    backgroundColor: '#4A9B87',
   },
 });

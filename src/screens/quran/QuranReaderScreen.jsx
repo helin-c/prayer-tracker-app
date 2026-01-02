@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/quran/QuranReaderScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/quran/QuranReaderScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -19,8 +19,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuranStore } from '../../store/quranStore';
 import { useFocusEffect } from '@react-navigation/native';
+
+// ✅ IMPORT Store and Selectors
+import { 
+  useQuranStore, 
+  selectBookmarks, 
+  selectHighlights, 
+  selectQuranSettings, 
+  selectQuranIsInitialized 
+} from '../../store/quranStore';
 
 // COMPONENT IMPORTS
 import { SkeletonLoader, SkeletonLine, SkeletonCircle } from '../../components/loading/SkeletonLoader';
@@ -76,22 +84,23 @@ export const QuranReaderScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { surahNumber: initialSurah = 1, ayahNumber: initialAyah } = route.params || {};
   
-  const {
-    getSurah,
-    bookmarks,
-    highlights,
-    settings,
-    addBookmark,
-    removeBookmark,
-    addHighlight,
-    removeHighlight,
-    updateLastRead,
-    isBookmarked,
-    getHighlight,
-    getBookmarkBySurahAyah,
-    initialize,
-    isInitialized,
-  } = useQuranStore();
+  // ✅ OPTIMIZED: Use selectors for state
+  const bookmarks = useQuranStore(selectBookmarks);
+  const highlights = useQuranStore(selectHighlights);
+  const settings = useQuranStore(selectQuranSettings);
+  const isInitialized = useQuranStore(selectQuranIsInitialized);
+
+  // Actions (stable functions)
+  const getSurah = useQuranStore(state => state.getSurah);
+  const addBookmark = useQuranStore(state => state.addBookmark);
+  const removeBookmark = useQuranStore(state => state.removeBookmark);
+  const addHighlight = useQuranStore(state => state.addHighlight);
+  const removeHighlight = useQuranStore(state => state.removeHighlight);
+  const updateLastRead = useQuranStore(state => state.updateLastRead);
+  const isBookmarked = useQuranStore(state => state.isBookmarked);
+  const getHighlight = useQuranStore(state => state.getHighlight);
+  const getBookmarkBySurahAyah = useQuranStore(state => state.getBookmarkBySurahAyah);
+  const initialize = useQuranStore(state => state.initialize);
 
   const [currentSurah, setCurrentSurah] = useState(getSurah(initialSurah));
   const [selectedAyah, setSelectedAyah] = useState(null);
@@ -528,7 +537,9 @@ export const QuranReaderScreen = ({ navigation, route }) => {
 // Settings Component (Kept same as before)
 const QuranSettings = ({ colors, onClose }) => {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useQuranStore();
+  // ✅ OPTIMIZED: Use selectors
+  const settings = useQuranStore(selectQuranSettings);
+  const updateSettings = useQuranStore(state => state.updateSettings);
 
   return (
     <ScrollView style={styles.settingsContent}>

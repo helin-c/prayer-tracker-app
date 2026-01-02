@@ -1,20 +1,22 @@
 # ============================================================================
-# FILE: backend/app/api/deps.py (FINAL PRODUCTION VERSION)
+# FILE: backend/app/api/deps.py (ASYNC PRODUCTION-READY)
 # ============================================================================
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession  # ✅ CHANGED: Async Session
+from sqlalchemy.future import select             # ✅ CHANGED: For async queries
 from jose import JWTError
 from typing import Optional
 import logging
 
 from app.core.database import get_db
 from app.core.security import decode_token
+from app.core.redis import redis_client
+from app.core.config import settings
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
-# HTTP Bearer token scheme
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
 
@@ -24,96 +26,98 @@ optional_security = HTTPBearer(auto_error=False)
 # ============================================================================
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)  # ✅ CHANGED: AsyncSession
 ) -> User:
     """
     Get current authenticated user from JWT access token.
-    
-    This dependency:
-    1. Extracts JWT token from Authorization header
-    2. Validates and decodes the token
-    3. Fetches user from database
-    4. Checks user is active
-    
-    Args:
-        credentials: Bearer token from Authorization header
-        db: Database session
-        
-    Returns:
-        User: Authenticated user object
-        
-    Raises:
-        HTTPException 401: If token is invalid, expired, or user not found
-        HTTPException 403: If user account is inactive
+    Checks JTI blacklist in Redis.
     """
     try:
-        # Get token from credentials
         token = credentials.credentials
         
-        # Decode token
-        payload = decode_token(token)
+        # 1. Decode token (Centralized function handles blacklist check logic internally)
+        # Note: We pass check_blacklist=False here because we want to handle the specific
+        # Redis error/fail-closed logic explicitly in this dependency for better HTTP errors.
+        payload = decode_token(token, check_blacklist=False)
         
         if payload is None:
-            logger.warning("Token decode failed")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired authentication credentials",
+                detail="Invalid or expired token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # Get user ID from token
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            logger.warning("Token missing 'sub' claim")
+            
+        # 2. Explicit JTI Blacklist Check
+        jti = payload.get("jti")
+        if not jti:
+            logger.warning("Token missing JTI claim")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token format",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # Convert to int
+            
         try:
-            user_id_int = int(user_id)
-        except (ValueError, TypeError):
-            logger.warning(f"Invalid user ID format: {user_id}")
+            # Check Redis for JTI
+            if redis_client.exists(f"blacklist:jti:{jti}"):
+                logger.warning(f"🚫 Blocked blacklisted token JTI: {jti[:8]}...")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has been revoked",
+                    headers={"WWW-Authenticate": "Bearer"}
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Redis blacklist check failed: {e}")
+            # ✅ FAIL CLOSED: If Redis is down in production, deny access for security
+            if settings.REDIS_FAIL_CLOSED and not settings.DEBUG:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Authentication service temporarily unavailable"
+                )
+        
+        # 3. Get User (Async)
+        user_id = payload.get("sub")
+        if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token payload",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # Get user from database
-        user = db.query(User).filter(User.id == user_id_int).first()
+            
+        try:
+            user_id_int = int(user_id)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid user ID format",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+            
+        # ✅ CHANGED: Async Database Query
+        result = await db.execute(select(User).filter(User.id == user_id_int))
+        user = result.scalars().first()
         
         if user is None:
-            logger.warning(f"User not found for ID: {user_id}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # Check if user is active
+            
         if not user.is_active:
-            logger.warning(f"Inactive user attempted access: {user.email}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Account is inactive"
             )
-        
+            
         return user
         
     except HTTPException:
         raise
-    except JWTError as e:
-        logger.warning(f"JWT error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
     except Exception as e:
-        logger.error(f"Get current user error: {str(e)}")
+        logger.error(f"Authentication error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
@@ -122,94 +126,51 @@ async def get_current_user(
 
 
 # ============================================================================
-# VALIDATE REFRESH TOKEN (For token refresh endpoint)
+# VALIDATE REFRESH TOKEN
 # ============================================================================
-def validate_refresh_token(
+async def validate_refresh_token(
     refresh_token: str,
-    db: Session
+    db: AsyncSession  # ✅ CHANGED: AsyncSession
 ) -> User:
-    """
-    Validate refresh token and return user.
-    
-    This is a synchronous function (not async) that's called directly
-    from the refresh endpoint, not as a FastAPI dependency.
-    
-    Args:
-        refresh_token: JWT refresh token string
-        db: Database session
-        
-    Returns:
-        User: User object if token is valid
-        
-    Raises:
-        HTTPException 401: If token is invalid or expired
-        HTTPException 403: If user is inactive
-    """
+    """Validate refresh token with JTI blacklist check."""
     try:
-        # Decode token
-        payload = decode_token(refresh_token)
+        # Decode without internal check to handle explicitly
+        payload = decode_token(refresh_token, check_blacklist=False)
         
         if payload is None:
-            logger.warning("Refresh token decode failed")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired refresh token",
+                detail="Invalid refresh token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-        
-        # Get user ID from token
-        user_id: str = payload.get("sub")
+            
+        # Check JTI Blacklist
+        jti = payload.get("jti")
+        if jti:
+            if redis_client.exists(f"blacklist:jti:{jti}"):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Refresh token has been revoked",
+                    headers={"WWW-Authenticate": "Bearer"}
+                )
+
+        user_id = payload.get("sub")
         if user_id is None:
-            logger.warning("Refresh token missing 'sub' claim")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token format",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+            
+        # ✅ CHANGED: Async Database Query
+        result = await db.execute(select(User).filter(User.id == int(user_id)))
+        user = result.scalars().first()
         
-        # Convert to int
-        try:
-            user_id_int = int(user_id)
-        except (ValueError, TypeError):
-            logger.warning(f"Invalid user ID in refresh token: {user_id}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        
-        # Get user from database
-        user = db.query(User).filter(User.id == user_id_int).first()
-        
-        if user is None:
-            logger.warning(f"User not found for refresh token: {user_id}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        
-        # Check if user is active
-        if not user.is_active:
-            logger.warning(f"Inactive user attempted token refresh: {user.email}")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Account is inactive"
-            )
-        
+        if not user or not user.is_active:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User invalid")
+            
         return user
         
     except HTTPException:
         raise
-    except JWTError as e:
-        logger.warning(f"Refresh token JWT error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
     except Exception as e:
-        logger.error(f"Validate refresh token error: {str(e)}")
+        logger.error(f"Refresh token validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token validation failed",
@@ -222,53 +183,30 @@ def validate_refresh_token(
 # ============================================================================
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)  # ✅ CHANGED: AsyncSession
 ) -> Optional[User]:
-    """
-    Get current user if authenticated, None otherwise.
-    
-    Use this for endpoints that work both with and without authentication,
-    providing different behavior based on auth status.
-    
-    Example:
-        - Public content visible to everyone
-        - Additional features for authenticated users
-    
-    Args:
-        credentials: Optional JWT token from Authorization header
-        db: Database session
-        
-    Returns:
-        User: Authenticated user object, or None if not authenticated
-    """
+    """Get current user if authenticated, checks blacklist."""
     if credentials is None:
         return None
     
     try:
         token = credentials.credentials
-        payload = decode_token(token)
+        
+        # Decode and verify blacklist internally
+        payload = decode_token(token, check_blacklist=True)
         
         if payload is None:
             return None
         
         user_id = payload.get("sub")
-        if user_id is None:
-            return None
         
-        try:
-            user_id_int = int(user_id)
-        except (ValueError, TypeError):
-            return None
-        
-        user = db.query(User).filter(
-            User.id == user_id_int,
-            User.is_active == True
-        ).first()
+        # ✅ CHANGED: Async Database Query
+        result = await db.execute(select(User).filter(User.id == int(user_id), User.is_active == True))
+        user = result.scalars().first()
         
         return user
     
-    except Exception as e:
-        logger.debug(f"Optional auth failed: {e}")
+    except Exception:
         return None
 
 
@@ -280,18 +218,6 @@ async def get_current_active_user(
 ) -> User:
     """
     Get current active user (additional check).
-    
-    This is redundant since get_current_user already checks is_active,
-    but kept for explicit clarity in endpoints that require active users.
-    
-    Args:
-        current_user: User from get_current_user dependency
-        
-    Returns:
-        User: Active user object
-        
-    Raises:
-        HTTPException 403: If user is inactive
     """
     if not current_user.is_active:
         raise HTTPException(
@@ -309,17 +235,6 @@ async def get_current_verified_user(
 ) -> User:
     """
     Get current verified user.
-    
-    Use this dependency for endpoints that require email verification.
-    
-    Args:
-        current_user: User from get_current_user dependency
-        
-    Returns:
-        User: Verified user object
-        
-    Raises:
-        HTTPException 403: If user is not verified
     """
     if not current_user.is_verified:
         raise HTTPException(
@@ -337,17 +252,6 @@ async def get_current_admin_user(
 ) -> User:
     """
     Get current user and verify admin role.
-    
-    Use this dependency for admin-only endpoints.
-    
-    Args:
-        current_user: User from get_current_user dependency
-        
-    Returns:
-        User: Admin user object
-        
-    Raises:
-        HTTPException 403: If user is not an admin
     """
     if not current_user.is_admin:
         logger.warning(f"Non-admin user attempted admin access: {current_user.id}")

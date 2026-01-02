@@ -1,65 +1,76 @@
 # ============================================================================
-# FILE: backend/app/core/database.py
+# FILE: backend/app/core/database.py (FIXED - ASYNC PRODUCTION-READY)
 # ============================================================================
-from sqlalchemy import create_engine, event
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import NullPool
+from sqlalchemy import text, event
+from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool  
+from contextlib import asynccontextmanager
 from app.core.config import settings
 import logging
+import time
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-
 # ============================================================================
-# DATABASE ENGINE
+# ASYNC DATABASE ENGINE (FIXED)
 # ============================================================================
-def get_engine():
+def get_async_engine():
     """
-    Create database engine with production-ready settings.
+    Create asynchronous database engine with production-ready settings.
+    Requires 'asyncpg' driver for PostgreSQL.
+    """
+    # Convert standard postgres URL to asyncpg URL
+    db_url = settings.DATABASE_URL
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
     
-    Features:
-    - Connection pooling
-    - Pre-ping for connection health checks
-    - Configurable pool size
-    """
     engine_kwargs = {
         "pool_pre_ping": settings.DB_POOL_PRE_PING,
         "echo": settings.DB_ECHO,
     }
     
-    # Add pooling for non-SQLite databases
-    if not settings.DATABASE_URL.startswith("sqlite"):
-        engine_kwargs.update({
-            "pool_size": settings.DB_POOL_SIZE,
-            "max_overflow": settings.DB_MAX_OVERFLOW,
-        })
-    else:
-        # SQLite doesn't support connection pooling
+    # PostgreSQL specific optimizations
+    if "postgresql" in db_url:
+        # ✅ FIXED: Use NullPool for async or configure async pool properly
+        # Option 1: NullPool (simpler, good for most cases)
         engine_kwargs["poolclass"] = NullPool
-        logger.warning("Using SQLite - connection pooling disabled")
-    
-    engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
-    
-    # Enable foreign keys for SQLite
-    if settings.DATABASE_URL.startswith("sqlite"):
-        @event.listens_for(engine, "connect")
-        def set_sqlite_pragma(dbapi_conn, connection_record):
-            cursor = dbapi_conn.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
-    
-    return engine
+        
+        # Option 2: Async pool with proper configuration (better for high traffic)
+        # Uncomment below if you want connection pooling:
+        # engine_kwargs["poolclass"] = AsyncAdaptedQueuePool
+        # engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
+        # engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW
+        # engine_kwargs["pool_recycle"] = 3600
+        # engine_kwargs["pool_timeout"] = 30
+        
+        # AsyncPG specific connect args
+        engine_kwargs["connect_args"] = {
+            "server_settings": {
+                "statement_timeout": "30000"  # 30 seconds
+            }
+        }
+    elif "sqlite" in db_url:
+        # SQLite async requires special handling
+        if not db_url.startswith("sqlite+aiosqlite://"):
+            db_url = db_url.replace("sqlite://", "sqlite+aiosqlite://")
+        engine_kwargs["poolclass"] = NullPool
+        logger.warning("⚠️  Using SQLite with Async - strictly for development")
+
+    return create_async_engine(db_url, **engine_kwargs)
 
 
-# Create engine
-engine = get_engine()
+# Create global async engine
+async_engine = get_async_engine()
 
-# Create session factory
-SessionLocal = sessionmaker(
+# Create async session factory
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
     autocommit=False,
     autoflush=False,
-    bind=engine
+    expire_on_commit=False
 )
 
 # Base class for models
@@ -67,84 +78,95 @@ Base = declarative_base()
 
 
 # ============================================================================
-# DATABASE DEPENDENCY
+# DATABASE DEPENDENCY (ASYNC)
 # ============================================================================
-def get_db() -> Session:
+async def get_db() -> AsyncSession:
     """
-    Database session dependency for FastAPI routes.
-    
-    Usage:
-        @app.get("/items")
-        def get_items(db: Session = Depends(get_db)):
-            return db.query(Item).all()
-    
-    Yields:
-        Session: SQLAlchemy database session
+    Async Database session dependency.
     """
-    db = SessionLocal()
-    try:
-        yield db
-    except Exception as e:
-        logger.error(f"Database error: {e}")
-        db.rollback()
-        raise
-    finally:
-        db.close()
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except Exception as e:
+            logger.error(f"Database session error: {e}", exc_info=True)
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 
 # ============================================================================
-# DATABASE UTILITIES
+# TRANSACTION CONTEXT MANAGER (ASYNC)
 # ============================================================================
-def init_db():
+@asynccontextmanager
+async def transaction_scope():
     """
-    Initialize database tables.
-    
-    Creates all tables defined in models.
-    Use alembic migrations in production.
+    Provide an async transactional scope.
     """
+    async with AsyncSessionLocal() as session:
+        try:
+            async with session.begin():
+                yield session
+        except Exception as e:
+            logger.error(f"Async transaction failed: {e}", exc_info=True)
+            raise
+
+
+# ============================================================================
+# DATABASE UTILITIES (ASYNC)
+# ============================================================================
+async def init_db():
+    """Initialize database tables (Async)."""
     logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")
 
 
-def drop_db():
-    """
-    Drop all database tables.
+async def drop_db():
+    """Drop all database tables (Async)."""
+    if not settings.DEBUG:
+        raise RuntimeError("Cannot drop database in production mode!")
     
-    WARNING: This will delete all data!
-    Use only in development/testing.
-    """
     logger.warning("Dropping all database tables...")
-    Base.metadata.drop_all(bind=engine)
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
     logger.info("Database tables dropped successfully")
 
 
-def reset_db():
-    """
-    Reset database (drop and recreate all tables).
-    
-    WARNING: This will delete all data!
-    Use only in development/testing.
-    """
-    drop_db()
-    init_db()
-
-
 # ============================================================================
-# DATABASE HEALTH CHECK
+# HEALTH CHECK (ASYNC)
 # ============================================================================
-def check_db_connection() -> bool:
-    """
-    Check if database connection is healthy.
-    
-    Returns:
-        bool: True if connection is healthy, False otherwise
-    """
+async def check_db_connection(timeout: int = 5) -> tuple[bool, Optional[str]]:
+    """Check database connection health asynchronously."""
     try:
-        db = SessionLocal()
-        db.execute("SELECT 1")
-        db.close()
-        return True
+        async with AsyncSessionLocal() as session:
+            start_time = time.time()
+            await session.execute(text("SELECT 1"))
+            query_time = time.time() - start_time
+            
+        if query_time > 1.0:
+            logger.warning(f"Slow database response: {query_time:.2f}s")
+            
+        return True, None
+        
     except Exception as e:
-        logger.error(f"Database health check failed: {e}")
-        return False
+        error_msg = f"Database health check failed: {str(e)}"
+        logger.error(error_msg)
+        return False, error_msg
+
+
+# ============================================================================
+# CONNECTION POOL STATS
+# ============================================================================
+def get_pool_stats() -> dict:
+    """Get pool statistics."""
+    if isinstance(async_engine.pool, NullPool):
+        return {"message": "No connection pooling (NullPool)", "note": "Each request creates new connection"}
+        
+    pool = async_engine.pool
+    return {
+        "pool_size": pool.size(),
+        "checked_out": pool.checkedout(),
+        "overflow": pool.overflow(),
+    }

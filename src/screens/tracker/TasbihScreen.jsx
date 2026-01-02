@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/TasbihScreen.jsx (BUTTON ORDER FIXED)
+// FILE: src/screens/tracker/TasbihScreen.jsx (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -19,28 +19,37 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useTasbihStore } from '../../store/tasbihStore';
+
+// ✅ IMPORT Store and Selectors
+import { 
+  useTasbihStore, 
+  selectCurrentCount, 
+  selectTargetCount, 
+  selectZikrName, 
+  selectSessionId 
+} from '../../store/tasbihStore';
 
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const TasbihScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const {
-    currentCount,
-    targetCount,
-    zikrName,
-    sessionId,
-    increment,
-    startNewSession,
-    saveSession,
-    resetCounter,
-    completeReset,
-    updateSessionSettings,
-  } = useTasbihStore();
+  
+  // ✅ OPTIMIZED: Use selectors for state
+  const currentCount = useTasbihStore(selectCurrentCount);
+  const targetCount = useTasbihStore(selectTargetCount);
+  const zikrName = useTasbihStore(selectZikrName);
+  const sessionId = useTasbihStore(selectSessionId);
+
+  // Actions (stable functions)
+  const increment = useTasbihStore(state => state.increment);
+  const startNewSession = useTasbihStore(state => state.startNewSession);
+  const saveSession = useTasbihStore(state => state.saveSession);
+  const resetCounter = useTasbihStore(state => state.resetCounter);
+  const completeReset = useTasbihStore(state => state.completeReset);
+  const updateSessionSettings = useTasbihStore(state => state.updateSessionSettings);
 
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -57,7 +66,6 @@ export const TasbihScreen = ({ navigation }) => {
     setTimeout(() => setToast({ visible: false, text: '' }), 2200);
   };
 
-  // ... [PRESETS array remains same] ...
   const PRESETS = [
     {
       name: t('tasbih.presets.subhanallah'),
@@ -86,7 +94,6 @@ export const TasbihScreen = ({ navigation }) => {
     },
   ];
 
-  // ... [Logic functions remain same: progress, handleIncrement, handlePresetSelect, settings, reset, save] ...
   const hasTarget = targetCount > 0;
   const progress = hasTarget
     ? Math.min((currentCount / targetCount) * 100, 100)
@@ -434,7 +441,7 @@ export const TasbihScreen = ({ navigation }) => {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Save Confirmation Modal - GÜNCELLENDİ (Spinner Eklendi) */}
+      {/* Save Confirmation Modal */}
       <Modal
         visible={showSaveModal}
         transparent
@@ -490,10 +497,10 @@ export const TasbihScreen = ({ navigation }) => {
                 style={[
                   styles.modalButton,
                   styles.modalButtonCancel,
-                  isSaving && { opacity: 0.5 }, // Kayıt sırasında soluklaştır
+                  isSaving && { opacity: 0.5 },
                 ]}
                 onPress={() => setShowSaveModal(false)}
-                disabled={isSaving} // Kayıt sırasında disable et
+                disabled={isSaving}
               >
                 <Text style={styles.modalButtonTextCancel}>
                   {t('tasbih.saveModal.cancel')}
@@ -503,7 +510,7 @@ export const TasbihScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalButtonSave]}
                 onPress={handleSave}
-                disabled={isSaving} // Çift tıklamayı engelle
+                disabled={isSaving}
               >
                 {isSaving ? (
                   <ActivityIndicator size="small" color="#FFF" />
@@ -533,7 +540,6 @@ export const TasbihScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since ScreenLayout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',

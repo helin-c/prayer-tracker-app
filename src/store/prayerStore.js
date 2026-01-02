@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/stores/usePrayerStore.js (WITH AUTO-DETECTION)
+// FILE: src/stores/PrayerStore.js (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import { create } from 'zustand';
 import { prayersAPI } from '../api/prayers';
@@ -12,6 +12,7 @@ const LOCATION_CACHE_KEY = '@location_cache';
 const CACHE_EXPIRY_KEY = '@prayer_times_expiry';
 
 export const usePrayerStore = create((set, get) => ({
+  // State
   prayerTimes: null,
   location: null,
   isLoading: false,
@@ -19,7 +20,9 @@ export const usePrayerStore = create((set, get) => ({
   lastUpdated: null,
   fromCache: false,
 
-  // Initialize from storage
+  // ============================================================================
+  // INITIALIZE
+  // ============================================================================
   initialize: async () => {
     try {
       // Load cached location
@@ -45,13 +48,15 @@ export const usePrayerStore = create((set, get) => ({
           console.log('✅ Loaded prayer times from cache');
           return;
         } else {
+          // Cache expired
           await storage.removeItem(PRAYER_TIMES_CACHE_KEY);
           await storage.removeItem(CACHE_EXPIRY_KEY);
         }
       }
 
       // If we have location but no valid cache, fetch fresh data
-      if (cachedLocation) {
+      // ✅ RACE CONDITION FIX: Added guards
+      if (cachedLocation && !get().isLoading && !get().prayerTimes) {
         await get().fetchPrayerTimes(
           cachedLocation.latitude,
           cachedLocation.longitude
@@ -62,6 +67,9 @@ export const usePrayerStore = create((set, get) => ({
     }
   },
 
+  // ============================================================================
+  // FETCH PRAYER TIMES
+  // ============================================================================
   fetchPrayerTimes: async (latitude, longitude, forceRefresh = false) => {
     // Check cache validity
     if (!forceRefresh && get().fromCache && get().prayerTimes) {
@@ -78,7 +86,6 @@ export const usePrayerStore = create((set, get) => ({
 
     try {
       // 🎯 Let backend auto-detect method/school based on location
-      // Don't pass method/school parameters - backend will choose the best one
       const response = await prayersAPI.getPrayerTimes(latitude, longitude);
       const data = response.data;
 
@@ -132,6 +139,9 @@ export const usePrayerStore = create((set, get) => ({
     }
   },
 
+  // ============================================================================
+  // FETCH WITH CURRENT LOCATION
+  // ============================================================================
   fetchWithCurrentLocation: async (forceRefresh = false) => {
     set({ isLoading: true, error: null });
 
@@ -181,6 +191,9 @@ export const usePrayerStore = create((set, get) => ({
     }
   },
 
+  // ============================================================================
+  // LOAD SAVED LOCATION
+  // ============================================================================
   loadSavedLocation: async () => {
     try {
       const cachedLocation = await storage.getItem(LOCATION_CACHE_KEY);
@@ -203,6 +216,9 @@ export const usePrayerStore = create((set, get) => ({
     }
   },
 
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
   clearCache: async () => {
     await storage.removeItem(PRAYER_TIMES_CACHE_KEY);
     await storage.removeItem(CACHE_EXPIRY_KEY);
@@ -228,3 +244,14 @@ export const usePrayerStore = create((set, get) => ({
   clearError: () => set({ error: null }),
   setLoading: (isLoading) => set({ isLoading }),
 }));
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const prayerTimes = usePrayerStore(selectPrayerTimes);
+// ============================================================================
+export const selectPrayerTimes = (state) => state.prayerTimes;
+export const selectLocation = (state) => state.location;
+export const selectPrayerIsLoading = (state) => state.isLoading;
+export const selectPrayerError = (state) => state.error;
+export const selectLastUpdated = (state) => state.lastUpdated;
+export const selectFromCache = (state) => state.fromCache;

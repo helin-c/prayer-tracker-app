@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/store/tasbihStore.js (COMPLETE REDESIGN)
+// FILE: src/store/tasbihStore.js (OPTIMIZED WITH SELECTORS)
 // ============================================================================
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -167,3 +167,14 @@ export const useTasbihStore = create((set, get) => ({
     }
   },
 }));
+
+// ============================================================================
+// SELECTORS (Use these for performance optimization)
+// Usage: const currentCount = useTasbihStore(selectCurrentCount);
+// ============================================================================
+export const selectCurrentCount = (state) => state.currentCount;
+export const selectTargetCount = (state) => state.targetCount;
+export const selectZikrName = (state) => state.zikrName;
+export const selectSessionId = (state) => state.sessionId;
+export const selectSessions = (state) => state.sessions;
+export const selectTasbihIsLoading = (state) => state.isLoading;

@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/main.py (FIXED)
+# FILE: backend/app/main.py (PRODUCTION-READY & SECURE)
 # ============================================================================
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,9 +8,9 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import time
+import sys
 
 from app.core.config import settings
-from app.core.database import engine, Base
 from app.api.v1.api import api_router
 
 # Configure logging
@@ -20,16 +20,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create database tables (for development - use Alembic in production)
-Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
     description="Prayer Tracker API - Track your daily prayers and build consistency",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if settings.DEBUG else None, # Hide docs in production
+    redoc_url="/redoc" if settings.DEBUG else None,
     debug=settings.DEBUG,
 )
 
@@ -37,15 +35,34 @@ app = FastAPI(
 # MIDDLEWARE CONFIGURATION
 # ============================================================================
 
-# CORS Middleware - FIXED: Use get_cors_origins() method
+# ✅ CORS Middleware (SECURE CONFIGURATION)
+# Explicitly defines allowed methods instead of allowing "*" for everything.
+# Uses strict origin validation from settings.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_cors_origins(),  # FIXED: Call method
+    allow_origins=settings.get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],  # ✅ Explicit methods
+    allow_headers=["*"],  # Headers can usually remain broad, but origin/methods must be strict
+    expose_headers=["X-RateLimit-Remaining", "X-RateLimit-Reset"],  # ✅ Expose rate limit headers
 )
+
+# ✅ NEW: Rate Limit Headers Middleware
+# Adds X-RateLimit-Remaining and X-RateLimit-Reset headers to responses
+# if the rate limiter dependency has set them on request.state.
+@app.middleware("http")
+async def add_rate_limit_headers(request: Request, call_next):
+    """Add rate limit information to response headers."""
+    response = await call_next(request)
+    
+    # Check if rate limit info was set by rate_limiter dependency
+    if hasattr(request.state, "rate_limit_remaining"):
+        response.headers["X-RateLimit-Remaining"] = str(request.state.rate_limit_remaining)
+    
+    if hasattr(request.state, "rate_limit_reset"):
+        response.headers["X-RateLimit-Reset"] = str(request.state.rate_limit_reset)
+        
+    return response
 
 # Request logging middleware
 @app.middleware("http")
@@ -53,8 +70,9 @@ async def log_requests(request: Request, call_next):
     """Log all incoming requests with timing"""
     start_time = time.time()
     
-    # Log request
-    logger.info(f"→ {request.method} {request.url.path}")
+    # Log request start (Debug only to reduce noise)
+    if settings.DEBUG:
+        logger.debug(f"→ {request.method} {request.url.path}")
     
     try:
         # Process request
@@ -64,10 +82,14 @@ async def log_requests(request: Request, call_next):
         duration = time.time() - start_time
         
         # Log response
-        logger.info(
-            f"← {request.method} {request.url.path} "
-            f"[{response.status_code}] {duration:.3f}s"
-        )
+        log_msg = f"← {request.method} {request.url.path} [{response.status_code}] {duration:.3f}s"
+        
+        if response.status_code >= 500:
+            logger.error(log_msg)
+        elif response.status_code >= 400:
+            logger.warning(log_msg)
+        else:
+            logger.info(log_msg)
         
         return response
     
@@ -88,10 +110,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     """Handle validation errors with detailed messages"""
     errors = []
     for error in exc.errors():
+        # Clean up error path
+        path = " -> ".join(str(x) for x in error["loc"])
         errors.append({
-            "field": " -> ".join(str(x) for x in error["loc"]),
-            "message": error["msg"],
-            "type": error["type"]
+            "field": path,
+            "message": error["msg"]
         })
     
     logger.warning(f"Validation error on {request.url.path}: {errors}")
@@ -112,7 +135,7 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "detail": "Database error occurred. Please try again later."
+            "detail": "A database error occurred. Please try again later."
         }
     )
 
@@ -121,20 +144,12 @@ async def general_exception_handler(request: Request, exc: Exception):
     """Handle all other exceptions"""
     logger.error(f"Unexpected error on {request.url.path}: {str(exc)}", exc_info=True)
     
-    # Return detailed error in debug mode
-    if settings.DEBUG:
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "detail": f"An unexpected error occurred: {str(exc)}"
-            }
-        )
+    # Return detailed error ONLY in debug mode
+    message = f"An unexpected error occurred: {str(exc)}" if settings.DEBUG else "An unexpected error occurred. Please try again later."
     
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "detail": "An unexpected error occurred. Please try again later."
-        }
+        content={"detail": message}
     )
 
 # ============================================================================
@@ -152,9 +167,7 @@ async def root():
         "name": settings.APP_NAME,
         "version": settings.VERSION,
         "status": "running",
-        "docs": "/docs",
-        "api": settings.API_V1_PREFIX,
-        "debug": settings.DEBUG
+        "environment": "development" if settings.DEBUG else "production"
     }
 
 # Health check
@@ -163,14 +176,26 @@ async def health_check():
     """Health check endpoint for monitoring"""
     from app.core.database import check_db_connection
     
-    db_healthy = check_db_connection()
+    # ✅ FIX: Unpack the tuple (is_healthy, error_message)
+    # This prevents the boolean logic error where a tuple (False, "Error") was evaluated as True
+    db_healthy, error_msg = await check_db_connection() # ✅ Added await for Async
     
-    return {
+    status_code = 200 if db_healthy else 503
+    
+    response_content = {
         "status": "healthy" if db_healthy else "degraded",
         "service": settings.APP_NAME,
-        "version": settings.VERSION,
         "database": "connected" if db_healthy else "disconnected"
     }
+    
+    # Include error detail if unhealthy
+    if not db_healthy and error_msg:
+        response_content["database_error"] = error_msg
+        
+    return JSONResponse(
+        status_code=status_code,
+        content=response_content
+    )
 
 # ============================================================================
 # STARTUP & SHUTDOWN EVENTS
@@ -179,13 +204,30 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup"""
-    logger.info("=" * 80)
+    logger.info("=" * 60)
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.VERSION}")
-    logger.info(f"📚 API Documentation: http://localhost:8000/docs")
+    
+    # ✅ SECURITY CHECK: Validate Production Settings
+    if not settings.DEBUG:
+        logger.info("🔒 Running security validation for production...")
+        try:
+            # We explicitly check allow_origins logic here as well
+            settings.get_cors_origins()
+            
+            is_valid = settings.validate_production_settings()
+            if not is_valid:
+                logger.critical("⛔ SECURITY CHECK FAILED. Aborting startup to protect data.")
+                sys.exit(1)
+            else:
+                logger.info("✅ Security configuration passed.")
+        except ValueError as e:
+            # Catches the CORS error raised by get_cors_origins
+            logger.critical(f"⛔ CONFIGURATION ERROR: {e}")
+            sys.exit(1)
+    
     logger.info(f"🔧 Environment: {'Development' if settings.DEBUG else 'Production'}")
     logger.info(f"🌐 CORS Origins: {settings.get_cors_origins()}")
-    logger.info(f"💾 Database: {settings.DATABASE_URL.split('@')[-1] if '@' in settings.DATABASE_URL else 'SQLite'}")
-    logger.info("=" * 80)
+    logger.info("=" * 60)
 
 @app.on_event("shutdown")
 async def shutdown_event():

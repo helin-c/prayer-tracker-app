@@ -13,7 +13,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-// REMOVED: SafeAreaView & ImageBackground (Handled by ScreenLayout)
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -120,41 +119,50 @@ export const ChangePasswordScreen = ({ navigation }) => {
   const passwordStrength = getPasswordStrength(formData.newPassword);
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
-    <ScreenLayout>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          disabled={isLoading}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profile.changePassword')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
+    <ScreenLayout noPaddingBottom={true}>
       <ScrollView 
-        style={styles.content}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoIconContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButtonWrapper}
+            onPress={() => navigation.goBack()}
+            disabled={isLoading}
+          >
             <LinearGradient
-              colors={['#6F9C8C', '#4F6F64']}
-              style={styles.infoIconGradient}
+              colors={[]}
+              style={styles.backButton}
             >
-              <Ionicons name="shield-checkmark" size={32} color="#FFFFFF" />
+              <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
             </LinearGradient>
-          </View>
-          <Text style={styles.infoTitle}>{t('profile.secureYourAccount')}</Text>
-          <Text style={styles.infoText}>
-            {t('profile.changePasswordDescription')}
-          </Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('profile.changePassword')}</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Info Card */}
+        <View style={styles.infoCardWrapper}>
+          <LinearGradient
+            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            style={styles.infoCard}
+          >
+            <View style={styles.infoIconWrapper}>
+              <LinearGradient
+                colors={['#5BA895', '#4A9B87']}
+                style={styles.infoIconGradient}
+              >
+                <Ionicons name="shield-checkmark" size={32} color="#FFFFFF" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.infoTitle}>{t('profile.secureYourAccount')}</Text>
+            <Text style={styles.infoText}>
+              {t('profile.changePasswordDescription')}
+            </Text>
+          </LinearGradient>
         </View>
 
         {/* Form */}
@@ -162,32 +170,37 @@ export const ChangePasswordScreen = ({ navigation }) => {
           {/* Current Password */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('profile.currentPassword')}</Text>
-            <View style={[styles.inputWrapper, errors.currentPassword && styles.inputError]}>
-              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={t('profile.enterCurrentPassword')}
-                placeholderTextColor="#999"
-                value={formData.currentPassword}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, currentPassword: text });
-                  setErrors({ ...errors, currentPassword: '' });
-                }}
-                secureTextEntry={!showCurrentPassword}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                style={styles.eyeIcon}
-                disabled={isLoading}
+            <View style={styles.inputCardWrapper}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                style={[styles.inputWrapper, errors.currentPassword && styles.inputError]}
               >
-                <Ionicons
-                  name={showCurrentPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color="#666"
+                <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('profile.enterCurrentPassword')}
+                  placeholderTextColor="#999"
+                  value={formData.currentPassword}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, currentPassword: text });
+                    setErrors({ ...errors, currentPassword: '' });
+                  }}
+                  secureTextEntry={!showCurrentPassword}
+                  autoCapitalize="none"
+                  editable={!isLoading}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                  style={styles.eyeIcon}
+                  disabled={isLoading}
+                >
+                  <Ionicons
+                    name={showCurrentPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#5BA895"
+                  />
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
             {errors.currentPassword ? (
               <Text style={styles.errorText}>{errors.currentPassword}</Text>
@@ -197,32 +210,37 @@ export const ChangePasswordScreen = ({ navigation }) => {
           {/* New Password */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('profile.newPassword')}</Text>
-            <View style={[styles.inputWrapper, errors.newPassword && styles.inputError]}>
-              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={t('profile.enterNewPassword')}
-                placeholderTextColor="#999"
-                value={formData.newPassword}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, newPassword: text });
-                  setErrors({ ...errors, newPassword: '' });
-                }}
-                secureTextEntry={!showNewPassword}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                onPress={() => setShowNewPassword(!showNewPassword)}
-                style={styles.eyeIcon}
-                disabled={isLoading}
+            <View style={styles.inputCardWrapper}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                style={[styles.inputWrapper, errors.newPassword && styles.inputError]}
               >
-                <Ionicons
-                  name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color="#666"
+                <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('profile.enterNewPassword')}
+                  placeholderTextColor="#999"
+                  value={formData.newPassword}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, newPassword: text });
+                    setErrors({ ...errors, newPassword: '' });
+                  }}
+                  secureTextEntry={!showNewPassword}
+                  autoCapitalize="none"
+                  editable={!isLoading}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowNewPassword(!showNewPassword)}
+                  style={styles.eyeIcon}
+                  disabled={isLoading}
+                >
+                  <Ionicons
+                    name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#5BA895"
+                  />
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
             {errors.newPassword ? (
               <Text style={styles.errorText}>{errors.newPassword}</Text>
@@ -247,32 +265,37 @@ export const ChangePasswordScreen = ({ navigation }) => {
           {/* Confirm Password */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('profile.confirmNewPassword')}</Text>
-            <View style={[styles.inputWrapper, errors.confirmPassword && styles.inputError]}>
-              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={t('profile.confirmNewPassword')}
-                placeholderTextColor="#999"
-                value={formData.confirmPassword}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, confirmPassword: text });
-                  setErrors({ ...errors, confirmPassword: '' });
-                }}
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.eyeIcon}
-                disabled={isLoading}
+            <View style={styles.inputCardWrapper}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                style={[styles.inputWrapper, errors.confirmPassword && styles.inputError]}
               >
-                <Ionicons
-                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color="#666"
+                <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('profile.confirmNewPassword')}
+                  placeholderTextColor="#999"
+                  value={formData.confirmPassword}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, confirmPassword: text });
+                    setErrors({ ...errors, confirmPassword: '' });
+                  }}
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                  editable={!isLoading}
                 />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={styles.eyeIcon}
+                  disabled={isLoading}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#5BA895"
+                  />
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
             {errors.confirmPassword ? (
               <Text style={styles.errorText}>{errors.confirmPassword}</Text>
@@ -280,41 +303,44 @@ export const ChangePasswordScreen = ({ navigation }) => {
           </View>
 
           {/* Requirements */}
-          <View style={styles.requirementsCard}>
-            <Text style={styles.requirementsTitle}>{t('profile.passwordRequirements')}</Text>
-            <View style={styles.requirementsList}>
-              <View style={styles.requirementItem}>
-                <Ionicons 
-                  name={formData.newPassword.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'} 
-                  size={16} 
-                  color={formData.newPassword.length >= 8 ? '#10B981' : '#999'} 
-                />
-                <Text style={styles.requirementText}>{t('profile.atLeast8Characters')}</Text>
+          <View style={styles.requirementsCardWrapper}>
+            <LinearGradient
+              colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+              style={styles.requirementsCard}
+            >
+              <Text style={styles.requirementsTitle}>{t('profile.passwordRequirements')}</Text>
+              <View style={styles.requirementsList}>
+                <View style={styles.requirementItem}>
+                  <Ionicons 
+                    name={formData.newPassword.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'} 
+                    size={18} 
+                    color={formData.newPassword.length >= 8 ? '#5BA895' : '#999'} 
+                  />
+                  <Text style={styles.requirementText}>{t('profile.atLeast8Characters')}</Text>
+                </View>
+                <View style={styles.requirementItem}>
+                  <Ionicons 
+                    name={formData.newPassword !== formData.currentPassword && formData.newPassword ? 'checkmark-circle' : 'ellipse-outline'} 
+                    size={18} 
+                    color={formData.newPassword !== formData.currentPassword && formData.newPassword ? '#5BA895' : '#999'} 
+                  />
+                  <Text style={styles.requirementText}>{t('profile.differentFromCurrent')}</Text>
+                </View>
               </View>
-              <View style={styles.requirementItem}>
-                <Ionicons 
-                  name={formData.newPassword !== formData.currentPassword && formData.newPassword ? 'checkmark-circle' : 'ellipse-outline'} 
-                  size={16} 
-                  color={formData.newPassword !== formData.currentPassword && formData.newPassword ? '#10B981' : '#999'} 
-                />
-                <Text style={styles.requirementText}>{t('profile.differentFromCurrent')}</Text>
-              </View>
-            </View>
+            </LinearGradient>
           </View>
         </View>
 
-        {/* Submit Button with Spinner */}
+        {/* Submit Button */}
         <TouchableOpacity
-          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+          style={styles.submitButtonWrapper}
           onPress={handleChangePassword}
           disabled={isLoading}
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={isLoading ? ['#999', '#777'] : ['#6F9C8C', '#4F6F64']}
-            style={styles.submitGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+            colors={isLoading ? ['#999', '#777'] : ['#5BA895', '#4A9B87']}
+            style={styles.submitButton}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
@@ -326,69 +352,100 @@ export const ChangePasswordScreen = ({ navigation }) => {
             )}
           </LinearGradient>
         </TouchableOpacity>
+
+        <View style={{ height: 20 }} />
       </ScrollView>
     </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  // Removed container and background properties
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  
+  // Header
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  backButtonWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backButton: {
     width: 40,
     height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1A1A1A',
-  },
-  content: {
     flex: 1,
-    padding: 20,
+    textAlign: 'center',
+  },
+  
+  // Info Card
+  infoCardWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 24,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   infoCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
+    padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
-  infoIconContainer: {
-    marginBottom: 12,
+  infoIconWrapper: {
+    borderRadius: 35,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   infoIconGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1A1A1A',
     marginBottom: 8,
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#1A1A1A',
     textAlign: 'center',
     lineHeight: 20,
+    fontWeight: '600',
   },
+  
+  // Form
   form: {
     marginBottom: 24,
   },
@@ -396,115 +453,128 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1A1A1A',
     marginBottom: 8,
   },
+  inputCardWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    paddingHorizontal: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    paddingHorizontal: 16,
+    height: 56,
   },
   inputError: {
+    borderWidth: 2,
     borderColor: '#DC2626',
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   input: {
     flex: 1,
-    height: 48,
     fontSize: 15,
     color: '#1A1A1A',
+    fontWeight: '500',
   },
   eyeIcon: {
     padding: 8,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#DC2626',
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 4,
+    fontWeight: '600',
   },
+  
+  // Strength Indicator
   strengthContainer: {
-    marginTop: 8,
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   strengthBar: {
     flex: 1,
-    height: 4,
+    height: 6,
     backgroundColor: '#E0E0E0',
-    borderRadius: 2,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   strengthFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
   strengthLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  
+  // Requirements Card
+  requirementsCardWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: '#2D6856',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   requirementsCard: {
-    backgroundColor: 'rgba(111, 156, 140, 0.1)',
-    borderRadius: 12,
     padding: 16,
-    marginTop: 8,
   },
   requirementsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 12,
   },
   requirementsList: {
-    gap: 8,
+    gap: 10,
   },
   requirementItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   requirementText: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: 14,
+    color: '#1A1A1A',
+    fontWeight: '600',
   },
-  submitButton: {
+  
+  // Submit Button
+  submitButtonWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 20,
-    shadowColor: '#4F6F64',
+    shadowColor: '#2D6856',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 5,
   },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitGradient: {
+  submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
     gap: 8,
-    height: 56, // Fixed height for spinner
+    height: 56,
   },
   submitText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 });

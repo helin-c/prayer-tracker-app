@@ -11,16 +11,12 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-// REMOVED: SafeAreaView (ScreenLayout handles this)
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useQuranStore } from '../../store/quranStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
-
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -29,6 +25,7 @@ import {
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 2;
+const CARD_HEIGHT = 180; // Sabit yükseklik
 
 // ============================================================================
 // CUSTOM SKELETON FOR GUIDES SCREEN
@@ -38,7 +35,6 @@ const GuidesSkeleton = () => {
 
   return (
     <View style={{ padding: 20 }}>
-      {/* Header Skeleton */}
       <View style={{ marginBottom: 24 }}>
         <SkeletonLine
           width={180}
@@ -48,7 +44,6 @@ const GuidesSkeleton = () => {
         <SkeletonLine width={240} height={16} style={skeletonStyle} />
       </View>
 
-      {/* Featured Card Skeleton */}
       <SkeletonLoader
         width="100%"
         height={160}
@@ -56,14 +51,12 @@ const GuidesSkeleton = () => {
         style={{ ...skeletonStyle, marginBottom: 32 }}
       />
 
-      {/* Section Title Skeleton */}
       <SkeletonLine
         width={120}
         height={20}
         style={{ ...skeletonStyle, marginBottom: 16 }}
       />
 
-      {/* Grid Cards Skeleton */}
       <View
         style={{
           flexDirection: 'row',
@@ -75,14 +68,13 @@ const GuidesSkeleton = () => {
           <SkeletonLoader
             key={i}
             width={CARD_WIDTH}
-            height={160}
+            height={CARD_HEIGHT}
             borderRadius={16}
             style={{ ...skeletonStyle, marginBottom: 16 }}
           />
         ))}
       </View>
 
-      {/* Help Section Skeleton */}
       <SkeletonLoader
         width="100%"
         height={180}
@@ -126,10 +118,9 @@ export const GuidesScreen = ({ navigation }) => {
       gradient: ['#00A86B', '#00D084'],
       action: () => navigation.navigate('QuranSurahList'),
     },
-    // ... rest of your guides array
     {
       id: 'prayer',
-      title: t('guides.prayer'),
+      title: t('guides.prayer1'),
       subtitle: t('guides.prayerSubtitle'),
       icon: 'hand-right',
       color: '#3498DB',
@@ -138,7 +129,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'wudu',
-      title: t('guides.wudu'),
+      title: t('guides.wudu1'),
       subtitle: t('guides.wuduSubtitle'),
       icon: 'water',
       color: '#9B59B6',
@@ -147,7 +138,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'pillars',
-      title: t('guides.pillars'),
+      title: t('guides.pillars1'),
       subtitle: t('guides.pillarsSubtitle'),
       icon: 'cube',
       color: '#E67E22',
@@ -156,7 +147,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'duas',
-      title: t('guides.duas'),
+      title: t('guides.duas1'),
       subtitle: t('guides.duasSubtitle'),
       icon: 'chatbubbles',
       color: '#16A085',
@@ -165,7 +156,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'ramadan',
-      title: t('guides.ramadan'),
+      title: t('guides.ramadan1'),
       subtitle: t('guides.ramadanSubtitle'),
       icon: 'moon',
       color: '#8E44AD',
@@ -174,7 +165,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'hajj',
-      title: t('guides.hajj'),
+      title: t('guides.hajj1'),
       subtitle: t('guides.hajjSubtitle'),
       icon: 'business',
       color: '#C0392B',
@@ -183,7 +174,7 @@ export const GuidesScreen = ({ navigation }) => {
     },
     {
       id: 'basics',
-      title: t('guides.basics'),
+      title: t('guides.basics1'),
       subtitle: t('guides.basicsSubtitle'),
       icon: 'bulb',
       color: '#F39C12',
@@ -216,8 +207,12 @@ export const GuidesScreen = ({ navigation }) => {
         <View style={styles.iconContainer}>
           <Ionicons name={guide.icon} size={32} color="#FFF" />
         </View>
-        <Text style={styles.cardTitle}>{guide.title}</Text>
-        <Text style={styles.cardSubtitle}>{guide.subtitle}</Text>
+        <Text style={styles.cardTitle} numberOfLines={2}>
+          {guide.title}
+        </Text>
+        <Text style={styles.cardSubtitle} numberOfLines={2}>
+          {guide.subtitle}
+        </Text>
         <View style={styles.cardArrow}>
           <Ionicons name="arrow-forward" size={20} color="#FFF" />
         </View>
@@ -226,8 +221,6 @@ export const GuidesScreen = ({ navigation }) => {
   );
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
-    // Added noPaddingBottom because ScrollView has its own padding
     <ScreenLayout noPaddingBottom={true}>
       {isLoading ? (
         <GuidesSkeleton />
@@ -264,7 +257,7 @@ export const GuidesScreen = ({ navigation }) => {
                     {t('guides.popular')}
                   </Text>
                   <Text style={styles.featuredTitle}>{t('quran.quran')}</Text>
-                  <Text style={styles.featuredSubtitle}>
+                  <Text style={styles.featuredSubtitle} numberOfLines={2}>
                     {t('guides.quranDescription')}
                   </Text>
                 </View>
@@ -308,8 +301,7 @@ export const GuidesScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Extra bottom spacing for Tab Bar if needed */}
-          <View style={{height: 40}} />
+          <View style={{ height: 40 }} />
         </ScrollView>
       )}
     </ScreenLayout>
@@ -317,7 +309,6 @@ export const GuidesScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container logic
   scrollView: {
     flex: 1,
   },
@@ -410,17 +401,19 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: CARD_WIDTH,
+    height: CARD_HEIGHT, // Sabit yükseklik
     marginBottom: 16,
   },
   card: {
+    flex: 1,
     borderRadius: 16,
     padding: 20,
-    minHeight: 160,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+    justifyContent: 'space-between', // İçeriği eşit dağıt
   },
   iconContainer: {
     width: 56,
@@ -429,22 +422,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFF',
-    marginBottom: 4,
+    marginTop: 12,
+    minHeight: 40, // Minimum yükseklik
   },
   cardSubtitle: {
     fontSize: 12,
     color: '#FFF',
     opacity: 0.9,
-    marginBottom: 12,
+    minHeight: 32, // Minimum yükseklik
   },
   cardArrow: {
     alignSelf: 'flex-end',
+    marginTop: 'auto', // En alta yapıştır
   },
   helpSection: {
     marginTop: 16,
