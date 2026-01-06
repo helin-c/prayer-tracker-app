@@ -16,7 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
-// ✅ IMPORT Store and Selectors
 import { 
   useQuranStore, 
   selectQuranData, 
@@ -26,10 +25,8 @@ import {
   selectQuranIsLoading 
 } from '../../store/quranStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -37,7 +34,7 @@ import {
 } from '../../components/loading/SkeletonLoader';
 
 const QuranListSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
@@ -406,10 +403,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderWidth: 0.8,
+    borderColor: 'rgba(91,168,149,0.6)'
+
   },
   lastReadCard: {
     backgroundColor: '#F0FFF4',

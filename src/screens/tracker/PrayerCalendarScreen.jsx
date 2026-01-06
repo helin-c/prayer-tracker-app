@@ -1,15 +1,14 @@
+// ============================================================================
+// FILE: src/screens/tracker/PrayerCalendarScreen.jsx (UPDATED & PRODUCTION READY)
+// ============================================================================
 // @ts-nocheck
-// ============================================================================
-// FILE: src/screens/tracker/PrayerCalendarScreen.jsx (OPTIMIZED WITH SELECTORS)
-// ============================================================================
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ImageBackground,
   ActivityIndicator,
   Dimensions,
   Modal,
@@ -22,12 +21,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 // IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// ✅ IMPORT Store and Selectors
+// STORE IMPORTS
 import { 
   usePrayerTrackerStore, 
   selectTrackerIsLoading 
 } from '../../store/prayerTrackerStore';
 import { useAuthStore, selectUser } from '../../store/authStore';
+import { useStreakStore, selectUserStreak } from '../../store/streakStore'; 
 
 // COMPONENT IMPORTS
 import {
@@ -40,7 +40,7 @@ const { width } = Dimensions.get('window');
 const CIRCLE_SIZE = (width - 80) / 7;
 
 const CalendarSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <View style={{ padding: 20 }}>
@@ -130,30 +130,38 @@ const CalendarSkeleton = () => {
 export const PrayerCalendarScreen = ({ navigation }) => {
   const { t } = useTranslation();
   
-  // ✅ OPTIMIZED: Use selectors
-  const user = useAuthStore(selectUser);
+  // ✅ STORES
+  const currentUser = useAuthStore(selectUser);
+  const currentUserId = currentUser?.id;
   const isLoading = usePrayerTrackerStore(selectTrackerIsLoading);
   const fetchWeekPrayers = usePrayerTrackerStore(state => state.fetchWeekPrayers);
+  
+  // Streak Store
+  const userStreak = useStreakStore(selectUserStreak);
+  const fetchUserStreak = useStreakStore(state => state.fetchUserStreak);
+  const clearStreakCache = useStreakStore(state => state.clearCache);
 
+  // ✅ REFS
+  const lastUserId = useRef(currentUserId);
+
+  // LOCAL STATE
   const [calendarData, setCalendarData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
 
-  // Stats State
+  // Simplified Stats State (No local streak calc)
   const [totalStats, setTotalStats] = useState({
     totalDays: 0,
     completedDays: 0,
     onTimePrayers: 0,
     totalPrayers: 0,
-    currentStreak: 0,
-    longestStreak: 0,
   });
 
-  useEffect(() => {
-    loadMonthData();
-  }, [selectedMonth]);
+  // ============================================================================
+  // LOGIC: Data Loading
+  // ============================================================================
 
   const loadMonthData = async () => {
     try {
@@ -162,7 +170,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
         selectedMonth.getMonth(),
         1
       );
-      const joinDate = user?.created_at ? new Date(user.created_at) : firstDay;
+      const joinDate = currentUser?.created_at ? new Date(currentUser.created_at) : firstDay;
       const startDate = firstDay > joinDate ? firstDay : joinDate;
 
       const weeks = [];
@@ -178,6 +186,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
         0
       );
 
+      // Fetch loop
       while (currentDate <= lastDayOfMonth || weeks.length === 0) {
         const weekStart = new Date(currentDate);
         const response = await fetchWeekPrayers(formatDate(weekStart));
@@ -205,6 +214,88 @@ export const PrayerCalendarScreen = ({ navigation }) => {
       setInitialLoading(false);
     }
   };
+
+  const calculateStats = (days) => {
+    let totalDays = 0;
+    let completedDays = 0;
+    let onTimePrayers = 0;
+    let totalPrayers = 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sortedDays = [...days].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    sortedDays.forEach((day) => {
+      const dayDate = new Date(day.date);
+      dayDate.setHours(0, 0, 0, 0);
+
+      if (dayDate <= today) {
+        totalDays++;
+        totalPrayers += 5;
+
+        const completion = day.completion_percentage || 0;
+        const onTimeCount = day.on_time_count || 0;
+
+        onTimePrayers += onTimeCount;
+
+        if (completion === 100) {
+          completedDays++;
+        }
+      }
+    });
+
+    setTotalStats({
+      totalDays,
+      completedDays,
+      onTimePrayers,
+      totalPrayers,
+    });
+  };
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+
+  // 1. Initial Load & Month Change
+  useEffect(() => {
+    loadMonthData();
+    fetchUserStreak();
+  }, [selectedMonth]);
+
+  // 2. ✅ ACCOUNT SWITCH DETECTION
+  useEffect(() => {
+    // Check if user changed from what we last tracked
+    if (currentUserId !== lastUserId.current) {
+      console.log(`🔄 Account switched in Calendar (User ${lastUserId.current} -> ${currentUserId}). Reloading...`);
+      
+      // 1. Clear streak cache to prevent stale data
+      if (clearStreakCache) clearStreakCache();
+      
+      // 2. Reset local state
+      setInitialLoading(true);
+      setCalendarData([]);
+      setTotalStats({
+        totalDays: 0,
+        completedDays: 0,
+        onTimePrayers: 0,
+        totalPrayers: 0,
+      });
+      
+      // 3. Update Ref to current
+      lastUserId.current = currentUserId;
+      
+      // 4. Reload Data for the new user
+      loadMonthData();
+      fetchUserStreak();
+    }
+  }, [currentUserId]); // Only run when ID changes
+
+  // ============================================================================
+  // HELPERS
+  // ============================================================================
 
   const groupByWeeks = (days) => {
     const weeks = [];
@@ -239,67 +330,6 @@ export const PrayerCalendarScreen = ({ navigation }) => {
     return weeks;
   };
 
-  const calculateStats = (days) => {
-    let totalDays = 0;
-    let completedDays = 0;
-    let onTimePrayers = 0;
-    let totalPrayers = 0;
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const sortedDays = [...days].sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    );
-
-    sortedDays.forEach((day) => {
-      const dayDate = new Date(day.date);
-      dayDate.setHours(0, 0, 0, 0);
-
-      if (dayDate <= today) {
-        totalDays++;
-        totalPrayers += 5;
-
-        const completion = day.completion_percentage || 0;
-        const onTimeCount = day.on_time_count || 0;
-
-        onTimePrayers += onTimeCount;
-
-        if (completion === 100) {
-          completedDays++;
-          tempStreak++;
-
-          if (tempStreak > longestStreak) {
-            longestStreak = tempStreak;
-          }
-
-          if (
-            dayDate.getTime() === today.getTime() ||
-            (new Date(sortedDays[sortedDays.length - 1].date).getTime() ===
-              today.getTime() &&
-              completion === 100)
-          ) {
-            currentStreak = tempStreak;
-          }
-        } else {
-          tempStreak = 0;
-        }
-      }
-    });
-
-    setTotalStats({
-      totalDays,
-      completedDays,
-      onTimePrayers,
-      totalPrayers,
-      currentStreak,
-      longestStreak,
-    });
-  };
-
   const formatDate = (date) => {
     return date.toISOString().split('T')[0];
   };
@@ -313,7 +343,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
     const today = new Date();
     if (newMonth > today) return;
 
-    const joinDate = user?.created_at ? new Date(user.created_at) : new Date();
+    const joinDate = currentUser?.created_at ? new Date(currentUser.created_at) : new Date();
     if (newMonth < new Date(joinDate.getFullYear(), joinDate.getMonth(), 1))
       return;
 
@@ -340,6 +370,10 @@ export const PrayerCalendarScreen = ({ navigation }) => {
     setSelectedDay(day);
     setShowDayModal(true);
   };
+
+  // ============================================================================
+  // SUB-COMPONENTS
+  // ============================================================================
 
   const DayCircle = ({ day, size = CIRCLE_SIZE }) => {
     if (!day) {
@@ -526,6 +560,10 @@ export const PrayerCalendarScreen = ({ navigation }) => {
     );
   };
 
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
+
   if (initialLoading) {
     return (
       <ScreenLayout>
@@ -542,7 +580,6 @@ export const PrayerCalendarScreen = ({ navigation }) => {
   ];
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
       <View style={styles.header}>
         <TouchableOpacity
@@ -563,7 +600,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
         {/* Month Selector */}
         <View style={styles.monthSelectorWrapper}>
           <LinearGradient
-            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            colors={['#E0F5EC', '#E0F5EC']}
             style={styles.monthSelector}
           >
             <TouchableOpacity
@@ -602,7 +639,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
         {/* Calendar Grid */}
         <View style={styles.calendarContainerWrapper}>
           <LinearGradient
-            colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+            colors={[]}
             style={styles.calendarContainer}
           >
             <View style={styles.weekDayHeader}>
@@ -629,15 +666,13 @@ export const PrayerCalendarScreen = ({ navigation }) => {
           </LinearGradient>
         </View>
 
-        {/* Quick Stats from Calendar */}
+        {/* Quick Stats Section */}
         <View style={styles.quickStatsSection}>
           <View style={styles.statRow}>
+            {/* Current Streak */}
             <View style={styles.statCardWrapper}>
               <LinearGradient
-                colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.statCard}
               >
                 <View style={styles.statIconContainer}>
@@ -648,19 +683,17 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                     <Ionicons name="flame" size={24} color="#FFFFFF" />
                   </LinearGradient>
                 </View>
-                <Text style={styles.statValue}>{totalStats.currentStreak}</Text>
+                <Text style={styles.statValue}>{userStreak.current || 0}</Text>
                 <Text style={styles.statLabel}>
                   {t('calendar.currentStreak')}
                 </Text>
               </LinearGradient>
             </View>
 
+            {/* Best Streak */}
             <View style={styles.statCardWrapper}>
               <LinearGradient
-                colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.statCard}
               >
                 <View style={styles.statIconContainer}>
@@ -671,7 +704,7 @@ export const PrayerCalendarScreen = ({ navigation }) => {
                     <Ionicons name="trophy" size={24} color="#FFFFFF" />
                   </LinearGradient>
                 </View>
-                <Text style={styles.statValue}>{totalStats.longestStreak}</Text>
+                <Text style={styles.statValue}>{userStreak.best || 0}</Text>
                 <Text style={styles.statLabel}>
                   {t('calendar.longestStreak')}
                 </Text>
@@ -680,12 +713,10 @@ export const PrayerCalendarScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.statRow}>
+            {/* Perfect Days */}
             <View style={styles.statCardWrapper}>
               <LinearGradient
-                colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.statCard}
               >
                 <View style={styles.statIconContainer}>
@@ -709,12 +740,10 @@ export const PrayerCalendarScreen = ({ navigation }) => {
               </LinearGradient>
             </View>
 
+            {/* On Time Rate */}
             <View style={styles.statCardWrapper}>
               <LinearGradient
-                colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.statCard}
               >
                 <View style={styles.statIconContainer}>

@@ -149,7 +149,6 @@ export const QiblaScreen = () => {
     return 0; // Fallback to zero if API fails
   };
 
-  // ✅ IMPROVED: Better heading smoothing with outlier rejection
   const smoothHeading = (newHeading) => {
     // Add to readings buffer
     headingReadings.current.push(newHeading);
@@ -192,7 +191,6 @@ export const QiblaScreen = () => {
         );
         setQiblaDirection(qibla);
 
-        // ✅ NEW: Fetch magnetic declination
         const declination = await fetchMagneticDeclination(
           storeLocation.latitude,
           storeLocation.longitude

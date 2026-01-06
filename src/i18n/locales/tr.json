@@ -121,6 +121,7 @@
   },
   "qibla": {
     "qiblaDirection": "Kıble Yönü",
+    "checkingStoredLocation": "GPS koordinatları alınıyor",
     "faceTowardsKaaba": "Kabe'ye doğru yönelin",
     "findingLocation": "Konumunuz bulunuyor...",
     "requestingPermission": "Konum izni isteniyor...",

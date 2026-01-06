@@ -66,7 +66,7 @@
     "goodMorning": "Good Morning",
     "goodAfternoon": "Good Afternoon",
     "goodEvening": "Good Evening",
-    "home.goodNight": "Good Night",
+    "goodNight": "Good Night",
     "guest": "Guest",
     "currentLocation": "Current Location",
     "updateLocation": "Update Location",
@@ -121,6 +121,7 @@
   },
   "qibla": {
     "qiblaDirection": "Qibla Direction",
+    "checkingStoredLocation": "Checking GPS coordinates",
     "faceTowardsKaaba": "Face towards the Kaaba",
     "findingLocation": "Finding your location...",
     "requestingPermission": "Requesting location permission...",

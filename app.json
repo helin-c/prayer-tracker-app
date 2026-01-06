@@ -6,10 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#5BA895",
+    "backgroundColor": "#F0FFF4",
     "newArchEnabled": true,
     
-
     "plugins": [
       [
         "expo-location",
@@ -21,18 +20,25 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#5BA895",
-          "sounds": ["./assets/sounds/azan.mp3"],
+          "color": "#F0FFF4",
           "mode": "production"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-background-fetch",
+        {
+          "ios": {
+            "minimumInterval": 15
+          }
+        }
+      ]
     ],
 
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#5BA895"
+      "backgroundColor": "#F0FFF4"
     },
 
     "ios": {
@@ -40,7 +46,11 @@
       "bundleIdentifier": "com.mysalahs.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "My Salah uses your location to calculate accurate prayer times based on your city.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch",
+          "processing"
+        ]
       }
     },
 
@@ -48,9 +58,9 @@
       "package": "com.mysalahs.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#5BA895"
+        "backgroundColor": "#F0FFF4"
       },
-      "backgroundColor": "#5BA895",
+      "backgroundColor": "#F0FFF4",
       "softwareKeyboardLayoutMode": "resize",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -63,7 +73,7 @@
       ],
       "notification": {
         "icon": "./assets/notification-icon.png",
-        "color": "#5BA895"
+        "color": "#F0FFF4"
       }
     },
 

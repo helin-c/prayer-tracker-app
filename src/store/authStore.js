@@ -1,11 +1,17 @@
 // ============================================================================
-// FILE: src/store/authStore.js (OPTIMIZED WITH SELECTORS)
+// FILE: src/store/authStore.js (FIXED - CLEARS STORES ON LOGOUT)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
 import { storage } from '../services/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 import i18n from '../i18n';
+import languageManager from '../services/languageManager';
+import widgetService from '../services/widgetService';
+
+// ✅ NEW IMPORTS to clear data on logout
+import { usePrayerTrackerStore } from './prayerTrackerStore';
+import { useStreakStore } from './streakStore';
 
 export const useAuthStore = create((set, get) => ({
   // State
@@ -62,10 +68,10 @@ export const useAuthStore = create((set, get) => ({
         // Set authorization header
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-        // Set user's preferred language
+        // Set user's preferred language and sync to widgets
         if (userData?.preferred_language) {
           try {
-            await i18n.changeLanguage(userData.preferred_language);
+            await languageManager.changeLanguage(userData.preferred_language);
           } catch (error) {
             console.log('Language change error:', error);
           }
@@ -88,9 +94,13 @@ export const useAuthStore = create((set, get) => ({
           await get().clearAuth();
         }
       } else {
-        // No valid auth data, clear everything
+        // ✅ FIX: No valid auth data, clear auth BUT keep current language
         await get().clearAuth();
         set({ isLoading: false });
+        
+        // Ensure widgets use current language (from AsyncStorage/i18n)
+        const currentLang = languageManager.getCurrentLanguage();
+        await languageManager.syncLanguageToWidgets(currentLang);
       }
     } catch (error) {
       console.error('Initialize error:', error);
@@ -115,10 +125,10 @@ export const useAuthStore = create((set, get) => ({
 
       const userData = response.data;
 
-      // Set language after registration
+      // Set language after registration and sync to widgets
       if (userData?.preferred_language) {
         try {
-          await i18n.changeLanguage(userData.preferred_language);
+          await languageManager.changeLanguage(userData.preferred_language);
         } catch (error) {
           console.log('Language change error:', error);
         }
@@ -159,12 +169,12 @@ export const useAuthStore = create((set, get) => ({
         isLoading: false,
       });
 
-      // Get user data and set language
+      // Get user data and set language with widget sync
       const userData = await get().getCurrentUser();
 
       if (userData?.preferred_language) {
         try {
-          await i18n.changeLanguage(userData.preferred_language);
+          await languageManager.changeLanguage(userData.preferred_language);
         } catch (error) {
           console.log('Language change error:', error);
         }
@@ -179,7 +189,7 @@ export const useAuthStore = create((set, get) => ({
   },
 
   // ============================================================================
-  // LOGOUT
+  // LOGOUT (✅ UPDATED - CLEARS STORES)
   // ============================================================================
   logout: async () => {
     try {
@@ -194,14 +204,23 @@ export const useAuthStore = create((set, get) => ({
       console.log('Logout API error (ignored):', error);
     }
 
-    // Clear auth regardless of API result
+    // ✅ FIX: Get current language BEFORE clearing auth
+    const currentLanguage = languageManager.getCurrentLanguage();
+    
+    // Clear auth
     await get().clearAuth();
 
-    // Reset to default language
+    // ✅ NEW: Clear prayer and streak stores to prevent data mixing between users
+    // We access .getState() because we are inside a vanilla JS function, not a React component
+    usePrayerTrackerStore.getState().resetStore();
+    useStreakStore.getState().clearCache();
+
+    // ✅ FIX: Keep the current language (don't reset to 'en')
     try {
-      await i18n.changeLanguage('en');
+      console.log('🌐 Keeping language after logout:', currentLanguage);
+      await languageManager.syncLanguageToWidgets(currentLanguage);
     } catch (error) {
-      console.log('Language reset error:', error);
+      console.log('Language sync error on logout:', error);
     }
   },
 
@@ -282,15 +301,23 @@ export const useAuthStore = create((set, get) => ({
 
       await storage.setItem(STORAGE_KEYS.USER_DATA, updatedUser);
 
-      // Update language if changed
+      // Update language if changed AND sync to widgets
       if (
         profileData.preferred_language &&
         profileData.preferred_language !== get().user?.preferred_language
       ) {
         try {
-          await i18n.changeLanguage(profileData.preferred_language);
+          console.log('🌐 Changing language to:', profileData.preferred_language);
+          
+          // This will update i18n, AsyncStorage, AND widgets
+          await languageManager.changeLanguage(profileData.preferred_language);
+          
+          // Force reload all widgets to pick up new language immediately
+          await widgetService.updateAllWidgets();
+          
+          console.log('✅ Language and widgets updated successfully');
         } catch (error) {
-          console.log('Language change error:', error);
+          console.error('❌ Language change error:', error);
         }
       }
 
@@ -318,7 +345,8 @@ export const useAuthStore = create((set, get) => ({
 
   changeLanguage: async (languageCode) => {
     try {
-      await i18n.changeLanguage(languageCode);
+      // Use language manager to change language (includes widget sync)
+      await languageManager.changeLanguage(languageCode);
 
       // Update user profile if authenticated
       if (get().isAuthenticated) {
@@ -418,8 +446,7 @@ api.interceptors.response.use(
 );
 
 // ============================================================================
-// SELECTORS (Use these for performance optimization)
-// Usage: const user = useAuthStore(selectUser);
+// SELECTORS
 // ============================================================================
 export const selectUser = (state) => state.user;
 export const selectIsAuthenticated = (state) => state.isAuthenticated;

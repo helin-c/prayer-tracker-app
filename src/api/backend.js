@@ -96,5 +96,10 @@ export const userAPI = {
   deleteAccount: () => api.delete('/users/me'),
   deactivateAccount: () => api.post('/users/me/deactivate'),
 };
+export const streaksAPI = {
+  getCurrentStreak: () => api.get('/prayers/streak/current'),
+  getFriendStreak: (friendId) => api.get(`/friends/${friendId}/streak`),
+  getStreakHistory: (params) => api.get('/prayers/streak/history', { params }),
+};
 
 export default api;

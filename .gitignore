@@ -14,8 +14,6 @@ dist/
 
 # Transpiled / build artifacts
 build/
-android/
-ios/
 
 # Metro bundler cache
 .metro-cache/
@@ -118,3 +116,42 @@ assets/*.json
 backend/logs/
 *.log
 
+# CocoaPods
+ios/Pods/
+ios/Podfile.lock
+
+# Xcode build output
+ios/build/
+ios/DerivedData/
+
+# Xcode user-specific
+*.xcuserstate
+*.xcuserdata
+
+# macOS
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Gradle build outputs
+android/build/
+android/app/build/
+
+# Gradle cache
+android/.gradle/
+
+# Local SDK config
+android/local.properties
+
+# Android Studio / IntelliJ
+android/.idea/
+*.iml
+
+# NDK
+android/.cxx/
+
+# Logs
+*.log

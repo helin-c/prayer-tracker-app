@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/screens/auth/LoginScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/auth/LoginScreen.jsx
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -16,10 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../components/common';
 
-// ✅ Import Store and Selectors
 import { useAuthStore, selectAuthIsLoading } from '../../store/authStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const LoginScreen = ({ navigation }) => {
@@ -30,7 +28,6 @@ export const LoginScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
 
-  // ✅ OPTIMIZED: Use selectors to avoid unnecessary re-renders
   const isLoading = useAuthStore(selectAuthIsLoading);
   const login = useAuthStore((state) => state.login);
 
@@ -67,7 +64,6 @@ export const LoginScreen = ({ navigation }) => {
     const result = await login(cleanData);
 
     if (result.success) {
-      // Success handled by auth store (navigation state change)
     } else {
       Alert.alert(
         t('auth.errors.loginFailed'),
@@ -77,19 +73,16 @@ export const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
-      {/* KEYBOARD AVOIDING VIEW WRAPPER */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled" // Allows pressing button while keyboard is open
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header with semi-transparent card */}
           <View style={styles.card}>
             <View style={styles.header}>
               <View style={styles.logoContainer}>
@@ -109,7 +102,7 @@ export const LoginScreen = ({ navigation }) => {
                 keyboardType="email-address"
                 leftIcon="mail-outline"
                 error={errors.email}
-                editable={!isLoading} 
+                editable={!isLoading}
               />
 
               <Input
@@ -120,7 +113,7 @@ export const LoginScreen = ({ navigation }) => {
                 secureTextEntry
                 leftIcon="lock-closed-outline"
                 error={errors.password}
-                editable={!isLoading} 
+                editable={!isLoading}
               />
 
               <TouchableOpacity
@@ -136,7 +129,7 @@ export const LoginScreen = ({ navigation }) => {
               <Button
                 title={t('auth.signIn')}
                 onPress={handleLogin}
-                loading={isLoading} 
+                loading={isLoading}
                 disabled={isLoading}
                 style={styles.loginButton}
               />
@@ -173,29 +166,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Scroll Content: Centers the card vertically
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
 
-  // Login Card: Semi-transparent white to show background subtly
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     borderRadius: 24,
     padding: 24,
     paddingTop: 32,
-    
-    // Shadow Effects
+
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
-    elevation: 10, 
+    elevation: 10,
   },
 
-  // Header Section
   header: {
     alignItems: 'center',
     marginBottom: 32,
@@ -204,11 +193,11 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#F0FFF4', 
+    backgroundColor: '#F0FFF4',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-    
+
     shadowColor: '#00A86B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -217,7 +206,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '800', 
+    fontWeight: '800',
     color: '#1A1A1A',
     marginBottom: 8,
     textAlign: 'center',
@@ -229,15 +218,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // Form Section
   form: {
     width: '100%',
   },
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginTop: -4, 
+    marginTop: -4,
     marginBottom: 24,
-    padding: 4, 
+    padding: 4,
   },
   forgotPasswordText: {
     fontSize: 14,
@@ -246,16 +234,15 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginBottom: 24,
-    height: 56, 
+    height: 56,
     borderRadius: 16,
-    shadowColor: '#00A86B', 
+    shadowColor: '#00A86B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
   },
 
-  // Register Link
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -272,13 +259,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Footer Quote
   footerQuote: {
     marginTop: 40,
     alignItems: 'center',
     paddingHorizontal: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)', 
+    borderTopColor: 'rgba(0,0,0,0.05)',
     paddingTop: 20,
   },
   quoteText: {

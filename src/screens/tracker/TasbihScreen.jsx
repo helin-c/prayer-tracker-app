@@ -22,7 +22,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-// ✅ IMPORT Store and Selectors
 import { 
   useTasbihStore, 
   selectCurrentCount, 
@@ -31,19 +30,16 @@ import {
   selectSessionId 
 } from '../../store/tasbihStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const TasbihScreen = ({ navigation }) => {
   const { t } = useTranslation();
   
-  // ✅ OPTIMIZED: Use selectors for state
   const currentCount = useTasbihStore(selectCurrentCount);
   const targetCount = useTasbihStore(selectTargetCount);
   const zikrName = useTasbihStore(selectZikrName);
   const sessionId = useTasbihStore(selectSessionId);
 
-  // Actions (stable functions)
   const increment = useTasbihStore(state => state.increment);
   const startNewSession = useTasbihStore(state => state.startNewSession);
   const saveSession = useTasbihStore(state => state.saveSession);
@@ -353,7 +349,7 @@ export const TasbihScreen = ({ navigation }) => {
                 <View style={styles.presetTargetBadge}>
                   <Text style={styles.presetTargetText}>×{preset.target}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#CCC" />
+                <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
               </View>
             </TouchableOpacity>
           ))}
@@ -742,19 +738,19 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#1A1A1A',
     marginBottom: 16,
   },
   presetCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#5BA895',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -780,7 +776,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   presetTargetBadge: {
-    backgroundColor: '#F0FFF4',
+    backgroundColor: '',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,

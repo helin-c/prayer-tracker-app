@@ -36,7 +36,6 @@ import {
 export const NotificationSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   
-  // ✅ OPTIMIZED: Use selectors for state
   const prayerRemindersEnabled = useNotificationStore(selectPrayerRemindersEnabled);
   const completionRemindersEnabled = useNotificationStore(selectCompletionRemindersEnabled);
   const dailyVerseEnabled = useNotificationStore(selectDailyVerseEnabled);
@@ -44,11 +43,9 @@ export const NotificationSettingsScreen = ({ navigation }) => {
   const reminderMinutesBefore = useNotificationStore(selectReminderMinutesBefore);
   const completionMinutesAfter = useNotificationStore(selectCompletionMinutesAfter);
   
-  // Jumuah settings state
   const jumuahReminderEnabled = useNotificationStore(selectJumuahReminderEnabled);
   const jumuahReminderTime = useNotificationStore(selectJumuahReminderTime);
 
-  // Actions (stable functions)
   const togglePrayerReminders = useNotificationStore(state => state.togglePrayerReminders);
   const toggleCompletionReminders = useNotificationStore(state => state.toggleCompletionReminders);
   const toggleDailyVerse = useNotificationStore(state => state.toggleDailyVerse);
@@ -57,7 +54,6 @@ export const NotificationSettingsScreen = ({ navigation }) => {
   const toggleJumuahReminder = useNotificationStore(state => state.toggleJumuahReminder);
   const updateJumuahReminderTime = useNotificationStore(state => state.updateJumuahReminderTime);
 
-  // ✅ OPTIMIZED: Social notification preferences
   const notificationPreferences = useFriendsStore(selectNotificationPreferences);
   const updateNotificationPreferences = useFriendsStore(state => state.updateNotificationPreferences);
 
@@ -116,7 +112,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               <View style={styles.settingRow}>
@@ -186,7 +182,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               <View style={styles.settingRow}>
@@ -256,7 +252,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               <View style={styles.settingRow}>
@@ -288,7 +284,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               <View style={styles.settingRow}>
@@ -320,7 +316,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               <View style={styles.settingRow}>
@@ -400,7 +396,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           
           <View style={styles.settingCardWrapper}>
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
               {/* Friend Requests */}

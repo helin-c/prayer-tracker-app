@@ -1,5 +1,6 @@
 // ============================================================================
-// FILE: src/components/prayers/CircularPrayerCard.jsx (FIXED AM/PM STYLING)
+// FILE: src/components/prayers/CircularPrayerCard.jsx
+// WITH REAL-TIME COUNTDOWN (UPDATES EVERY SECOND)
 // ============================================================================
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
@@ -22,9 +23,18 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
   const [currentNextPrayer, setCurrentNextPrayer] = useState(null);
   const intervalRef = useRef(null);
 
+  // ✅ Update every SECOND for real-time countdown
   useEffect(() => {
     if (!prayerTimes) return;
+    
     updatePrayerStatus();
+    
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Update every second
     intervalRef.current = setInterval(() => {
       updatePrayerStatus();
     }, 1000);
@@ -45,6 +55,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
     let nextPrayer = null;
     let nextPrayerTime = null;
 
+    // Find next prayer
     for (const prayerName of prayerOrder) {
       const prayer = prayerTimes[prayerName];
       if (!prayer?.time) continue;
@@ -60,6 +71,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
       }
     }
 
+    // If no prayer found today, next is Fajr tomorrow
     if (!nextPrayer) {
       nextPrayer = 'fajr';
       const prayer = prayerTimes.fajr;
@@ -75,6 +87,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
       setCurrentNextPrayer(nextPrayer);
     }
 
+    // Calculate time remaining (hours, minutes, seconds)
     if (nextPrayerTime) {
       const diff = Math.max(0, nextPrayerTime - now);
       const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
@@ -185,11 +198,21 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
     },
   ];
 
+  // ✅ Format time remaining with proper padding (universal format)
+  const formatTimeRemaining = () => {
+    const { hours, minutes, seconds } = timeRemaining;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  };
+
   if (!prayerTimes || !currentNextPrayer) return null;
 
   const nextPrayer = prayerTimes[currentNextPrayer];
   
-  // Use returnObject parameter to get time and period separately
   const { time: nextTimeStr, period: nextPeriod } = formatTime(
     nextPrayer?.time, 
     i18n.language, 
@@ -197,7 +220,6 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
   );
   
   const [hh, mm] = nextTimeStr.split(':');
-
   const allPrayers = getAllPrayerTimes();
   const progressPercentage = getProgressPercentage();
 
@@ -298,7 +320,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
               strokeLinecap="round"
             />
 
-            {/* Progress arc (SOLID) */}
+            {/* Progress arc */}
             <Path
               d={`M 15 ${centerY} A ${radius} ${radius} 0 0 1 ${centerX * 2 - 15} ${centerY}`}
               fill="none"
@@ -308,11 +330,10 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
               strokeDasharray={arcLength}
               strokeDashoffset={dashOffset}
             />
-            {/* Progress outline (helps visibility on light background) */}
             <Path
               d={`M 15 ${centerY} A ${radius} ${radius} 0 0 1 ${centerX * 2 - 15} ${centerY}`}
               fill="none"
-              stroke="rgba(16, 185, 129, 0.35)" // subtle green edge
+              stroke="rgba(16, 185, 129, 0.35)"
               strokeWidth={strokeWidth + 2}
               strokeLinecap="round"
               strokeDasharray={arcLength}
@@ -328,7 +349,6 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                   <Text style={styles.timeHour}>{hh}</Text>
                   <Text style={styles.timeColon}>:</Text>
                   <Text style={styles.timeMinute}>{mm}</Text>
-                  {/* Tiny AM/PM badge */}
                   {nextPeriod && (
                     <View style={styles.periodBadge}>
                       <Text style={styles.periodText}>{nextPeriod}</Text>
@@ -336,6 +356,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                   )}
                 </View>
 
+                {/* ✅ Live countdown with seconds */}
                 <View style={styles.remainingContainer}>
                   <Ionicons
                     name="hourglass-outline"
@@ -343,9 +364,7 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
                     color="#1A1A1A"
                   />
                   <Text style={styles.remainingText}>
-                    {timeRemaining.hours > 0 && `${timeRemaining.hours}h `}
-                    {timeRemaining.minutes}m {timeRemaining.seconds}s{' '}
-                    {t('home.left')}
+                    {formatTimeRemaining()} {t('home.left')}
                   </Text>
                 </View>
               </View>
@@ -418,7 +437,6 @@ export const CircularPrayerCard = ({ prayerTimes }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 20,
     paddingHorizontal: 20,
   },
   cardWrapper: {
@@ -426,10 +444,6 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     paddingVertical: 24,
     paddingHorizontal: 16,
-    shadowColor: '#2D6856',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
     elevation: 10,
   },
   circleContainer: {
@@ -444,8 +458,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 30,
   },
-
-  // Label with border
   arcTopLabelOuter: {
     position: 'absolute',
     top: 0,
@@ -455,12 +467,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 5,
-  },
-  pillBorder: {
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#5BA895',
-    backgroundColor: '#F0FFF4',
   },
   pillInner: {
     flexDirection: 'row',
@@ -482,8 +488,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textTransform: 'capitalize',
   },
-
-  // Time display with border - UPDATED
   centerContentOuter: {
     position: 'absolute',
     top: 95,
@@ -494,12 +498,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 8,
-  },
-  timeBorder: {
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#5BA895',
-    backgroundColor: '#F0FFF4',
   },
   timeInner: {
     paddingHorizontal: 26,
@@ -517,6 +515,7 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: '800',
     color: '#1A1A1A',
+    fontVariant: ['tabular-nums'], // Prevents number jumping
   },
   timeColon: {
     fontSize: 36,
@@ -529,8 +528,8 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: '800',
     color: '#1A1A1A',
+    fontVariant: ['tabular-nums'], // Prevents number jumping
   },
-  // NEW: Tiny AM/PM badge
   periodBadge: {
     position: 'absolute',
     right: -26,
@@ -552,21 +551,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 6,
+    marginTop: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: 'rgba(91, 168, 149, 0.12)',
+    backgroundColor: '#E0F5EC',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(91, 168, 149, 0.25)',
   },
   remainingText: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#1A1A1A',
     fontWeight: '700',
+    fontVariant: ['tabular-nums'], 
   },
-
-  // Bottom prayer times - UPDATED
   prayerTimesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -594,7 +592,7 @@ const styles = StyleSheet.create({
   prayerIconWrapperActive: {
     borderColor: '#5BA895',
     borderWidth: 2,
-    backgroundColor: 'rgba(91, 168, 149, 0.08)',
+    backgroundColor: '#E0F5EC',
     transform: [{ scale: 1.08 }],
   },
   prayerLabel: {
@@ -608,7 +606,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
   },
-  // NEW: Container for time + period
   prayerTimeContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -624,7 +621,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
   },
-  // NEW: Tiny period text for bottom times
   prayerPeriodText: {
     fontSize: 7,
     color: '#1A1A1A',

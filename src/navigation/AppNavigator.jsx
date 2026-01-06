@@ -13,7 +13,7 @@ const AppTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: '#5BA895', 
+    background: '#f0fff4', 
   },
 };
 
@@ -45,26 +45,22 @@ const linking = {
 };
 
 export const AppNavigator = () => {
-  // ✅ OPTIMIZED: Use selector to prevent unnecessary re-renders
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const navigationRef = useRef(null);
   const notificationListener = useRef(null);
   const responseListener = useRef(null);
 
   useEffect(() => {
-    // ✅ Listener for notifications received while app is foregrounded
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       console.log('📬 Notification received (foreground):', notification);
     });
 
-    // ✅ Listener for when user taps notification
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
       console.log('👆 Notification tapped:', data);
 
       if (!navigationRef.current?.isReady()) return;
 
-      // Navigate based on notification type
       switch (data.type) {
         case 'prayer_reminder':
         case 'prayer_completion':
@@ -146,6 +142,6 @@ export const AppNavigator = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5BA895', 
+    backgroundColor: '#f0fff4', 
   },
 });

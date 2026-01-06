@@ -49,7 +49,6 @@ const BookmarksSkeleton = () => {
             borderRadius: 16,
           }}
         >
-          {/* Header (Title + Delete Icon) */}
           <View
             style={{
               flexDirection: 'row',
@@ -207,7 +206,7 @@ export const QuranBookmarksScreen = ({ navigation }) => {
   const renderEmpty = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIcon}>
-        <Ionicons name="bookmark-outline" size={64} color="#1A1A1A" />
+        <Ionicons name="bookmark-outline" size={64} color="#fff" />
       </View>
       <Text style={styles.emptyTitle}>{t('quran.noBookmarks')}</Text>
       <Text style={styles.emptyText}>{t('quran.noBookmarksDescription')}</Text>
@@ -287,7 +286,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   bookmarkCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#E0F5EC',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -376,7 +375,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#5BA895',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -394,13 +393,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   startReadingButton: {
-    backgroundColor: '#00A86B',
+    backgroundColor: '#5BA895',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
   },
   startReadingText: {
-    color: '#1A1A1A',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },

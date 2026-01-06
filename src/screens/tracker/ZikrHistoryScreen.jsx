@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/tracker/ZikrHistoryScreen.jsx (FIXED BUTTON OVERLAP)
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -17,13 +17,10 @@ import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, tr } from 'date-fns/locale';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// ✅ IMPORT Store and Selectors
 import { useTasbihStore, selectSessions } from '../../store/tasbihStore';
 
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -31,7 +28,7 @@ import {
 } from '../../components/loading/SkeletonLoader';
 
 const HistorySkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <View style={{ padding: 16 }}>
@@ -186,6 +183,24 @@ export const ZikrHistoryScreen = ({ navigation }) => {
 
     return (
       <View style={styles.sessionCard}>
+        {/* ✅ DELETE BUTTON - Top right corner */}
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDelete(item.id, item.name)}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
+          <Ionicons name="trash-outline" size={18} color="#DC3545" />
+        </TouchableOpacity>
+
+        {/* ✅ CONTINUE BUTTON - Bottom right corner */}
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={() => handleContinue(item)}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
+          <Ionicons name="play-circle" size={18} color="#00A86B" />
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.sessionContent}
           onPress={() => handleContinue(item)}
@@ -207,7 +222,9 @@ export const ZikrHistoryScreen = ({ navigation }) => {
 
           {/* Session Info */}
           <View style={styles.sessionInfo}>
-            <Text style={styles.sessionName}>{item.name}</Text>
+            <Text style={styles.sessionName} numberOfLines={1}>
+              {item.name}
+            </Text>
 
             <View style={styles.sessionStats}>
               <View style={styles.statItem}>
@@ -257,22 +274,6 @@ export const ZikrHistoryScreen = ({ navigation }) => {
               })}
             </Text>
           </View>
-
-          {/* Continue Button */}
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={() => handleContinue(item)}
-          >
-            <Ionicons name="play-circle" size={32} color="#00A86B" />
-          </TouchableOpacity>
-        </TouchableOpacity>
-
-        {/* Delete Button */}
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDelete(item.id, item.name)}
-        >
-          <Ionicons name="trash-outline" size={18} color="#DC3545" />
         </TouchableOpacity>
       </View>
     );
@@ -360,7 +361,7 @@ export const ZikrHistoryScreen = ({ navigation }) => {
           ) : (
             <View style={styles.emptyState}>
               <View style={styles.emptyIconContainer}>
-                <Ionicons name="bookmark-outline" size={64} color="#CCC" />
+                <Ionicons name="bookmark-outline" size={64} color="#fff" />
               </View>
               <Text style={styles.emptyTitle}>
                 {t('zikrHistory.empty.title')}
@@ -372,7 +373,6 @@ export const ZikrHistoryScreen = ({ navigation }) => {
                 style={styles.startButton}
                 onPress={() => navigation.goBack()}
               >
-                <Ionicons name="add-circle" size={20} color="#FFF" />
                 <Text style={styles.startButtonText}>
                   {t('zikrHistory.empty.startButton')}
                 </Text>
@@ -386,16 +386,12 @@ export const ZikrHistoryScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since ScreenLayout handles bg
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    // Removed border for cleaner look over bg, can add back if needed
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   backButton: {
     width: 40,
@@ -420,11 +416,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: '#5BA895',
+    shadowColor: '#E0F5EC',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -445,7 +442,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sessionCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#E0F5EC',
     borderRadius: 16,
     marginBottom: 12,
     shadowColor: '#000',
@@ -453,7 +450,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
-    overflow: 'hidden',
+    overflow: 'visible',
+    position: 'relative',
   },
   sessionContent: {
     flexDirection: 'row',
@@ -468,12 +466,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    flexShrink: 0,
   },
   sessionIconComplete: {
     backgroundColor: '#F0FFF4',
   },
   sessionInfo: {
     flex: 1,
+    minWidth: 0,
   },
   sessionName: {
     fontSize: 18,
@@ -485,6 +485,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     marginBottom: 8,
+    flexWrap: 'wrap',
   },
   statItem: {
     flexDirection: 'row',
@@ -535,19 +536,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
   },
-  continueButton: {
-    marginLeft: 8,
-  },
+  // ✅ DELETE BUTTON - Top right corner (same size as continue)
   deleteButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFF5F5',
+    top: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderColor: 'rgba(91,168,149,0.6)',
+    borderWidth: 0.8,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  continueButton: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderColor: 'rgba(91,168,149,0.6)',
+    borderWidth: 0.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
   },
   emptyState: {
     flex: 1,
@@ -559,7 +583,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#5BA895',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -572,7 +596,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: '#666',
+    color: '#1A1A1A',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
@@ -581,7 +605,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#00A86B',
+    backgroundColor: '#5BA895',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,

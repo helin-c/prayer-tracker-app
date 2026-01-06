@@ -33,9 +33,6 @@ class User(Base):
     location = Column(String(255), nullable=True)
     preferred_language = Column(String(10), default="en", nullable=False)
 
-    # ========================================================================
-    # 🔔 PUSH NOTIFICATIONS & SETTINGS (YENİ EKLENEN KISIM)
-    # ========================================================================
     
     # Expo Push Token (Mobil cihazdan gelen token)
     push_token = Column(String(255), nullable=True, index=True)

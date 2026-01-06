@@ -1,5 +1,5 @@
 export const lightColors = {
-    primary: '#00A86B',      // Islamic Green
+    primary: '#F0FFF4',      // Islamic Green
     secondary: '#FFD700',    // Gold
     background: '#FFFFFF',
     surface: '#F5F5F5',

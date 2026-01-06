@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/onboarding/OnboardingScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/onboarding/OnboardingScreen.jsx
 // ============================================================================
 import React, { useRef, useState } from 'react';
 import {
@@ -14,13 +14,10 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-// REMOVED: SafeAreaView (Handled by Layout)
-// REMOVED: ImageBackground (Handled by Layout)
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { storage } from '../../services/storage';
 
-// IMPORT THE UPDATED LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const { width, height } = Dimensions.get('window');
@@ -82,8 +79,8 @@ const slides = [
 
 export const OnboardingScreen = ({ navigation }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(false); 
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const flatListRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -151,64 +148,47 @@ export const OnboardingScreen = ({ navigation }) => {
 
     return (
       <View style={styles.slide}>
-        <Animated.View 
+        <Animated.View
           style={[
-            styles.content, 
-            { 
-              opacity, 
-              transform: [{ scale }, { translateY }] 
-            }
+            styles.content,
+            {
+              opacity,
+              transform: [{ scale }, { translateY }],
+            },
           ]}
         >
-          <Animated.View 
+          <Animated.View
             style={[
               styles.iconWrapper,
-              { transform: [{ rotate: iconRotate }] }
+              { transform: [{ rotate: iconRotate }] },
             ]}
           >
-            <LinearGradient
-              colors={item.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.iconContainer}
-            >
-              <View style={styles.primaryIcon}>
-                <Ionicons name={item.icon} size={48} color="#FFFFFF" />
-              </View>
-              
-              <View style={styles.secondaryIcon}>
-                <View style={styles.secondaryIconBg}>
-                  <Ionicons 
-                    name={item.iconSecondary} 
-                    size={20} 
-                    color={item.accentColor} 
-                  />
-                </View>
-              </View>
-
-              <View style={[styles.particle, styles.particle1, { backgroundColor: item.accentColor }]} />
-              <View style={[styles.particle, styles.particle2, { backgroundColor: item.accentColor }]} />
-              <View style={[styles.particle, styles.particle3, { backgroundColor: item.accentColor }]} />
-            </LinearGradient>
+            <View style={styles.iconGlass}>
+              <Ionicons name={item.icon} size={48} color="#FFFFFF" />
+            </View>
           </Animated.View>
 
           <View style={styles.textContent}>
             {item.titleArabic && (
-              <Text style={styles.titleArabic}>
-                {item.titleArabic}
-              </Text>
+              <Text style={styles.titleArabic}>{item.titleArabic}</Text>
             )}
 
-            <Text style={styles.title}>
-              {item.titleEn || item.title}
-            </Text>
+            <Text style={styles.title}>{item.titleEn || item.title}</Text>
 
             <View style={styles.subtitleContainer}>
-              <View style={[styles.accentLine, { backgroundColor: item.accentColor }]} />
-              <Text style={styles.subtitle}>
-                {item.subtitle}
-              </Text>
-              <View style={[styles.accentLine, { backgroundColor: item.accentColor }]} />
+              <View
+                style={[
+                  styles.accentLine,
+                  { backgroundColor: item.accentColor },
+                ]}
+              />
+              <Text style={styles.subtitle}>{item.subtitle}</Text>
+              <View
+                style={[
+                  styles.accentLine,
+                  { backgroundColor: item.accentColor },
+                ]}
+              />
             </View>
 
             <Text style={styles.description}>{item.description}</Text>
@@ -251,7 +231,9 @@ export const OnboardingScreen = ({ navigation }) => {
                 {
                   opacity: dotOpacity,
                   transform: [{ scale: dotScale }],
-                  backgroundColor: isActive ? item.accentColor : 'rgba(255,255,255,0.3)',
+                  backgroundColor: isActive
+                    ? item.accentColor
+                    : 'rgba(255,255,255,0.3)',
                 },
               ]}
             />
@@ -264,10 +246,8 @@ export const OnboardingScreen = ({ navigation }) => {
   const currentSlide = slides[currentIndex];
 
   return (
-    // WRAPPED IN SCREEN LAYOUT WITH CUSTOM IMAGE
-    // We disable automatic padding because this screen does manual positioning
-    <ScreenLayout 
-      backgroundImage={require('../../assets/images/illustrations/background.jpeg')}
+    <ScreenLayout
+      backgroundImage={require('../../assets/images/illustrations/onboarding.png')}
       noPaddingTop={true}
       noPaddingBottom={true}
     >
@@ -281,7 +261,11 @@ export const OnboardingScreen = ({ navigation }) => {
         >
           <View style={styles.skipButtonInner}>
             <Text style={styles.skipText}>Skip</Text>
-            <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.7)" />
+            <Ionicons
+              name="arrow-forward"
+              size={14}
+              color="rgba(255,255,255,0.7)"
+            />
           </View>
         </TouchableOpacity>
       )}
@@ -325,29 +309,31 @@ export const OnboardingScreen = ({ navigation }) => {
             activeOpacity={0.9}
             disabled={isLoading}
           >
-            <LinearGradient
-              colors={currentSlide.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.nextButton}
-            >
+            <View style={styles.nextButtonGlass}>
               {isLoading ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <Text style={styles.nextButtonText}>
-                    {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
+                    {currentIndex === slides.length - 1
+                      ? 'Get Started'
+                      : 'Continue'}
                   </Text>
-                  <View style={[styles.nextButtonIcon, { backgroundColor: currentSlide.accentColor + '33' }]}>
-                    <Ionicons 
-                      name={currentIndex === slides.length - 1 ? "checkmark" : "arrow-forward"} 
-                      size={18} 
-                      color="#FFFFFF" 
+
+                  <View style={styles.nextButtonIconGlass}>
+                    <Ionicons
+                      name={
+                        currentIndex === slides.length - 1
+                          ? 'checkmark'
+                          : 'arrow-forward'
+                      }
+                      size={18}
+                      color="#FFFFFF"
                     />
                   </View>
                 </>
               )}
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -356,12 +342,9 @@ export const OnboardingScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container background logic since Layout handles it
-  
-  // ========== SKIP BUTTON ==========
   skipButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40, // Adjusted for safe area since we disabled padding
+    top: Platform.OS === 'ios' ? 60 : 40,
     right: 20,
     zIndex: 10,
   },
@@ -382,8 +365,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
   },
-
-  // ========== SLIDES ==========
   slidesContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -399,8 +380,6 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 60,
   },
-
-  // ========== ICON CONTAINER ==========
   iconWrapper: {
     marginBottom: 48,
   },
@@ -439,8 +418,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-
-  // ========== PARTICLES ==========
   particle: {
     position: 'absolute',
     width: 6,
@@ -465,7 +442,6 @@ const styles = StyleSheet.create({
     height: 5,
   },
 
-  // ========== TEXT CONTENT ==========
   textContent: {
     alignItems: 'center',
     width: '100%',
@@ -528,14 +504,12 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
 
-  // ========== BOTTOM CONTROLS ==========
   bottomContainer: {
     paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24, // Adjusted for safe area
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     gap: 24,
   },
 
-  // ========== PAGINATION ==========
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -553,7 +527,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // ========== ACTIONS ==========
   actionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -590,7 +563,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 16,
     paddingHorizontal: 24,
-    height: 56, 
+    height: 56,
   },
   nextButtonText: {
     color: '#FFFFFF',
@@ -604,5 +577,47 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  nextButtonGlass: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    height: 56,
+
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  nextButtonIconGlass: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  iconGlass: {
+    width: 120,
+    height: 120,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 12,
   },
 });

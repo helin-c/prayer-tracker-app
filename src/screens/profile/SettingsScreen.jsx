@@ -14,19 +14,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-// ✅ IMPORT Store
 import { useAuthStore } from '../../store/authStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   
-  // ✅ OPTIMIZED: Select specific action
   const logout = useAuthStore(state => state.logout);
 
-  // İşlem durumları
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -71,7 +67,6 @@ export const SettingsScreen = ({ navigation }) => {
         style: 'destructive',
         onPress: async () => {
           setIsDeleting(true);
-          // Simulating API call for delete account
           setTimeout(() => {
             setIsDeleting(false);
             Alert.alert(
@@ -85,7 +80,6 @@ export const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
       {/* Header */}
       <View style={styles.header}>
@@ -245,7 +239,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
+    backgroundColor: '#E0F5EC',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,

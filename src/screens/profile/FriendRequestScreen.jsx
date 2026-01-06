@@ -14,17 +14,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-// ✅ IMPORT Store and Selectors
 import { 
   useFriendsStore, 
   selectFriendsCount, 
   selectFriendsIsLoading 
 } from '../../store/friendsStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -32,7 +29,7 @@ import {
 } from '../../components/loading/SkeletonLoader';
 
 const RequestSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.5)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <View style={{ padding: 20, alignItems: 'center', paddingTop: 60 }}>

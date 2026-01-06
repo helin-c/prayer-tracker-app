@@ -3,6 +3,7 @@
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
+import widgetService from '../services/widgetService';
 
 export const useFriendsStore = create((set, get) => ({
   // State
@@ -33,6 +34,7 @@ export const useFriendsStore = create((set, get) => ({
 
     try {
       const response = await api.get('/friends');
+      
       set({ 
         friends: response.data, 
         isLoading: false 
@@ -40,15 +42,20 @@ export const useFriendsStore = create((set, get) => ({
       
       // Also fetch count after getting friends
       await get().fetchFriendsCount();
+
+      // ✅ UPDATE WIDGET
+      widgetService.updateFriendStreaksWidget(response.data);
       
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to fetch friends';
       console.error('Fetch friends error:', error);
+      
       set({ 
         error: errorMessage, 
         isLoading: false 
       });
+      
       throw error;
     }
   },
@@ -63,7 +70,6 @@ export const useFriendsStore = create((set, get) => ({
       return response.data;
     } catch (error) {
       console.error('Fetch friends count error:', error);
-      // Don't throw, just log
     }
   },
 
@@ -298,8 +304,7 @@ export const useFriendsStore = create((set, get) => ({
 }));
 
 // ============================================================================
-// SELECTORS (Use these for performance optimization)
-// Usage: const friends = useFriendsStore(selectFriends);
+// SELECTORS
 // ============================================================================
 export const selectFriends = (state) => state.friends;
 export const selectPendingRequests = (state) => state.pendingRequests;

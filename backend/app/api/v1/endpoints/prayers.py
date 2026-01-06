@@ -16,7 +16,6 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.prayer import PrayerLog, PrayerStreak
 from app.models.friendship import Friendship, FriendshipStatus
-# ✅ FIXED: Import get_translation for i18n support
 from app.services.push_notification_service import push_service, get_translation
 from app.core.rate_limiter import rate_limit
 from app.schemas.prayer import (
@@ -27,6 +26,7 @@ from app.schemas.prayer import (
     PrayerStatsResponse,
     MessageResponse,
 )
+from app.schemas.prayer import StreakResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -557,3 +557,172 @@ async def delete_prayer_log(
         await db.rollback()
         logger.error(f"Error deleting: {e}", exc_info=True)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to delete")
+    
+
+# ============================================================================
+# NEW: GET CURRENT USER STREAK (Real-time)
+# ============================================================================
+@router.get(
+    "/streak/current",
+    response_model=StreakResponse,
+    summary="Get current user's streak (real-time calculation)",
+    dependencies=[Depends(rate_limit(60, 60, by_user=True))]
+)
+async def get_current_streak(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get user's current streak with real-time calculation.
+    This is the SOURCE OF TRUTH for streak data.
+    """
+    try:
+        # 1. Calculate current streak from prayer logs
+        current_streak = await calculate_prayer_streak_optimized(
+            current_user.id, 
+            db
+        )
+        
+        # 2. Get or create streak record
+        query = select(PrayerStreak).filter(
+            PrayerStreak.user_id == current_user.id
+        )
+        result = await db.execute(query)
+        streak_record = result.scalars().first()
+        
+        if not streak_record:
+            # Create new record
+            streak_record = PrayerStreak(
+                user_id=current_user.id,
+                current_streak=current_streak,
+                best_streak=current_streak,
+                last_prayer_date=datetime.utcnow().strftime("%Y-%m-%d")
+            )
+            db.add(streak_record)
+            await db.commit()
+            await db.refresh(streak_record)
+        else:
+            # Update if calculation differs from stored value
+            if current_streak != streak_record.current_streak:
+                streak_record.current_streak = current_streak
+                
+                # Update best streak if current is higher
+                if current_streak > streak_record.best_streak:
+                    streak_record.best_streak = current_streak
+                
+                streak_record.last_prayer_date = datetime.utcnow().strftime("%Y-%m-%d")
+                
+                db.add(streak_record)
+                await db.commit()
+                await db.refresh(streak_record)
+        
+        return StreakResponse(
+            current_streak=streak_record.current_streak,
+            best_streak=streak_record.best_streak,
+            last_prayer_date=streak_record.last_prayer_date,
+            updated_at=streak_record.updated_at
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting current streak: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get streak"
+        )
+
+
+# ============================================================================
+# NEW: GET STREAK HISTORY (for calendar visualization)
+# ============================================================================
+@router.get(
+    "/streak/history",
+    summary="Get streak history for date range",
+    dependencies=[Depends(rate_limit(60, 60, by_user=True))]
+)
+async def get_streak_history(
+    start_date: str = Query(..., description="YYYY-MM-DD"),
+    end_date: str = Query(..., description="YYYY-MM-DD"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get detailed streak information for a date range.
+    Shows which days contributed to streaks.
+    """
+    try:
+        # Query all days with 5 completed prayers in range
+        query = select(
+            PrayerLog.prayer_date,
+            func.count(PrayerLog.id).label('completed_count')
+        ).filter(
+            and_(
+                PrayerLog.user_id == current_user.id,
+                PrayerLog.prayer_date >= start_date,
+                PrayerLog.prayer_date <= end_date,
+                PrayerLog.completed == True
+            )
+        ).group_by(
+            PrayerLog.prayer_date
+        ).having(
+            func.count(PrayerLog.id) == 5  # All 5 prayers completed
+        ).order_by(
+            PrayerLog.prayer_date
+        )
+        
+        result = await db.execute(query)
+        perfect_days = [row.prayer_date for row in result.all()]
+        
+        # Calculate streaks within this range
+        streaks = []
+        current_streak_days = []
+        
+        for i, date_str in enumerate(perfect_days):
+            current_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            
+            if i == 0:
+                # First day starts a streak
+                current_streak_days.append(date_str)
+            else:
+                # Check if consecutive
+                prev_date = datetime.strptime(perfect_days[i-1], "%Y-%m-%d").date()
+                diff = (current_date - prev_date).days
+                
+                if diff == 1:
+                    # Continues streak
+                    current_streak_days.append(date_str)
+                else:
+                    # Streak broken, save previous streak
+                    if current_streak_days:
+                        streaks.append({
+                            "start_date": current_streak_days[0],
+                            "end_date": current_streak_days[-1],
+                            "length": len(current_streak_days),
+                            "dates": current_streak_days
+                        })
+                    # Start new streak
+                    current_streak_days = [date_str]
+        
+        # Don't forget the last streak
+        if current_streak_days:
+            streaks.append({
+                "start_date": current_streak_days[0],
+                "end_date": current_streak_days[-1],
+                "length": len(current_streak_days),
+                "dates": current_streak_days
+            })
+        
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+            "perfect_days": perfect_days,
+            "streaks": streaks,
+            "total_perfect_days": len(perfect_days)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting streak history: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get streak history"
+        )
+

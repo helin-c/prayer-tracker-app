@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/auth/RegisterScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/auth/RegisterScreen.jsx
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -17,10 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../components/common';
 
-// ✅ Import Store and Selectors
 import { useAuthStore, selectAuthIsLoading } from '../../store/authStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const LANGUAGES = [
@@ -40,7 +38,6 @@ export const RegisterScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
 
-  // ✅ OPTIMIZED: Use selectors to avoid unnecessary re-renders
   const isLoading = useAuthStore(selectAuthIsLoading);
   const register = useAuthStore((state) => state.register);
 
@@ -98,16 +95,14 @@ export const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
-      {/* KEYBOARD AVOIDING VIEW WRAPPER */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled" // Critical for buttons to work while keyboard is up
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Card Container */}
@@ -220,7 +215,7 @@ export const RegisterScreen = ({ navigation }) => {
               <Button
                 title={t('auth.createAccount')}
                 onPress={handleRegister}
-                loading={isLoading} 
+                loading={isLoading}
                 disabled={isLoading}
                 style={styles.registerButton}
               />
@@ -253,15 +248,13 @@ export const RegisterScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Removed container since ScreenLayout handles bg
-  
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    paddingBottom: 40, // Added padding bottom to ensure scroll clears keyboard
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -351,7 +344,7 @@ const styles = StyleSheet.create({
   registerButton: {
     marginTop: 8,
     marginBottom: 24,
-    height: 56, // Fixed height for consistent layout
+    height: 56,
   },
   loginContainer: {
     flexDirection: 'row',

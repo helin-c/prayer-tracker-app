@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/tracker/StatsSection.jsx 
+// FILE: src/components/tracker/StatsSection.jsx (FIXED AUTO-REFRESH)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -29,6 +29,14 @@ export const StatsSection = () => {
     fetchPeriodStats(selectedPeriod);
   }, [selectedPeriod]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPeriodStats(selectedPeriod);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [selectedPeriod]);
+
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
   };
@@ -36,7 +44,7 @@ export const StatsSection = () => {
   const StatCard = ({ icon, label, value, color = '#5BA895', suffix = '' }) => (
     <View style={styles.statCardWrapper}>
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+        colors={['#E0F5EC', '#E0F5EC']}
         style={styles.statCard}
       >
         <View style={styles.statIconContainer}>
@@ -99,10 +107,10 @@ export const StatsSection = () => {
       <View style={styles.header}>
         <Text style={styles.title}>{t('prayerTracker.statistics')}</Text>
         
-        {/* IMPROVED Period Selector */}
+        {/* Period Selector */}
         <View style={styles.periodSelectorWrapper}>
           <LinearGradient
-            colors={['rgba(240, 255, 244, 0.5)', 'rgba(240, 255, 244, 0.4)']}
+            colors={['#E0F5EC', '#E0F5EC']}
             style={styles.periodSelector}
           >
             {PERIODS.map((period) => {
@@ -110,13 +118,13 @@ export const StatsSection = () => {
               return (
                 <TouchableOpacity
                   key={period.key}
-                  style={styles.periodButtonContainer} // Container to keep layout stable
+                  style={styles.periodButtonContainer}
                   onPress={() => handlePeriodChange(period.key)}
                   activeOpacity={0.7}
                 >
                   {isActive ? (
                     <LinearGradient
-                      colors={['#5BA895', '#4A9B87']} // Active gradient colors
+                      colors={['#5BA895', '#4A9B87']}
                       style={styles.periodButtonActiveGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
@@ -259,7 +267,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     marginBottom: 16,
   },
-  // --- IMPROVED PERIOD SELECTOR STYLES ---
   periodSelectorWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
@@ -268,19 +275,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
-    backgroundColor: '#FFF', // Ensure background is solid
+    backgroundColor: '#FFF',
   },
   periodSelector: {
     flexDirection: 'row',
-    padding: 4, // Padding around the buttons inside the container
+    padding: 4,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   periodButtonContainer: {
-    flex: 1, // Each button takes equal width
-    height: 40, // Fixed height to prevent jumping
+    flex: 1,
+    height: 40,
     borderRadius: 8,
-    overflow: 'hidden', // Ensure gradient respects border radius
+    overflow: 'hidden',
   },
   periodButtonActiveGradient: {
     flex: 1,
@@ -293,19 +300,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
-    backgroundColor: 'transparent', // Or a very light gray if preferred
+    backgroundColor: 'transparent',
   },
   periodButtonTextActive: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF', // White text on active
+    color: '#FFFFFF',
   },
   periodButtonTextInactive: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666666', // Dark gray text on inactive
+    color: '#666666',
   },
-  // ----------------------------------------
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

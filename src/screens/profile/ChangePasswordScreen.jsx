@@ -18,7 +18,6 @@ import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { userAPI } from '../../api/backend';
 
-// IMPORT THE LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const ChangePasswordScreen = ({ navigation }) => {
@@ -172,7 +171,7 @@ export const ChangePasswordScreen = ({ navigation }) => {
             <Text style={styles.label}>{t('profile.currentPassword')}</Text>
             <View style={styles.inputCardWrapper}>
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={[styles.inputWrapper, errors.currentPassword && styles.inputError]}
               >
                 <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />
@@ -212,7 +211,7 @@ export const ChangePasswordScreen = ({ navigation }) => {
             <Text style={styles.label}>{t('profile.newPassword')}</Text>
             <View style={styles.inputCardWrapper}>
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={[styles.inputWrapper, errors.newPassword && styles.inputError]}
               >
                 <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />
@@ -267,7 +266,7 @@ export const ChangePasswordScreen = ({ navigation }) => {
             <Text style={styles.label}>{t('profile.confirmNewPassword')}</Text>
             <View style={styles.inputCardWrapper}>
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={[styles.inputWrapper, errors.confirmPassword && styles.inputError]}
               >
                 <Ionicons name="lock-closed-outline" size={20} color="#5BA895" style={styles.inputIcon} />

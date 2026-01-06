@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/api/v1/endpoints/friends.py (ASYNC PRODUCTION READY)
+# FILE: backend/app/api/v1/endpoints/friends.py (FIXED IMPORT)
 # ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,9 +20,13 @@ from app.schemas.friend import (
     FriendWeekPrayersResponse,
     MessageResponse
 )
-# ✅ FIXED: Import get_translation for i18n support
+from app.schemas.prayer import StreakResponse
+
 from app.services.push_notification_service import push_service, get_translation
 from app.core.rate_limiter import rate_limit
+
+# ✅ CRITICAL FIX: Import the missing function from prayers.py
+from app.api.v1.endpoints.prayers import calculate_prayer_streak_optimized
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -77,7 +81,6 @@ async def get_friends(
 ):
     """Get all accepted friends for current user."""
     try:
-        # Get all accepted friendships (bidirectional)
         query = select(Friendship).filter(
             and_(
                 or_(
@@ -87,7 +90,6 @@ async def get_friends(
                 Friendship.status == FriendshipStatus.ACCEPTED
             )
         )
-        # Eager load relationships for async compatibility
         from sqlalchemy.orm import selectinload
         query = query.options(
             selectinload(Friendship.user).selectinload(User.prayer_streak),
@@ -101,15 +103,12 @@ async def get_friends(
         for friendship in friendships:
             friend_dict = friendship.to_dict(current_user.id)
             
-            # ✅ FIXED: Skip if to_dict returned None (relationships not loaded)
             if friend_dict is None:
                 logger.warning(f"Skipping friendship {friendship.id} in get_friends - relationships not loaded")
                 continue
 
-            # Determine friend object to get extra stats
             friend_user = friendship.friend if friendship.user_id == current_user.id else friendship.user
             
-            # Access loaded relationship safely
             if friend_user.prayer_streak:
                 friend_dict['current_streak'] = friend_user.prayer_streak.current_streak
                 friend_dict['best_streak'] = friend_user.prayer_streak.best_streak
@@ -163,14 +162,12 @@ async def get_pending_requests(
 ):
     """Get all pending friend requests received by current user."""
     try:
-        # Get pending requests where current user is the friend (recipient)
         query = select(Friendship).filter(
             and_(
                 Friendship.friend_id == current_user.id,
                 Friendship.status == FriendshipStatus.PENDING
             )
         )
-        # Eager load user relationship for sender details
         from sqlalchemy.orm import selectinload
         query = query.options(selectinload(Friendship.user))
         
@@ -181,7 +178,7 @@ async def get_pending_requests(
         for request in requests:
             req_dict = {
                 "id": request.id,
-                "friend_id": request.user_id,  # sender is the "friend"
+                "friend_id": request.user_id,
                 "friend_name": request.user.full_name or request.user.email.split('@')[0],
                 "friend_email": request.user.email,
                 "status": request.status.value,
@@ -216,14 +213,12 @@ async def get_sent_requests(
                 Friendship.status == FriendshipStatus.PENDING
             )
         )
-        # Eager load friend details
         from sqlalchemy.orm import selectinload
         query = query.options(selectinload(Friendship.friend))
         
         result = await db.execute(query)
         requests = result.scalars().all()
         
-        # ✅ FIXED: Handle None return from to_dict safely
         valid_requests = []
         for req in requests:
             data = req.to_dict(current_user.id)
@@ -255,7 +250,6 @@ async def send_friend_request(
 ):
     """Send a friend request to another user by email."""
     try:
-        # Check friend limit
         current_friends_count = await get_accepted_friends_count(db, current_user.id)
         if current_friends_count >= MAX_FRIENDS_LIMIT:
             raise HTTPException(
@@ -263,7 +257,6 @@ async def send_friend_request(
                 detail=f"You have reached the maximum limit of {MAX_FRIENDS_LIMIT} friends."
             )
         
-        # Find friend by email
         result = await db.execute(select(User).filter(User.email == request_data.friend_email.lower()))
         friend = result.scalars().first()
         
@@ -273,14 +266,12 @@ async def send_friend_request(
                 detail="User not found with this email"
             )
         
-        # Can't friend yourself
         if friend.id == current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="You cannot add yourself as a friend"
             )
         
-        # Check friend's limit
         friend_count = await get_accepted_friends_count(db, friend.id)
         if friend_count >= MAX_FRIENDS_LIMIT:
             raise HTTPException(
@@ -288,7 +279,6 @@ async def send_friend_request(
                 detail=f"This user has reached their maximum limit of {MAX_FRIENDS_LIMIT} friends"
             )
         
-        # Check existing friendship
         existing = await check_friendship_exists(db, current_user.id, friend.id)
         
         if existing:
@@ -300,7 +290,6 @@ async def send_friend_request(
                 else:
                     raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="This user already sent you a request")
         
-        # Create request
         friendship = Friendship(
             user_id=current_user.id,
             friend_id=friend.id,
@@ -309,18 +298,15 @@ async def send_friend_request(
         )
         
         db.add(friendship)
-        await db.commit()  # ✅ Async Commit
+        await db.commit()
         await db.refresh(friendship)
         
         logger.info(f"Friend request sent: {current_user.id} -> {friend.id}")
 
-        # Push Notification (✅ WITH i18n)
         try:
             if friend.push_token and friend.notification_preferences.get('friend_requests', True):
-                # Get friend's preferred language
                 lang = friend.preferred_language or 'en'
                 
-                # Get translated content
                 content = get_translation(
                     'friend_request',
                     lang,
@@ -370,7 +356,6 @@ async def accept_friend_request(
 ):
     """Accept a pending friend request."""
     try:
-        # Check current user limit
         current_friends_count = await get_accepted_friends_count(db, current_user.id)
         if current_friends_count >= MAX_FRIENDS_LIMIT:
             raise HTTPException(
@@ -378,7 +363,6 @@ async def accept_friend_request(
                 detail=f"You have reached the maximum limit of {MAX_FRIENDS_LIMIT} friends."
             )
         
-        # Get request (with requester details for notification)
         from sqlalchemy.orm import selectinload
         query = select(Friendship).options(selectinload(Friendship.user)).filter(
             and_(
@@ -393,7 +377,6 @@ async def accept_friend_request(
         if not friendship:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Friend request not found")
         
-        # Check requester limit
         requester_count = await get_accepted_friends_count(db, friendship.user_id)
         if requester_count >= MAX_FRIENDS_LIMIT:
             raise HTTPException(
@@ -401,17 +384,14 @@ async def accept_friend_request(
                 detail="The requester has reached their friend limit"
             )
         
-        # Accept
         friendship.status = FriendshipStatus.ACCEPTED
-        await db.commit()  # ✅ Async Commit
+        await db.commit()
         
         logger.info(f"Friend request accepted: {request_id} by user {current_user.id}")
 
-        # Notification (✅ WITH i18n)
         try:
             requester = friendship.user
             if requester.push_token and requester.notification_preferences.get('friend_requests', True):
-                # Get requester's preferred language
                 lang = requester.preferred_language or 'en'
                 
                 content = get_translation(
@@ -476,7 +456,7 @@ async def reject_friend_request(
         if not friendship:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Friend request not found")
         
-        await db.delete(friendship)  # ✅ Async Delete
+        await db.delete(friendship)
         await db.commit()
         
         return MessageResponse(message="Friend request rejected")
@@ -578,12 +558,10 @@ async def get_friend_week_prayers(
 ):
     """Get a friend's prayer completion for a week."""
     try:
-        # Check friendship
         friendship = await check_friendship_exists(db, current_user.id, friend_id)
         if not friendship or friendship.status != FriendshipStatus.ACCEPTED:
             raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not accepted friends")
         
-        # Get friend user (with streak)
         from sqlalchemy.orm import selectinload
         query = select(User).options(selectinload(User.prayer_streak)).filter(User.id == friend_id)
         result = await db.execute(query)
@@ -592,11 +570,9 @@ async def get_friend_week_prayers(
         if not friend:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Friend not found")
         
-        # Parse dates
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
         end = start + timedelta(days=6)
         
-        # Get logs
         log_query = select(PrayerLog).filter(
             and_(
                 PrayerLog.user_id == friend_id,
@@ -646,4 +622,88 @@ async def get_friend_week_prayers(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get friend's prayer data"
+        )
+    
+
+# ============================================================================
+# GET FRIEND STREAK (FIXED - NOW WORKS!)
+# ============================================================================
+@router.get(
+    "/{friend_id}/streak",
+    response_model=StreakResponse,
+    summary="Get friend's streak"
+)
+async def get_friend_streak(
+    friend_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a friend's current streak."""
+    try:
+        # 1. Verify friendship
+        query = select(Friendship).filter(
+            and_(
+                or_(
+                    and_(
+                        Friendship.user_id == current_user.id,
+                        Friendship.friend_id == friend_id
+                    ),
+                    and_(
+                        Friendship.user_id == friend_id,
+                        Friendship.friend_id == current_user.id
+                    )
+                ),
+                Friendship.status == FriendshipStatus.ACCEPTED
+            )
+        )
+        result = await db.execute(query)
+        friendship = result.scalars().first()
+        
+        if not friendship:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Friendship not found"
+            )
+        
+        # 2. ✅ Calculate friend's streak using imported function
+        friend_streak = await calculate_prayer_streak_optimized(friend_id, db)
+        
+        # 3. Get or update streak record
+        query = select(PrayerStreak).filter(
+            PrayerStreak.user_id == friend_id
+        )
+        result = await db.execute(query)
+        streak_record = result.scalars().first()
+        
+        if not streak_record:
+            return StreakResponse(
+                current_streak=friend_streak,
+                best_streak=friend_streak,
+                last_prayer_date=datetime.utcnow().strftime("%Y-%m-%d"),
+                updated_at=datetime.utcnow()
+            )
+        
+        # Update if needed
+        if friend_streak != streak_record.current_streak:
+            streak_record.current_streak = friend_streak
+            if friend_streak > streak_record.best_streak:
+                streak_record.best_streak = friend_streak
+            db.add(streak_record)
+            await db.commit()
+            await db.refresh(streak_record)
+        
+        return StreakResponse(
+            current_streak=streak_record.current_streak,
+            best_streak=streak_record.best_streak,
+            last_prayer_date=streak_record.last_prayer_date,
+            updated_at=streak_record.updated_at
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting friend streak: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get friend streak"
         )

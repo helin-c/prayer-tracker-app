@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/profile/ProfileScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/profile/ProfileScreen.jsx (UPDATED WITH STREAK STORE)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,10 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// STORE IMPORTS
 import { useAuthStore, selectUser } from '../../store/authStore';
 import {
   useFriendsStore,
@@ -34,17 +32,16 @@ import {
   selectTrackerIsLoading,
 } from '../../store/prayerTrackerStore';
 import { usePrayerStore, selectLocation } from '../../store/prayerStore';
+import { useStreakStore, selectUserStreak } from '../../store/streakStore'; 
 
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
   SkeletonCircle,
 } from '../../components/loading/SkeletonLoader';
 
-// ... [ProfileSkeleton remains exactly the same] ...
 const ProfileSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
   return (
     <View style={{ padding: 20 }}>
       {/* Header Skeleton */}
@@ -137,7 +134,7 @@ const ProfileSkeleton = () => {
 export const ProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
 
-  // ✅ OPTIMIZED: Use selectors
+  // Selectors
   const user = useAuthStore(selectUser);
   const logout = useAuthStore((state) => state.logout);
 
@@ -157,6 +154,10 @@ export const ProfileScreen = ({ navigation }) => {
 
   const location = usePrayerStore(selectLocation);
 
+  // ✅ Streak Store Hooks
+  const userStreak = useStreakStore(selectUserStreak);
+  const fetchUserStreak = useStreakStore((state) => state.fetchUserStreak);
+
   const [refreshing, setRefreshing] = useState(false);
 
   // Use a local loading state for initial mount
@@ -174,8 +175,8 @@ export const ProfileScreen = ({ navigation }) => {
       await Promise.all([
         fetchFriends(),
         fetchPendingRequests(),
-        // Ensure we explicitly fetch 'week' stats on load
         fetchPeriodStats('week'),
+        fetchUserStreak(), // ✅ Fetch streak on mount
       ]);
     } catch (error) {
       console.error('Error loading profile data:', error);
@@ -193,6 +194,7 @@ export const ProfileScreen = ({ navigation }) => {
       fetchFriends(),
       fetchPendingRequests(),
       fetchPeriodStats('week'),
+      fetchUserStreak(), // ✅ Refresh streak
     ]);
     setRefreshing(false);
   };
@@ -278,12 +280,12 @@ export const ProfileScreen = ({ navigation }) => {
             >
               <LinearGradient
                 colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
+                  '#5BA895',
+                  '#5BA895',
                 ]}
                 style={styles.settingsButton}
               >
-                <Ionicons name="settings-outline" size={24} color="#1A1A1A" />
+                <Ionicons name="settings-outline" size={24} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -291,7 +293,7 @@ export const ProfileScreen = ({ navigation }) => {
           {/* Profile Card */}
           <View style={styles.profileCardWrapper}>
             <LinearGradient
-              colors={['rgba(240, 255, 244, 0.7)', 'rgba(240, 255, 244, 0.6)']}
+              colors={[]}
               style={styles.profileCard}
             >
               <View style={styles.avatarContainer}>
@@ -318,8 +320,9 @@ export const ProfileScreen = ({ navigation }) => {
               {/* Stats Row */}
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
+                  {/* ✅ UPDATED: Use userStreak from store */}
                   <Text style={styles.statValue}>
-                    {periodStats?.current_streak || 0}
+                    {userStreak.current || 0}
                   </Text>
                   <Text style={styles.statLabel}>{t('friends.dayStreak')}</Text>
                 </View>
@@ -351,8 +354,8 @@ export const ProfileScreen = ({ navigation }) => {
                 >
                   <LinearGradient
                     colors={[
-                      'rgba(255, 255, 255, 0.95)',
-                      'rgba(255, 255, 255, 0.95)',
+                      '#E0F5EC',
+                      '#E0F5EC',
                     ]}
                     style={styles.actionButton}
                   >
@@ -468,8 +471,8 @@ export const ProfileScreen = ({ navigation }) => {
                 >
                   <LinearGradient
                     colors={[
-                      'rgba(255, 255, 255, 0.95)',
-                      'rgba(255, 255, 255, 0.95)',
+                      '#E0F5EC',
+                      '#E0F5EC',
                     ]}
                     style={styles.friendCard}
                   >
@@ -562,8 +565,7 @@ export const ProfileScreen = ({ navigation }) => {
             <View style={styles.infoCardWrapper}>
               <LinearGradient
                 colors={[
-                  'rgba(255, 255, 255, 0.95)',
-                  'rgba(255, 255, 255, 0.95)',
+                  
                 ]}
                 style={styles.infoCard}
               >
@@ -622,29 +624,7 @@ export const ProfileScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Logout Button */}
-          <TouchableOpacity
-            style={styles.logoutButtonWrapper}
-            onPress={handleLogout}
-            disabled={isLoggingOut}
-          >
-            <LinearGradient
-              colors={[
-                'rgba(255, 255, 255, 0.95)',
-                'rgba(255, 255, 255, 0.95)',
-              ]}
-              style={styles.logoutButton}
-            >
-              {isLoggingOut ? (
-                <ActivityIndicator size="small" color="#DC3545" />
-              ) : (
-                <>
-                  <Ionicons name="log-out-outline" size={20} color="#DC3545" />
-                  <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
+          
 
           {/* Version */}
           <Text style={styles.versionText}>{t('profile.version')} 1.0.0</Text>
@@ -1014,7 +994,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#DC3545',
     borderRadius: 12,
-    height: 56, // Fixed height for consistent layout with spinner
+    height: 56, 
   },
   logoutText: { fontSize: 16, fontWeight: '700', color: '#DC3545' },
   versionText: {
@@ -1037,7 +1017,7 @@ const styles = StyleSheet.create({
   footerBrand: {
     fontSize: 13,
     color: '#1A1A1A',
-    fontWeight: '600',
+    fontWeight: '600',    
     marginBottom: 6,
     letterSpacing: 0.5,
   },

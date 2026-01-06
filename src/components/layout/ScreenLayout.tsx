@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/layout/ScreenLayout.tsx
+// FILE: src/components/layout/ScreenLayout.tsx (FIXED)
 // ============================================================================
 import React from 'react';
 import {
@@ -27,16 +27,18 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   backgroundImage,
 }) => {
   const insets = useSafeAreaInsets();
-
+  
   const imageSource =
-    backgroundImage || require('../../assets/images/illustrations/background.png');
-
+    backgroundImage || require('../../assets/images/illustrations/bg.png');
+  
   return (
     <View style={styles.container}>
       <ImageBackground
         source={imageSource}
         style={styles.backgroundImage}
         resizeMode="cover"
+        // ✅ ADD THIS: Fade in the image smoothly
+        fadeDuration={0}
       >
         <View
           style={[
@@ -58,12 +60,13 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5BA895', 
+    backgroundColor: '#F0FFF4', // ✅ CHANGED: Match your app background!
   },
   backgroundImage: {
     flex: 1,
     width: '100%',
     height: '100%',
+    backgroundColor: '#F0FFF4', // ✅ ADDED: Match while image loads
   },
   content: {
     flex: 1,

@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/home/HomeScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/home/HomeScreen.jsx (FIXED - NO LAYOUT SHIFTS)
 // ============================================================================
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
@@ -22,10 +22,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// STORES & SELECTORS
 import { useAuthStore, selectUser } from '../../store/authStore';
 import { 
   usePrayerStore, 
@@ -46,7 +44,7 @@ import { DailyQuoteCard } from '../../components/quotes/DailyQuoteCard';
 const { width } = Dimensions.get('window');
 
 // ============================================================================
-// PRODUCTION-READY SKELETON COMPONENT
+// SKELETON COMPONENTS
 // ============================================================================
 const SkeletonItem = ({ style }) => {
   const opacity = useRef(new Animated.Value(0.3)).current;
@@ -74,7 +72,7 @@ const SkeletonItem = ({ style }) => {
     <Animated.View
       style={[
         {
-          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backgroundColor: '#DCEFE3',
           borderRadius: 12,
           opacity,
         },
@@ -84,10 +82,89 @@ const SkeletonItem = ({ style }) => {
   );
 };
 
+// ============================================================================
+// CIRCULAR PRAYER CARD SKELETON
+// ============================================================================
+const CircularPrayerCardSkeleton = () => {
+  const cardSize = width - 80;
+  
+  return (
+    <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+      <SkeletonItem
+        style={{
+          width: cardSize,
+          height: cardSize,
+          borderRadius: cardSize / 2,
+        }}
+      />
+    </View>
+  );
+};
+
+// ============================================================================
+// DAILY QUOTE CARD SKELETON
+// ============================================================================
+const DailyQuoteCardSkeleton = () => {
+  return (
+    <View
+      style={{
+        backgroundColor: '#DCEFE3',
+        borderRadius: 24,
+        padding: 24,
+        minHeight: 180,
+      }}
+    >
+      <SkeletonItem
+        style={{
+          height: 20,
+          width: '60%',
+          marginBottom: 16,
+          borderRadius: 8,
+        }}
+      />
+      <SkeletonItem
+        style={{
+          height: 16,
+          width: '100%',
+          marginBottom: 8,
+          borderRadius: 6,
+        }}
+      />
+      <SkeletonItem
+        style={{
+          height: 16,
+          width: '95%',
+          marginBottom: 8,
+          borderRadius: 6,
+        }}
+      />
+      <SkeletonItem
+        style={{
+          height: 16,
+          width: '85%',
+          marginBottom: 20,
+          borderRadius: 6,
+        }}
+      />
+      <SkeletonItem
+        style={{
+          height: 14,
+          width: '40%',
+          borderRadius: 6,
+        }}
+      />
+    </View>
+  );
+};
+
+// ============================================================================
+// FULL PAGE SKELETON (Initial Load)
+// ============================================================================
 const HomeSkeleton = () => {
+  const cardSize = width - 80;
+  
   return (
     <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
-      {/* Greeting Skeleton */}
       <SkeletonItem
         style={{
           height: 60,
@@ -97,24 +174,21 @@ const HomeSkeleton = () => {
         }}
       />
 
-      {/* Chips Skeleton */}
       <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
         <SkeletonItem style={{ height: 40, flex: 1, borderRadius: 18 }} />
         <SkeletonItem style={{ height: 40, flex: 1, borderRadius: 18 }} />
       </View>
 
-      {/* Main Prayer Card Skeleton */}
       <View style={{ alignItems: 'center', marginBottom: 24 }}>
         <SkeletonItem
           style={{
-            width: width - 80,
-            height: width - 80,
-            borderRadius: (width - 80) / 2,
+            width: cardSize,
+            height: cardSize,
+            borderRadius: cardSize / 2,
           }}
         />
       </View>
 
-      {/* Tracker Notification Skeleton */}
       <SkeletonItem
         style={{
           height: 90,
@@ -124,7 +198,6 @@ const HomeSkeleton = () => {
         }}
       />
 
-      {/* Friends Section Skeleton */}
       <View style={{ marginBottom: 20 }}>
         <View
           style={{
@@ -148,6 +221,18 @@ const HomeSkeleton = () => {
           />
         ))}
       </View>
+
+      <View style={{ marginTop: 28 }}>
+        <SkeletonItem
+          style={{
+            height: 24,
+            width: 140,
+            marginBottom: 16,
+            borderRadius: 8,
+          }}
+        />
+        <DailyQuoteCardSkeleton />
+      </View>
     </View>
   );
 };
@@ -158,7 +243,6 @@ const HomeSkeleton = () => {
 export const HomeScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   
-  // ✅ OPTIMIZED: Use selectors
   const user = useAuthStore(selectUser);
   
   const prayerTimes = usePrayerStore(selectPrayerTimes);
@@ -166,31 +250,50 @@ export const HomeScreen = ({ navigation }) => {
   const isLoading = usePrayerStore(selectPrayerIsLoading);
   const error = usePrayerStore(selectPrayerError);
   
-  // Actions can be selected or destructured (methods are stable)
   const fetchWithCurrentLocation = usePrayerStore(state => state.fetchWithCurrentLocation);
   const loadSavedLocation = usePrayerStore(state => state.loadSavedLocation);
   const clearError = usePrayerStore(state => state.clearError);
   const isCacheValid = usePrayerStore(state => state.isCacheValid);
 
-  // Friends Store
   const friends = useFriendsStore(selectFriends);
   const fetchFriends = useFriendsStore(state => state.fetchFriends);
 
   const [refreshing, setRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  
-  // Local loading state to ensure we wait for initial mounting/checking
   const [isInitializing, setIsInitializing] = useState(true);
+  
+  // ✅ NEW: Track if individual cards are ready
+  const [prayerCardReady, setPrayerCardReady] = useState(false);
+  const [quoteCardReady, setQuoteCardReady] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       await initializePrayerTimes();
       await fetchFriends();
-      // Only set this to false after we've attempted to fetch/load
       setIsInitializing(false); 
     };
     init();
   }, []);
+
+  // ✅ Set prayer card ready when prayer times are available
+  useEffect(() => {
+    if (prayerTimes && !isInitializing) {
+      const timer = setTimeout(() => {
+        setPrayerCardReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [prayerTimes, isInitializing]);
+
+  // ✅ Set quote card ready after initialization
+  useEffect(() => {
+    if (!isInitializing) {
+      const timer = setTimeout(() => {
+        setQuoteCardReady(true);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitializing]);
 
   useFocusEffect(
     useCallback(() => {
@@ -203,7 +306,6 @@ export const HomeScreen = ({ navigation }) => {
 
   const initializePrayerTimes = async () => {
     await loadSavedLocation();
-    // Use stored location if available, otherwise fetch
     if (!location && !prayerTimes) {
       await fetchWithCurrentLocation();
     }
@@ -299,7 +401,7 @@ export const HomeScreen = ({ navigation }) => {
       }
     >
       <LinearGradient
-        colors={['rgba(240, 255, 244, 0.95)', 'rgba(240, 255, 244, 0.95)']}
+        colors={['#E0F5EC', '#E0F5EC']}
         style={styles.friendCardGradient}
       >
         <View style={styles.friendAvatar}>
@@ -328,22 +430,14 @@ export const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  // KEY FIX: Improved Loading Logic
-  // We show skeleton if:
-  // 1. We are initializing (first boot check)
-  // 2. PrayerStore says it is loading (fetching data)
-  // 3. We don't have prayer times yet (critical data missing)
-  const shouldShowSkeleton = isInitializing || isLoading || !prayerTimes;
+  const shouldShowFullSkeleton = isInitializing || (isLoading && !prayerTimes);
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
       
-      {shouldShowSkeleton ? (
-        // SKELETON LOADING STATE
+      {shouldShowFullSkeleton ? (
         <HomeSkeleton />
       ) : (
-        // ACTUAL CONTENT
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -351,20 +445,15 @@ export const HomeScreen = ({ navigation }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#5BA895"
+              tintColor="#DCEFE3"
             />
           }
           showsVerticalScrollIndicator={false}
         >
-          {/* Greeting, Location & Islamic Date Combined */}
           <View style={styles.topSection}>
-            {/* Greeting Section */}
             <View style={styles.greetingCard}>
               <LinearGradient
-                colors={[
-                  'rgba(240, 255, 244, 0.95)',
-                  'rgba(240, 255, 244, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.greetingGradient}
               >
                 <Text style={styles.greetingText}>
@@ -376,7 +465,6 @@ export const HomeScreen = ({ navigation }) => {
               </LinearGradient>
             </View>
 
-            {/* Location & Islamic Date Row */}
             <View style={styles.topBar}>
               <TouchableOpacity
                 style={styles.headerItemOuter}
@@ -414,14 +502,15 @@ export const HomeScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Main Circular Prayer Card */}
-          {prayerTimes && (
-            <View style={styles.mainCardContainer}>
+          {/* ✅ Main Circular Prayer Card - WITH SKELETON */}
+          <View style={styles.mainCardContainer}>
+            {prayerTimes && prayerCardReady ? (
               <CircularPrayerCard prayerTimes={prayerTimes} />
-            </View>
-          )}
+            ) : (
+              <CircularPrayerCardSkeleton />
+            )}
+          </View>
 
-          {/* Prayer Tracker Reminder */}
           {prayerTimes && (
             <TouchableOpacity
               style={styles.trackerNotification}
@@ -429,10 +518,7 @@ export const HomeScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('PrayerTracker')}
             >
               <LinearGradient
-                colors={[
-                  'rgba(240, 255, 244, 0.95)',
-                  'rgba(240, 255, 244, 0.95)',
-                ]}
+                colors={['#E0F5EC', '#E0F5EC']}
                 style={styles.notificationGradient}
               >
                 <View style={styles.notificationContent}>
@@ -460,14 +546,10 @@ export const HomeScreen = ({ navigation }) => {
                     <Ionicons name="arrow-forward" size={20} color="#1A1A1A" />
                   </View>
                 </View>
-
-                <View style={styles.decorCircle1} />
-                <View style={styles.decorCircle2} />
               </LinearGradient>
             </TouchableOpacity>
           )}
 
-          {/* Friends Section */}
           {friends && friends.length > 0 && (
             <View style={styles.friendsSection}>
               <View style={styles.sectionHeaderContainer}>
@@ -506,7 +588,7 @@ export const HomeScreen = ({ navigation }) => {
             </View>
           )}
 
-          {/* Daily Inspiration Quote Card */}
+          {/* ✅ Daily Inspiration Quote Card - WITH SKELETON */}
           <View style={styles.quoteSection}>
             <View style={styles.quoteSectionHeaderOuter}>
               <LinearGradient
@@ -519,10 +601,13 @@ export const HomeScreen = ({ navigation }) => {
                 </Text>
               </LinearGradient>
             </View>
-            <DailyQuoteCard />
+            {quoteCardReady ? (
+              <DailyQuoteCard />
+            ) : (
+              <DailyQuoteCardSkeleton />
+            )}
           </View>
 
-          {/* Error Banner */}
           {error && (
             <View style={styles.errorBanner}>
               <LinearGradient
@@ -541,7 +626,6 @@ export const HomeScreen = ({ navigation }) => {
             </View>
           )}
 
-          {/* Empty State */}
           {!prayerTimes && !isLoading && (
             <View style={styles.emptyState}>
               <LinearGradient
@@ -650,7 +734,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(91, 168, 149, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -663,6 +746,7 @@ const styles = StyleSheet.create({
   },
   mainCardContainer: {
     marginTop: 0,
+    minHeight: width - 40,
   },
   trackerNotification: {
     marginHorizontal: 20,
@@ -733,24 +817,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
-  },
-  decorCircle1: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(91, 168, 149, 0.08)',
-    top: -40,
-    right: -20,
-  },
-  decorCircle2: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(91, 168, 149, 0.06)',
-    bottom: -20,
-    left: 40,
   },
   friendsSection: {
     marginTop: 28,
@@ -863,6 +929,7 @@ const styles = StyleSheet.create({
   quoteSection: {
     paddingHorizontal: 20,
     marginTop: 28,
+    minHeight: 200,
   },
   quoteSectionHeaderOuter: {
     marginBottom: 16,

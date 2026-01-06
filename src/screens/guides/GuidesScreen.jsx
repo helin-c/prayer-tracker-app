@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/guides/GuidesScreen.jsx (PRODUCTION READY)
+// FILE: src/screens/guides/GuidesScreen.jsx
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import {
@@ -27,11 +27,9 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 2;
 const CARD_HEIGHT = 180; // Sabit yükseklik
 
-// ============================================================================
 // CUSTOM SKELETON FOR GUIDES SCREEN
-// ============================================================================
 const GuidesSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <View style={{ padding: 20 }}>
@@ -85,9 +83,7 @@ const GuidesSkeleton = () => {
   );
 };
 
-// ============================================================================
 // MAIN SCREEN
-// ============================================================================
 export const GuidesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { initialize } = useQuranStore();
@@ -282,7 +278,7 @@ export const GuidesScreen = ({ navigation }) => {
           {/* Help Section */}
           <View style={styles.helpSection}>
             <View style={styles.helpCard}>
-              <Ionicons name="help-circle" size={32} color="#00A86B" />
+              <Ionicons name="help-circle" size={32} color="#5BA895" />
               <Text style={styles.helpTitle}>{t('guides.newToIslam')}</Text>
               <Text style={styles.helpText}>{t('guides.newToIslamText')}</Text>
               <TouchableOpacity
@@ -296,7 +292,7 @@ export const GuidesScreen = ({ navigation }) => {
                 <Text style={styles.helpButtonText}>
                   {t('guides.getStarted')}
                 </Text>
-                <Ionicons name="arrow-forward" size={16} color="#00A86B" />
+                <Ionicons name="arrow-forward" size={16} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
@@ -401,7 +397,7 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: CARD_WIDTH,
-    height: CARD_HEIGHT, // Sabit yükseklik
+    height: CARD_HEIGHT,
     marginBottom: 16,
   },
   card: {
@@ -413,7 +409,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    justifyContent: 'space-between', // İçeriği eşit dağıt
+    justifyContent: 'space-between',
   },
   iconContainer: {
     width: 56,
@@ -428,23 +424,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFF',
     marginTop: 12,
-    minHeight: 40, // Minimum yükseklik
+    minHeight: 40,
   },
   cardSubtitle: {
     fontSize: 12,
     color: '#FFF',
     opacity: 0.9,
-    minHeight: 32, // Minimum yükseklik
+    minHeight: 32,
   },
   cardArrow: {
     alignSelf: 'flex-end',
-    marginTop: 'auto', // En alta yapıştır
+    marginTop: '-16',
   },
   helpSection: {
     marginTop: 16,
   },
   helpCard: {
-    backgroundColor: '#FFF',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -470,7 +465,7 @@ const styles = StyleSheet.create({
   helpButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0FFF4',
+    backgroundColor: '#5BA895',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -479,6 +474,6 @@ const styles = StyleSheet.create({
   helpButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00A86B',
+    color: '#fff',
   },
 });

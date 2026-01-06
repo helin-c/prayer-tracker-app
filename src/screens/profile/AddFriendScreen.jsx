@@ -14,22 +14,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-// ✅ ADDED: LinearGradient import
 import { LinearGradient } from 'expo-linear-gradient';
 
-// ✅ IMPORT Store and Selectors
 import { useFriendsStore, selectFriendsCount } from '../../store/friendsStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 export const AddFriendScreen = ({ navigation }) => {
   const { t } = useTranslation();
   
-  // ✅ OPTIMIZED: Use selectors
   const friendsCount = useFriendsStore(selectFriendsCount);
   
-  // Actions
   const sendFriendRequest = useFriendsStore(state => state.sendFriendRequest);
   const fetchFriendsCount = useFriendsStore(state => state.fetchFriendsCount);
 
@@ -55,7 +50,6 @@ export const AddFriendScreen = ({ navigation }) => {
       return;
     }
 
-    // Check friend limit before sending
     if (!friendsCount.can_add_more) {
       Alert.alert(
         t('friends.limitReached'),
@@ -84,7 +78,6 @@ export const AddFriendScreen = ({ navigation }) => {
   const isButtonDisabled = !friendsCount.can_add_more || isSending;
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout>
       {/* Header */}
       <View style={styles.header}>
@@ -146,7 +139,7 @@ export const AddFriendScreen = ({ navigation }) => {
           value={email}
           onChangeText={setEmail}
           placeholder={t('friends.emailPlaceholder')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#000"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -263,7 +256,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   input: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#E0F5EC',
     padding: 16,
     borderRadius: 12,
     fontSize: 16,
@@ -272,7 +265,6 @@ const styles = StyleSheet.create({
     marginBottom: 16, // Added margin bottom for spacing
   },
   
-  // ✅ NEW: Button Styles
   sendButtonWrapper: {
     borderRadius: 12,
     overflow: 'hidden',

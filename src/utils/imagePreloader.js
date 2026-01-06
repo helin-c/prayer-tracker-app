@@ -1,12 +1,12 @@
-// src/utils/imagePreloader.js
+// src/utils/imagePreloader.js (UPDATED)
 import { Asset } from 'expo-asset';
-import { Image } from 'react-native';
 
 export const preloadImages = async () => {
   const images = [
+    require('../assets/images/illustrations/bg.png'), // ✅ Make sure this matches!
     require('../assets/images/illustrations/background.png'),
-    require('../assets/images/illustrations/background.jpeg')
-    // Diğer resimleri de ekleyin
+    require('../assets/images/illustrations/background.jpeg'),
+    // Add any other images used in your app
   ];
 
   const cacheImages = images.map(image => {

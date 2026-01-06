@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/components/quotes/DailyQuoteCard.jsx (WITH PROPER IMAGE SHARING)
+// FILE: src/components/quotes/DailyQuoteCard.jsx (FIXED)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -22,14 +22,15 @@ import { getDayOfYear, isLeapYear } from '../../utils/quoteGenerator';
 
 
 export const DailyQuoteCard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // ✅ Added i18n to track language changes
   const [dailyQuote, setDailyQuote] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
   const viewShotRef = React.useRef();
 
+  // ✅ FIX: Reload quote when language changes
   useEffect(() => {
     loadDailyQuote();
-  }, []);
+  }, [i18n.language]); // ✅ Added i18n.language as dependency
 
   const loadDailyQuote = () => {
     const today = new Date();
@@ -178,7 +179,7 @@ export const DailyQuoteCard = () => {
             disabled={isSharing}
           >
             <LinearGradient
-              colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.95)']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.shareButtonGradient}
             >
               <View style={styles.shareButtonInner}>
@@ -201,10 +202,10 @@ export const DailyQuoteCard = () => {
             disabled={isSharing}
           >
             <LinearGradient
-              colors={['#5BA895', '#4A9B87']}
+              colors={['#E0F5EC', '#E0F5EC']}
               style={styles.shareImageGradient}
             >
-              <Ionicons name="image" size={20} color="#FFFFFF" />
+              <Ionicons name="image" size={20} color="#5BA895" />
               <Text style={styles.shareImageButtonText}>
                 {t('quotes.shareImage')}
               </Text>
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#5BA895',
+    color: '#1A1A1A',
     letterSpacing: 0.3,
   },
   shareImageButton: {
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
   shareImageButtonText: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1A1A1A',
     letterSpacing: 0.3,
   },
 });

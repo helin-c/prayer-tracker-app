@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/friends/FriendProfileScreen.jsx (OPTIMIZED WITH SELECTORS)
+// FILE: src/screens/friends/FriendProfileScreen.jsx (UPDATED WITH STREAK STORE)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,13 +17,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { format, startOfWeek } from 'date-fns';
 
-// ✅ IMPORT Store
 import { useFriendsStore } from '../../store/friendsStore';
+import { useStreakStore } from '../../store/streakStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
-// COMPONENT IMPORTS
 import {
   SkeletonLoader,
   SkeletonLine,
@@ -31,7 +29,7 @@ import {
 } from '../../components/loading/SkeletonLoader';
 
 const FriendSkeleton = () => {
-  const skeletonStyle = { backgroundColor: 'rgba(255, 255, 255, 0.4)' };
+  const skeletonStyle = { backgroundColor: '#DCEFE3' };
 
   return (
     <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -149,29 +147,58 @@ export const FriendProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { friend } = route.params;
   
-  // ✅ OPTIMIZED: Select specific actions to prevent unnecessary re-renders
   const getFriendWeekPrayers = useFriendsStore(state => state.getFriendWeekPrayers);
   const removeFriend = useFriendsStore(state => state.removeFriend);
+  
+  const fetchFriendStreak = useStreakStore(state => state.fetchFriendStreak);
+  const getCachedFriendStreak = useStreakStore(state => state.getCachedFriendStreak);
 
   const [weekData, setWeekData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRemoving, setIsRemoving] = useState(false); 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
+  const [friendStreak, setFriendStreak] = useState({
+    current: friend.current_streak || 0,
+    best: friend.best_streak || 0,
+  });
+
   useEffect(() => {
-    loadWeekData();
+    loadFriendData();
   }, []);
 
-  const loadWeekData = async () => {
+  const loadFriendData = async () => {
     try {
+      // 1. Prepare Week Data Promise
       const startDate = format(
         startOfWeek(new Date(), { weekStartsOn: 1 }),
         'yyyy-MM-dd'
       );
-      const data = await getFriendWeekPrayers(friend.friend_id, startDate);
-      setWeekData(data);
+      const weekDataPromise = getFriendWeekPrayers(friend.friend_id, startDate);
+
+      const streakPromise = fetchFriendStreak(friend.friend_id);
+
+      const [weekResult, streakResult] = await Promise.all([
+        weekDataPromise,
+        streakPromise
+      ]);
+
+      setWeekData(weekResult);
+
+      if (streakResult) {
+        setFriendStreak({
+          current: streakResult.current_streak,
+          best: streakResult.best_streak,
+        });
+      }
+
     } catch (error) {
-      console.error('Error loading friend week data:', error);
+      console.error('Error loading friend data:', error);
+      
+      const cached = getCachedFriendStreak(friend.friend_id);
+      if (cached) {
+        setFriendStreak(cached);
+      }
     } finally {
       setLoading(false);
       Animated.timing(fadeAnim, {
@@ -226,7 +253,6 @@ export const FriendProfileScreen = ({ navigation, route }) => {
   };
 
   return (
-    // WRAPPED IN SCREEN LAYOUT
     <ScreenLayout noPaddingBottom={true}>
         {/* Header - Always Visible */}
         <View style={styles.header}>
@@ -243,7 +269,7 @@ export const FriendProfileScreen = ({ navigation, route }) => {
             onPress={handleRemoveFriend}
             disabled={loading || isRemoving}
           >
-            <Ionicons name="ellipsis-horizontal" size={24} color="#666" />
+            <Ionicons name="trash-outline" size={20} color="#DC3545" />
           </TouchableOpacity>
         </View>
 
@@ -266,12 +292,12 @@ export const FriendProfileScreen = ({ navigation, route }) => {
                 <Text style={styles.name}>{friend.friend_name}</Text>
                 <Text style={styles.email}>{friend.friend_email}</Text>
 
-                {/* Stats */}
+                {/* ✅ Stats - Updated to use local state */}
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
                     <Ionicons name="flame" size={32} color="#FF6B35" />
                     <Text style={styles.statValue}>
-                      {friend.current_streak || 0}
+                      {friendStreak.current}
                     </Text>
                     <Text style={styles.statLabel}>
                       {t('friends.dayStreak')}
@@ -281,7 +307,7 @@ export const FriendProfileScreen = ({ navigation, route }) => {
                   <View style={styles.statItem}>
                     <Ionicons name="trophy" size={32} color="#FFD700" />
                     <Text style={styles.statValue}>
-                      {friend.best_streak || 0}
+                      {friendStreak.best}
                     </Text>
                     <Text style={styles.statLabel}>
                       {t('friends.bestStreak')}
@@ -327,28 +353,6 @@ export const FriendProfileScreen = ({ navigation, route }) => {
                   <Text style={styles.noData}>{t('friends.noPrayerData')}</Text>
                 )}
               </View>
-
-              {/* Remove Friend Button with Spinner */}
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={handleRemoveFriend}
-                disabled={isRemoving}
-              >
-                {isRemoving ? (
-                  <ActivityIndicator size="small" color="#DC3545" />
-                ) : (
-                  <>
-                    <Ionicons
-                      name="person-remove-outline"
-                      size={20}
-                      color="#DC3545"
-                    />
-                    <Text style={styles.removeButtonText}>
-                      {t('friends.removeFriend')}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
               
               {/* Extra bottom padding */}
               <View style={{height: 40}} />
@@ -389,7 +393,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   profileCard: {
-    backgroundColor: '#FFF',
+
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -399,30 +403,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  removeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderRadius: 12,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#DC3545',
-    marginTop: 20,
-    marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    height: 56, 
-  },
-  removeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#DC3545',
   },
   avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#00A86B', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   avatarText: { fontSize: 36, fontWeight: 'bold', color: '#FFF' },
@@ -435,7 +415,7 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, height: 60, backgroundColor: '#E0E0E0' },
   section: { marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 16 },
-  weekGrid: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
+  weekGrid: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#E0F5EC', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
   dayCard: { alignItems: 'center', flex: 1 },
   dayName: { fontSize: 12, fontWeight: '600', color: '#666', marginBottom: 8 },
   dayCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },

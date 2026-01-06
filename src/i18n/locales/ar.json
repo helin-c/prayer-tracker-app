@@ -114,6 +114,7 @@
   },
   "qibla": {
     "qiblaDirection": "اتجاه القبلة",
+    "checkingStoredLocation": "جاري الحصول على إحداثيات GPS...",
     "faceTowardsKaaba": "اتجه نحو الكعبة",
     "findingLocation": "جاري تحديد موقعك...",
     "requestingPermission": "طلب إذن الموقع...",
@@ -2030,7 +2031,7 @@
   "profile": {
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
-    "editProfile": "تعديل الملف الشخصي",
+    "editProfile": "تعديل الملف",
     "personalInfo": "المعلومات الشخصية",
     "preferences": "التفضيلات",
     "about": "حول",

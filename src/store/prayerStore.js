@@ -1,11 +1,12 @@
 // ============================================================================
-// FILE: src/stores/PrayerStore.js (OPTIMIZED WITH SELECTORS)
+// FILE: src/stores/PrayerStore.js
 // ============================================================================
 import { create } from 'zustand';
 import { prayersAPI } from '../api/prayers';
 import { locationService } from '../services/location';
 import { storage } from '../services/storage';
 import { STORAGE_KEYS } from '../utils/constants';
+import widgetService from '../services/widgetService'; // Added at the top
 
 const PRAYER_TIMES_CACHE_KEY = '@prayer_times_cache';
 const LOCATION_CACHE_KEY = '@location_cache';
@@ -55,7 +56,6 @@ export const usePrayerStore = create((set, get) => ({
       }
 
       // If we have location but no valid cache, fetch fresh data
-      // ✅ RACE CONDITION FIX: Added guards
       if (cachedLocation && !get().isLoading && !get().prayerTimes) {
         await get().fetchPrayerTimes(
           cachedLocation.latitude,
@@ -85,7 +85,6 @@ export const usePrayerStore = create((set, get) => ({
     set({ isLoading: true, error: null, fromCache: false });
 
     try {
-      // 🎯 Let backend auto-detect method/school based on location
       const response = await prayersAPI.getPrayerTimes(latitude, longitude);
       const data = response.data;
 
@@ -99,6 +98,7 @@ export const usePrayerStore = create((set, get) => ({
       await storage.setItem(PRAYER_TIMES_CACHE_KEY, data);
       await storage.setItem(CACHE_EXPIRY_KEY, tomorrow.toISOString());
 
+      // Update State
       set({
         prayerTimes: data,
         lastUpdated: new Date(),
@@ -106,19 +106,26 @@ export const usePrayerStore = create((set, get) => ({
         fromCache: data.from_cache || false,
       });
 
-      console.log('✅ Prayer times fetched successfully');
+      // ✅ UPDATE WIDGET
+      const state = get();
+      widgetService.updateNextPrayerWidget(
+        data,
+        state.location,
+        null
+      );
+
+      console.log('✅ Prayer times fetched and widget updated');
       return { success: true, data };
     } catch (error) {
       let errorMessage = 'Failed to fetch prayer times';
 
-      // Check if it's an auth error
       if (error.response?.status === 401) {
         errorMessage = 'Please log in again to fetch prayer times';
       } else if (error.message?.includes('Network')) {
-        // Try to use cache as fallback
         const cachedTimes = await storage.getItem(PRAYER_TIMES_CACHE_KEY);
         if (cachedTimes) {
-          console.log('⚠️  Network error, using cached data');
+          console.log('⚠️ Network error, using cached data');
+          
           set({
             prayerTimes: cachedTimes,
             lastUpdated: new Date(cachedTimes.lastFetched),
@@ -126,6 +133,14 @@ export const usePrayerStore = create((set, get) => ({
             fromCache: true,
             error: 'Using offline data - network unavailable',
           });
+
+          // Optional: Update widget with cached data even on network failure
+          widgetService.updateNextPrayerWidget(
+            cachedTimes,
+            get().location,
+            null
+          );
+
           return { success: true, data: cachedTimes, fromCache: true };
         }
         errorMessage = 'Network error. Please check your connection.';
@@ -163,30 +178,23 @@ export const usePrayerStore = create((set, get) => ({
 
       console.log(`✅ Location: ${fullLocation.city}, ${fullLocation.country}`);
 
-      // Fetch prayer times (backend will auto-detect method)
       await get().fetchPrayerTimes(
         coords.latitude,
         coords.longitude,
         forceRefresh
       );
 
-      // Save to backend (don't wait, don't fail on error)
       prayersAPI.saveLocation(fullLocation).catch(e => {
-        console.log('⚠️  Failed to save location to backend (ignored):', e.message);
+        console.log('⚠️ Failed to save location to backend:', e.message);
       });
 
       return { success: true };
     } catch (error) {
       let errorMessage = 'Failed to get location';
-
       if (error.message === 'Location permission denied') {
-        errorMessage = 'Please enable location access in your device settings';
-      } else if (error.message.includes('timeout')) {
-        errorMessage = 'Location request timed out. Please try again.';
+        errorMessage = 'Please enable location access in settings';
       }
-
       set({ error: errorMessage, isLoading: false });
-      console.error('❌ Location error:', errorMessage);
       return { success: false, error: errorMessage };
     }
   },
@@ -201,7 +209,6 @@ export const usePrayerStore = create((set, get) => ({
         set({ location: cachedLocation });
       }
 
-      // Try backend (don't fail if it errors)
       try {
         const response = await prayersAPI.getLocation();
         if (response.data) {
@@ -209,10 +216,10 @@ export const usePrayerStore = create((set, get) => ({
           await storage.setItem(LOCATION_CACHE_KEY, response.data);
         }
       } catch (error) {
-        console.log('⚠️  Could not load location from backend (using cache)');
+        console.log('⚠️ Using cached location');
       }
     } catch (error) {
-      console.log('⚠️  No saved location');
+      console.log('⚠️ No saved location');
     }
   },
 
@@ -235,7 +242,6 @@ export const usePrayerStore = create((set, get) => ({
   isCacheValid: () => {
     const { prayerTimes, lastUpdated } = get();
     if (!prayerTimes || !lastUpdated) return false;
-
     const now = new Date();
     const lastFetch = new Date(lastUpdated);
     return now.toDateString() === lastFetch.toDateString();
@@ -245,10 +251,7 @@ export const usePrayerStore = create((set, get) => ({
   setLoading: (isLoading) => set({ isLoading }),
 }));
 
-// ============================================================================
-// SELECTORS (Use these for performance optimization)
-// Usage: const prayerTimes = usePrayerStore(selectPrayerTimes);
-// ============================================================================
+// SELECTORS
 export const selectPrayerTimes = (state) => state.prayerTimes;
 export const selectLocation = (state) => state.location;
 export const selectPrayerIsLoading = (state) => state.isLoading;

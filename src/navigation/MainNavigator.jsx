@@ -13,16 +13,18 @@ import { GuidesNavigator } from './GuidesNavigator';
 
 const Tab = createBottomTabNavigator();
 
+// MainNavigator.jsx (UPDATED)
 export const MainNavigator = () => {
   const { t } = useTranslation();
-
+  
   return (
     <Tab.Navigator
-      sceneContainerStyle={{ backgroundColor: 'transparent' }}
+      sceneContainerStyle={{ 
+        backgroundColor: '#F0FFF4' 
+      }}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
           if (route.name === ROUTES.HOME) {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === ROUTES.PRAYER_TRACKER) {
@@ -34,12 +36,16 @@ export const MainNavigator = () => {
           } else if (route.name === ROUTES.PROFILE) {
             iconName = focused ? 'person' : 'person-outline';
           }
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#00A86B',
         tabBarInactiveTintColor: '#666',
         headerShown: false,
+        
+        // 🔧 CRITICAL: Pre-render tabs to prevent flash
+        lazy: false,
+        unmountOnBlur: false,
+        
         tabBarStyle: {
           paddingBottom: 4,
           paddingTop: 4,

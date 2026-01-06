@@ -322,3 +322,21 @@ class MessageResponse(BaseModel):
                 "message": "Operation completed successfully"
             }
         }
+
+class StreakResponse(BaseModel):
+    """Response schema for streak data"""
+    current_streak: int = Field(..., description="Current consecutive days streak")
+    best_streak: int = Field(..., description="Best streak ever achieved")
+    last_prayer_date: Optional[str] = Field(None, description="Last prayer date in YYYY-MM-DD")
+    updated_at: datetime = Field(..., description="When streak was last updated")
+    
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "current_streak": 7,
+                "best_streak": 30,
+                "last_prayer_date": "2025-01-04",
+                "updated_at": "2025-01-04T12:00:00Z"
+            }
+        }

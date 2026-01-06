@@ -51,7 +51,7 @@ i18n
       ar: { translation: ar },
     },
     fallbackLng: 'en',
-    debug: false, // Set to false to reduce logs
+    debug: false, 
     interpolation: {
       escapeValue: false,
     },

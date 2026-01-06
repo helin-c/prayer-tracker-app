@@ -15,13 +15,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-// ✅ ADDED: LinearGradient import
 import { LinearGradient } from 'expo-linear-gradient';
 
-// ✅ IMPORT Store and Selectors
 import { useAuthStore, selectUser } from '../../store/authStore';
 
-// IMPORT THE NEW LAYOUT
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 const LANGUAGES = [
@@ -65,7 +62,6 @@ export const EditProfileScreen = ({ navigation }) => {
       const result = await updateProfile(formData);
 
       if (result.success) {
-        // ✅ Anında dil değişimi (UX iyileştirmesi)
         if (formData.preferred_language !== i18n.language) {
           await i18n.changeLanguage(formData.preferred_language);
         }
@@ -225,7 +221,6 @@ export const EditProfileScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* ✅ NEW: Gradient Save Button (Matching ChangePassword Style) */}
         <TouchableOpacity
           style={styles.saveButtonWrapper}
           onPress={handleSave}
@@ -304,18 +299,18 @@ const styles = StyleSheet.create({
   },
   labelSubtext: {
     fontSize: 12,
-    color: '#666',
+    color: '#1A1A1A',
     marginBottom: 12,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: '#E0F5EC',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     paddingHorizontal: 16,
-    height: 56, // Fixed height for input container
+    height: 56, 
   },
   inputIcon: {
     marginRight: 12,
@@ -327,7 +322,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  // Language Selection
+
   languageList: {
     gap: 12,
   },
@@ -335,7 +330,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
+    backgroundColor: '#E0F5EC',
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,

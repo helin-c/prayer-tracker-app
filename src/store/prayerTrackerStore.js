@@ -1,8 +1,10 @@
 // ============================================================================
-// FILE: src/store/prayerTrackerStore.js (OPTIMIZED WITH SELECTORS)
+// FILE: src/store/prayerTrackerStore.js (UPDATED WITH SYNCED WIDGETS)
 // ============================================================================
 import { create } from 'zustand';
 import api from '../api/backend';
+import widgetService from '../services/widgetService';
+import { useStreakStore } from './streakStore'; // ✅ Added Streak Store Import
 
 export const usePrayerTrackerStore = create((set, get) => ({
   // State
@@ -44,11 +46,24 @@ export const usePrayerTrackerStore = create((set, get) => ({
         timestamp: Date.now(),
       });
 
+      // Updated State
       set({ 
         dayPrayers: data, 
         isLoading: false,
         lastFetched: new Date(),
       });
+
+      // ✅ FETCH STREAK FROM STREAK STORE BEFORE UPDATING WIDGET
+      // This ensures the widget gets the latest streak count combined with today's progress
+      const fetchUserStreak = useStreakStore.getState().fetchUserStreak;
+      try {
+        await fetchUserStreak();
+      } catch (err) {
+        console.log('Failed to fetch streak for widget:', err);
+      }
+
+      // ✅ UPDATE WIDGET (will read streak from store)
+      widgetService.updateDailyProgressWidget(data);
 
       return data;
     } catch (error) {
@@ -125,6 +140,21 @@ export const usePrayerTrackerStore = create((set, get) => ({
       
       // Clear relevant caches
       get().clearCache(prayerData.prayer_date);
+
+      // ✅ INVALIDATE STREAK CACHE
+      const invalidateStreak = useStreakStore.getState().invalidateStreak;
+      invalidateStreak();
+      
+      // ✅ FETCH NEW STREAK IMMEDIATELY (for instant UI update)
+      if (prayerData.completed) {
+        const fetchUserStreak = useStreakStore.getState().fetchUserStreak;
+        try {
+          await fetchUserStreak();
+          console.log('✅ Streak updated after prayer tracking');
+        } catch (err) {
+          console.log('Background streak fetch failed:', err);
+        }
+      }
 
       set({ isLoading: false });
       return response.data;
@@ -282,8 +312,7 @@ export const usePrayerTrackerStore = create((set, get) => ({
 }));
 
 // ============================================================================
-// SELECTORS (Use these for performance optimization)
-// Usage: const dayPrayers = usePrayerTrackerStore(selectDayPrayers);
+// SELECTORS
 // ============================================================================
 export const selectDayPrayers = (state) => state.dayPrayers;
 export const selectWeekPrayers = (state) => state.weekPrayers;
