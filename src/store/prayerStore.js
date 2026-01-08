@@ -6,7 +6,7 @@ import { prayersAPI } from '../api/prayers';
 import { locationService } from '../services/location';
 import { storage } from '../services/storage';
 import { STORAGE_KEYS } from '../utils/constants';
-import widgetService from '../services/widgetService'; // Added at the top
+import widgetService from '../services/widgetService'; 
 
 const PRAYER_TIMES_CACHE_KEY = '@prayer_times_cache';
 const LOCATION_CACHE_KEY = '@location_cache';

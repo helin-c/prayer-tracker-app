@@ -1,12 +1,13 @@
 // ============================================================================
-// FILE: src/services/notificationService.js
+// FILE: src/services/notificationService.js (ENHANCED WITH AZAN)
 // ============================================================================
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { Audio } from 'expo-av';
 import Constants from 'expo-constants';
 import { storage } from './storage';
-import i18n from '../i18n'; // ✅ ADDED: Import i18n
+import i18n from '../i18n';
 
 // ✅ Configure notification handler
 Notifications.setNotificationHandler({
@@ -23,6 +24,8 @@ class NotificationService {
     this.expoPushToken = null;
     this.notificationListener = null;
     this.responseListener = null;
+    this.azanSound = null;
+    this.isPlayingAzan = false;
   }
 
   // ============================================================================
@@ -38,13 +41,87 @@ class NotificationService {
         await this.setupNotificationChannels();
       }
 
+      // ✅ NEW: Load Azan sound
+      await this.loadAzanSound();
+
       this.setupListeners();
 
-      console.log('✅ Notifications initialized');
+      console.log('✅ Notifications initialized with Azan support');
       return { success: true, token };
     } catch (error) {
       console.error('❌ Notification initialization error:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  // ============================================================================
+  // AZAN SOUND MANAGEMENT (NEW)
+  // ============================================================================
+
+  async loadAzanSound() {
+    try {
+      // Configure audio mode
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+      });
+
+      // Load Azan audio file
+      const { sound } = await Audio.Sound.createAsync(
+        require('../../assets/sounds/azan.mp3'), // You'll add this file
+        { shouldPlay: false, volume: 1.0 },
+        this.onAzanPlaybackStatusUpdate
+      );
+
+      this.azanSound = sound;
+      console.log('✅ Azan sound loaded');
+    } catch (error) {
+      console.error('❌ Error loading Azan sound:', error);
+    }
+  }
+
+  onAzanPlaybackStatusUpdate = (status) => {
+    if (status.didJustFinish) {
+      this.isPlayingAzan = false;
+      console.log('🎵 Azan playback finished');
+    }
+  };
+
+  async playAzan() {
+    try {
+      if (this.isPlayingAzan) {
+        console.log('⚠️ Azan already playing');
+        return;
+      }
+
+      if (!this.azanSound) {
+        console.warn('⚠️ Azan sound not loaded');
+        return;
+      }
+
+      this.isPlayingAzan = true;
+      
+      // Replay from beginning if already played
+      await this.azanSound.setPositionAsync(0);
+      await this.azanSound.playAsync();
+      
+      console.log('🎵 Playing Azan...');
+    } catch (error) {
+      console.error('❌ Error playing Azan:', error);
+      this.isPlayingAzan = false;
+    }
+  }
+
+  async stopAzan() {
+    try {
+      if (this.azanSound && this.isPlayingAzan) {
+        await this.azanSound.stopAsync();
+        this.isPlayingAzan = false;
+        console.log('⏹️ Azan stopped');
+      }
+    } catch (error) {
+      console.error('❌ Error stopping Azan:', error);
     }
   }
 
@@ -88,11 +165,23 @@ class NotificationService {
   }
 
   // ============================================================================
-  // NOTIFICATION CHANNELS (Android Only)
+  // NOTIFICATION CHANNELS (Android Only) - UPDATED
   // ============================================================================
 
   async setupNotificationChannels() {
     try {
+      // ✅ NEW: Prayer Time Channel (with custom Azan sound)
+      await Notifications.setNotificationChannelAsync('prayer-times', {
+        name: 'Prayer Times (Azan)',
+        importance: Notifications.AndroidImportance.HIGH,
+        sound: 'azan.mp3', // Custom sound file
+        vibrationPattern: [0, 500, 500, 500],
+        lightColor: '#00A86B',
+        enableVibrate: true,
+        showBadge: true,
+      });
+
+      // Regular prayer reminders (default sound)
       await Notifications.setNotificationChannelAsync('prayer-reminders', {
         name: 'Prayer Reminders',
         importance: Notifications.AndroidImportance.HIGH,
@@ -120,7 +209,6 @@ class NotificationService {
         sound: 'default',
       });
 
-      // ✅ ADDED: Social channel with High Importance for instant alerts
       await Notifications.setNotificationChannelAsync('social', {
         name: 'Social Notifications',
         importance: Notifications.AndroidImportance.HIGH,
@@ -129,26 +217,38 @@ class NotificationService {
         lightColor: '#5BA895',
       });
 
-      console.log('✅ Notification channels created');
+      console.log('✅ Notification channels created with Azan support');
     } catch (error) {
       console.error('❌ Error creating channels:', error);
     }
   }
 
   // ============================================================================
-  // LISTENERS
+  // LISTENERS (ENHANCED)
   // ============================================================================
 
   setupListeners() {
     this.notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
         console.log('📬 Notification received:', notification);
+        
+        // ✅ NEW: Play Azan for prayer time notifications
+        const notificationType = notification.request.content.data?.type;
+        if (notificationType === 'prayer_time') {
+          this.playAzan();
+        }
       }
     );
 
     this.responseListener = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         console.log('👆 Notification tapped:', response.notification.request.content.data);
+        
+        // Stop Azan if user taps notification
+        const notificationType = response.notification.request.content.data?.type;
+        if (notificationType === 'prayer_time') {
+          this.stopAzan();
+        }
       }
     );
   }
@@ -156,24 +256,70 @@ class NotificationService {
   cleanup() {
     if (this.notificationListener) Notifications.removeNotificationSubscription(this.notificationListener);
     if (this.responseListener) Notifications.removeNotificationSubscription(this.responseListener);
+    if (this.azanSound) {
+      this.azanSound.unloadAsync();
+      this.azanSound = null;
+    }
   }
 
   // ============================================================================
-  // SCHEDULE NOTIFICATIONS (FIXED TRIGGERS)
+  // SCHEDULE NOTIFICATIONS
   // ============================================================================
 
-  // 1. Single Prayer Reminder (One-time) - i18n
+  // ✅ NEW: Schedule Prayer Time Notification (AT prayer time with Azan)
+  async schedulePrayerTimeNotification(prayerName, prayerTime) {
+    try {
+      const notificationTime = new Date(prayerTime);
+
+      if (notificationTime <= new Date()) {
+        console.log(`⏭️ ${prayerName} time is in the past, skipping`);
+        return null;
+      }
+
+      const title = i18n.t('notifications.prayerTimeTitle', { prayer: prayerName });
+      const body = i18n.t('notifications.prayerTimeBody');
+
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `${title} 🕌`,
+          body,
+          sound: Platform.OS === 'ios' ? 'azan.mp3' : 'azan.mp3',
+          data: { 
+            type: 'prayer_time', 
+            prayerName, 
+            prayerTime: prayerTime.toISOString() 
+          },
+          priority: Notifications.AndroidNotificationPriority.HIGH,
+          ...(Platform.OS === 'android' && { 
+            color: '#00A86B',
+            channelId: 'prayer-times' // Channel with Azan sound
+          }),
+        },
+        trigger: {
+          type: 'date',
+          date: notificationTime,
+        },
+      });
+
+      console.log(`✅ Scheduled prayer time notification for ${prayerName}`);
+      return identifier;
+    } catch (error) {
+      console.error('❌ Error scheduling prayer time notification:', error);
+      return null;
+    }
+  }
+
+  // Prayer Reminder (BEFORE prayer time - default sound)
   async schedulePrayerReminder(prayerName, prayerTime, minutesBefore = 5) {
     try {
       const notificationTime = new Date(prayerTime);
       notificationTime.setMinutes(notificationTime.getMinutes() - minutesBefore);
 
       if (notificationTime <= new Date()) {
-        console.log(`⏭️  ${prayerName} time is in the past, skipping reminder`);
+        console.log(`⏭️ ${prayerName} reminder time is in the past, skipping`);
         return null;
       }
 
-      // ✅ ADDED: Use i18n for notification text
       const title = i18n.t('notifications.prayerReminderTitle', { 
          prayer: prayerName, 
          minutes: minutesBefore 
@@ -184,7 +330,7 @@ class NotificationService {
         content: {
           title: `${title} ⏰`,
           body,
-          sound: 'default',
+          sound: 'default', // Regular sound for reminders
           data: { type: 'prayer_reminder', prayerName, prayerTime: prayerTime.toISOString() },
           ...(Platform.OS === 'android' && { color: '#5BA895' }),
         },
@@ -202,7 +348,7 @@ class NotificationService {
     }
   }
 
-  // 2. Prayer Completion Reminder (One-time) - i18n
+  // Prayer Completion Reminder (AFTER prayer time - default sound)
   async schedulePrayerCompletionReminder(prayerName, prayerTime, minutesAfter = 40) {
     try {
       const notificationTime = new Date(prayerTime);
@@ -210,7 +356,6 @@ class NotificationService {
 
       if (notificationTime <= new Date()) return null;
 
-      // ✅ ADDED: Use i18n
       const title = i18n.t('notifications.completionReminderTitle', { prayer: prayerName });
       const body = i18n.t('notifications.completionReminderBody');
 
@@ -236,10 +381,14 @@ class NotificationService {
     }
   }
 
-  // Helper to schedule all daily prayers
-  async scheduleDailyPrayerNotifications(prayerTimes, reminderMinutesBefore = 5, completionMinutesAfter = 40) {
+  // ✅ UPDATED: Helper to schedule all daily prayers (includes prayer time + reminders)
+  async scheduleDailyPrayerNotifications(
+    prayerTimes, 
+    reminderMinutesBefore = 5, 
+    completionMinutesAfter = 40,
+    prayerTimeNotificationsEnabled = true // NEW parameter
+  ) {
     try {
-      // Clear old specific prayer notifications first
       await this.cancelAllPrayerNotifications();
 
       const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -253,15 +402,28 @@ class NotificationService {
         const prayerTime = new Date();
         prayerTime.setHours(hours, minutes, 0, 0);
 
+        const displayName = prayerName.charAt(0).toUpperCase() + prayerName.slice(1);
+
+        // ✅ NEW: Schedule prayer time notification (with Azan)
+        if (prayerTimeNotificationsEnabled) {
+          const prayerTimeId = await this.schedulePrayerTimeNotification(
+            displayName,
+            prayerTime
+          );
+          if (prayerTimeId) scheduledIds.push(prayerTimeId);
+        }
+
+        // Schedule reminder BEFORE prayer time
         const reminderId = await this.schedulePrayerReminder(
-          prayerName.charAt(0).toUpperCase() + prayerName.slice(1),
+          displayName,
           prayerTime,
           reminderMinutesBefore
         );
         if (reminderId) scheduledIds.push(reminderId);
 
+        // Schedule completion reminder AFTER prayer time
         const completionId = await this.schedulePrayerCompletionReminder(
-          prayerName.charAt(0).toUpperCase() + prayerName.slice(1),
+          displayName,
           prayerTime,
           completionMinutesAfter
         );
@@ -277,7 +439,7 @@ class NotificationService {
     }
   }
 
-  // 3. Daily Verse (Recurring Daily) - i18n
+  // Daily Verse (default sound)
   async scheduleDailyVerse(hour = 7, minute = 0) {
     try {
       const identifier = await Notifications.scheduleNotificationAsync({
@@ -305,7 +467,7 @@ class NotificationService {
     }
   }
 
-  // 4. Streak Reminder (Recurring Daily) - i18n
+  // Streak Reminder (default sound)
   async scheduleStreakReminder(hour = 21, minute = 0) {
     try {
       const identifier = await Notifications.scheduleNotificationAsync({
@@ -333,7 +495,7 @@ class NotificationService {
     }
   }
 
-  // 5. Jumuah Reminder (Recurring Weekly) - i18n
+  // Jumuah Reminder (default sound)
   async scheduleJumuahReminder(hour = 12, minute = 0) {
     try {
       const identifier = await Notifications.scheduleNotificationAsync({
@@ -375,11 +537,11 @@ class NotificationService {
           data,
           sound: 'default',
           ...(Platform.OS === 'android' && {
-             color: '#5BA895',
-            channelId: 'social' // Ensured this channel exists in setupNotificationChannels
+            color: '#5BA895',
+            channelId: 'social'
           }),
         },
-        trigger: null, // Send immediately
+        trigger: null,
       });
       console.log('✅ Instant notification sent');
       return { success: true };
@@ -416,7 +578,7 @@ class NotificationService {
   async cancelAllNotifications() {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-      console.log('🗑️  Cancelled all notifications');
+      console.log('🗑️ Cancelled all notifications');
     } catch (error) {
       console.error('❌ Error cancelling all notifications:', error);
     }

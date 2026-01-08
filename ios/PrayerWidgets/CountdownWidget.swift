@@ -54,7 +54,6 @@ struct CountdownProvider: TimelineProvider {
 }
 
 // MARK: - Countdown Small View
-// MARK: - Countdown Small View
 struct CountdownSmallView: View {
     let entry: NextPrayerEntry
     
@@ -72,55 +71,52 @@ struct CountdownSmallView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header: Icon Left, Location Right
                 HStack {
-                    PrayerIconBadge(prayer: actualNextPrayer.name, size: 28)
+                    PrayerIconBadge(prayer: actualNextPrayer.name, size: 24)
                     Spacer()
                     LocationBadge(location: entry.data.location)
                 }
-                .padding(.bottom, 8)
+                .padding(.bottom, 4)
                 
                 Spacer()
                 
-                // Main Content: Name, Label, Then Timer
-                VStack(spacing: 2) { // Slightly tighter spacing
+                VStack(spacing: 0) {
                     
-                    // 1. Prayer Name (UPPERCASE)
                     Text(PrayerHelper.localizedName(actualNextPrayer.name).uppercased())
-                        .font(.system(size: 14, weight: .black))
+                        .font(.system(size: 13, weight: .black))
                         .foregroundColor(.widgetPrimary)
                         .tracking(0.5)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
-                        .padding(.bottom, 2) // Add a tiny gap between name and label
                     
-                    // 2. "Time Remaining" Label (MOVED UP)
                     Text(WidgetLocalization.shared.translate("time_remaining"))
                         .font(.system(size: 7, weight: .bold))
                         .foregroundColor(.widgetTextSecondary.opacity(0.7))
+                        .padding(.bottom, 2)
                     
-                    // 3. BIG TIMER (MOVED DOWN)
                     if #available(iOS 17.0, *) {
                         Text(targetDate, style: .timer)
                             .contentTransition(.numericText())
                             .monospacedDigit()
-                            .font(.system(size: 24, weight: .heavy, design: .rounded))
+                            .font(.system(size: 34, weight: .heavy, design: .rounded))
                             .foregroundColor(.widgetText)
                             .multilineTextAlignment(.center)
-                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                     } else {
                         Text(targetDate, style: .timer)
                             .monospacedDigit()
-                            .font(.system(size: 24, weight: .heavy, design: .rounded))
+                            .font(.system(size: 34, weight: .heavy, design: .rounded))
                             .foregroundColor(.widgetText)
                             .multilineTextAlignment(.center)
-                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                     }
                 }
                 
                 Spacer()
             }
-            .padding(14)
+            .padding(12)
         }
     }
 }

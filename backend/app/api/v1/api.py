@@ -2,7 +2,7 @@
 # FILE: backend/app/api/v1/api.py (UPDATED)
 # ============================================================================
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, prayers, prayer_times, friends
+from app.api.v1.endpoints import auth, users, prayers, prayer_times, friends, password_reset
 
 api_router = APIRouter()
 
@@ -13,6 +13,15 @@ api_router.include_router(
     auth.router,
     prefix="/auth",
     tags=["authentication"]
+)
+
+# ============================================================================
+# PASSWORD RESET ENDPOINTS (NEW)
+# ============================================================================
+api_router.include_router(
+    password_reset.router,
+    prefix="/auth",
+    tags=["password-reset"]
 )
 
 # ============================================================================

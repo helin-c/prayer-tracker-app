@@ -1,6 +1,6 @@
 // @ts-nocheck
 // ============================================================================
-// FILE: src/screens/auth/RegisterScreen.jsx
+// FILE: src/screens/auth/RegisterScreen.jsx (FIXED)
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button, Input } from '../../components/common';
 
 import { useAuthStore, selectAuthIsLoading } from '../../store/authStore';
@@ -54,19 +55,31 @@ export const RegisterScreen = ({ navigation }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Full Name Validation 
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = t('auth.errors.fullNameRequired');
+    } else if (formData.full_name.trim().length < 2) {
+      newErrors.full_name = t('auth.errors.fullNameMinLength');
+    }
+
+    // Email Validation
     if (!formData.email.trim()) {
       newErrors.email = t('auth.errors.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = t('auth.errors.emailInvalid');
     }
 
+    // Password Validation
     if (!formData.password) {
       newErrors.password = t('auth.errors.passwordRequired');
     } else if (formData.password.length < 8) {
       newErrors.password = t('auth.errors.passwordMinLength');
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // Confirm Password Validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = t('auth.errors.confirmPasswordRequired');
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t('auth.errors.passwordsNotMatch');
     }
 
@@ -82,6 +95,7 @@ export const RegisterScreen = ({ navigation }) => {
     const cleanData = {
       ...registerData,
       email: registerData.email.toLowerCase().trim(),
+      full_name: registerData.full_name.trim(),
     };
 
     const result = await register(cleanData);
@@ -96,161 +110,158 @@ export const RegisterScreen = ({ navigation }) => {
 
   return (
     <ScreenLayout>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
+        keyboardOpeningTime={0}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Card Container */}
-          <View style={styles.card}>
-            {/* Back Button */}
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-              disabled={isLoading}
-            >
-              <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-            </TouchableOpacity>
+        {/* Card Container */}
+        <View style={styles.card}>
+          {/* Back Button */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            disabled={isLoading}
+          >
+            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
 
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Ionicons name="person-add" size={50} color="#00A86B" />
-              </View>
-              <Text style={styles.title}>{t('auth.createAccount')}</Text>
-              <Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="person-add" size={50} color="#00A86B" />
             </View>
+            <Text style={styles.title}>{t('auth.createAccount')}</Text>
+            <Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
+          </View>
 
-            {/* Language Selection */}
-            <View style={styles.languageSection}>
-              <Text style={styles.languageLabel}>
-                {t('auth.selectLanguage')}
-              </Text>
-              <View style={styles.languageButtons}>
-                {LANGUAGES.map((lang) => (
-                  <TouchableOpacity
-                    key={lang.code}
-                    style={[
-                      styles.languageButton,
-                      formData.preferred_language === lang.code &&
-                        styles.languageButtonActive,
-                    ]}
-                    onPress={() =>
-                      !isLoading && handleLanguageSelect(lang.code)
-                    }
-                    disabled={isLoading}
-                  >
-                    <Text style={styles.languageFlag}>{lang.flag}</Text>
-                    <Text
-                      style={[
-                        styles.languageName,
-                        formData.preferred_language === lang.code &&
-                          styles.languageNameActive,
-                      ]}
-                    >
-                      {lang.name}
-                    </Text>
-                    {formData.preferred_language === lang.code && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color="#00A86B"
-                      />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Form */}
-            <View style={styles.form}>
-              <Input
-                label={t('auth.emailAddress')}
-                value={formData.email}
-                onChangeText={(text) => updateField('email', text)}
-                placeholder={t('auth.emailPlaceholder')}
-                keyboardType="email-address"
-                leftIcon="mail-outline"
-                error={errors.email}
-                editable={!isLoading}
-              />
-
-              <Input
-                label={t('auth.fullNameOptional')}
-                value={formData.full_name}
-                onChangeText={(text) => updateField('full_name', text)}
-                placeholder={t('auth.fullNamePlaceholder')}
-                leftIcon="person-outline"
-                autoCapitalize="words"
-                editable={!isLoading}
-              />
-
-              <Input
-                label={t('auth.password')}
-                value={formData.password}
-                onChangeText={(text) => updateField('password', text)}
-                placeholder={t('auth.passwordPlaceholder')}
-                secureTextEntry
-                leftIcon="lock-closed-outline"
-                error={errors.password}
-                editable={!isLoading}
-              />
-
-              <Input
-                label={t('auth.confirmPassword')}
-                value={formData.confirmPassword}
-                onChangeText={(text) => updateField('confirmPassword', text)}
-                placeholder={t('auth.confirmPasswordPlaceholder')}
-                secureTextEntry
-                leftIcon="lock-closed-outline"
-                error={errors.confirmPassword}
-                editable={!isLoading}
-              />
-
-              {/* Create Account Button with Spinner */}
-              <Button
-                title={t('auth.createAccount')}
-                onPress={handleRegister}
-                loading={isLoading}
-                disabled={isLoading}
-                style={styles.registerButton}
-              />
-
-              <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>
-                  {t('auth.alreadyHaveAccount')}{' '}
-                </Text>
+          {/* Language Selection */}
+          <View style={styles.languageSection}>
+            <Text style={styles.languageLabel}>
+              {t('auth.selectLanguage')}
+            </Text>
+            <View style={styles.languageButtons}>
+              {LANGUAGES.map((lang) => (
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('Login')}
+                  key={lang.code}
+                  style={[
+                    styles.languageButton,
+                    formData.preferred_language === lang.code &&
+                      styles.languageButtonActive,
+                  ]}
+                  onPress={() =>
+                    !isLoading && handleLanguageSelect(lang.code)
+                  }
                   disabled={isLoading}
                 >
-                  <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
+                  <Text style={styles.languageFlag}>{lang.flag}</Text>
+                  <Text
+                    style={[
+                      styles.languageName,
+                      formData.preferred_language === lang.code &&
+                        styles.languageNameActive,
+                    ]}
+                  >
+                    {lang.name}
+                  </Text>
+                  {formData.preferred_language === lang.code && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#00A86B"
+                    />
+                  )}
                 </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Footer Quote */}
-            <View style={styles.footerQuote}>
-              <Text style={styles.quoteText}>{t('quotes.prayer1')}</Text>
-              <Text style={styles.quoteReference}>
-                {t('quotes.prayer1Ref')}
-              </Text>
+              ))}
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Form */}
+          <View style={styles.form}>
+            <Input
+              label={t('auth.fullName')} 
+              value={formData.full_name}
+              onChangeText={(text) => updateField('full_name', text)}
+
+              leftIcon="person-outline"
+              autoCapitalize="words"
+              error={errors.full_name}
+              editable={!isLoading}
+            />
+
+            <Input
+              label={t('auth.emailAddress')}
+              value={formData.email}
+              onChangeText={(text) => updateField('email', text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              leftIcon="mail-outline"
+              error={errors.email}
+              editable={!isLoading}
+            />
+
+            <Input
+              label={t('auth.password')}
+              value={formData.password}
+              onChangeText={(text) => updateField('password', text)}
+              placeholder={t('auth.passwordPlaceholder')}
+              secureTextEntry
+              leftIcon="lock-closed-outline"
+              error={errors.password}
+              editable={!isLoading}
+            />
+
+            <Input
+              label={t('auth.confirmPassword')}
+              value={formData.confirmPassword}
+              onChangeText={(text) => updateField('confirmPassword', text)}
+              placeholder={t('auth.confirmPasswordPlaceholder')}
+              secureTextEntry
+              leftIcon="lock-closed-outline"
+              error={errors.confirmPassword}
+              editable={!isLoading}
+            />
+
+            {/* Create Account Button with Spinner */}
+            <Button
+              title={t('auth.createAccount')}
+              onPress={handleRegister}
+              loading={isLoading}
+              disabled={isLoading}
+              style={styles.registerButton}
+            />
+
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>
+                {t('auth.alreadyHaveAccount')}{' '}
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Login')}
+                disabled={isLoading}
+              >
+                <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Footer Quote */}
+          <View style={styles.footerQuote}>
+            <Text style={styles.quoteText}>{t('quotes.prayer1')}</Text>
+            <Text style={styles.quoteReference}>
+              {t('quotes.prayer1Ref')}
+            </Text>
+          </View>
+        </View>
+      </KeyboardAwareScrollView>
     </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     padding: 24,
@@ -314,11 +325,11 @@ const styles = StyleSheet.create({
   languageButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(248, 249, 250, 0.8)',
+    backgroundColor: 'transparent',
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#E0F5EC',
   },
   languageButtonActive: {
     backgroundColor: 'rgba(240, 255, 244, 0.9)',

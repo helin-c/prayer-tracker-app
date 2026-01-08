@@ -13,7 +13,6 @@ import { GuidesNavigator } from './GuidesNavigator';
 
 const Tab = createBottomTabNavigator();
 
-// MainNavigator.jsx (UPDATED)
 export const MainNavigator = () => {
   const { t } = useTranslation();
   
@@ -42,7 +41,6 @@ export const MainNavigator = () => {
         tabBarInactiveTintColor: '#666',
         headerShown: false,
         
-        // 🔧 CRITICAL: Pre-render tabs to prevent flash
         lazy: false,
         unmountOnBlur: false,
         

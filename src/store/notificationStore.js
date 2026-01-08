@@ -1,24 +1,26 @@
-// FILE: src/store/notificationStore.js (FIXED)
+// ============================================================================
+// FILE: src/store/notificationStore.js (UPDATED WITH PRAYER TIME NOTIFICATIONS)
 // ============================================================================
 import { create } from 'zustand';
 import { storage } from '../services/storage';
 import { notificationService } from '../services/notificationService';
-import api from '../api/backend'; // ✅ FIXED: Correct import
+import api from '../api/backend';
 
 export const useNotificationStore = create((set, get) => ({
   // State
   isEnabled: true,
-  prayerRemindersEnabled: true,
-  completionRemindersEnabled: true,
+  prayerTimeNotificationsEnabled: true, // ✅ NEW: For Azan at prayer time
+  prayerRemindersEnabled: true, // Before prayer time
+  completionRemindersEnabled: true, // After prayer time
   dailyVerseEnabled: true,
   streakReminderEnabled: true,
   
-  // Jumuah (Cuma) State
+  // Jumuah State
   jumuahReminderEnabled: true,
   jumuahReminderTime: { hour: 12, minute: 0 },
   jumuahNotificationId: null,
 
-  // Notification IDs for tracking
+  // Notification IDs
   dailyVerseNotificationId: null,
   streakReminderNotificationId: null,
 
@@ -36,13 +38,11 @@ export const useNotificationStore = create((set, get) => ({
   // ============================================================================
   initialize: async () => {
     try {
-      // Load settings from storage
       const settings = await storage.getItem('notification_settings');
       if (settings) {
         set(settings);
       }
 
-      // Initialize notification service
       const result = await notificationService.initialize();
       
       if (result.success) {
@@ -51,39 +51,31 @@ export const useNotificationStore = create((set, get) => ({
           pushToken: result.token,
         });
 
-        // ✅ FIXED: Proper await with error handling
         if (result.token) {
           try {
             const saveResult = await get().savePushTokenToBackend(result.token);
             if (saveResult.success) {
               console.log('✅ Push token saved to backend');
-            } else {
-              console.warn('⚠️  Failed to save push token:', saveResult.error);
             }
           } catch (error) {
             console.error('❌ Error saving push token:', error);
-            // Don't fail initialization if backend save fails
           }
         }
 
-        // Schedule enabled notifications on init
         const state = get();
         
-        // Schedule daily verse if enabled
         if (state.dailyVerseEnabled && !state.dailyVerseNotificationId) {
           const { hour, minute } = state.dailyVerseTime;
           const notificationId = await notificationService.scheduleDailyVerse(hour, minute);
           set({ dailyVerseNotificationId: notificationId });
         }
         
-        // Schedule streak reminder if enabled
         if (state.streakReminderEnabled && !state.streakReminderNotificationId) {
           const { hour, minute } = state.streakReminderTime;
           const notificationId = await notificationService.scheduleStreakReminder(hour, minute);
           set({ streakReminderNotificationId: notificationId });
         }
         
-        // Schedule Jumuah reminder if enabled
         if (state.jumuahReminderEnabled && !state.jumuahNotificationId) {
           const { hour, minute } = state.jumuahReminderTime;
           const notificationId = await notificationService.scheduleJumuahReminder(hour, minute);
@@ -99,7 +91,7 @@ export const useNotificationStore = create((set, get) => ({
   },
 
   // ============================================================================
-  // BACKEND SYNC (FIXED)
+  // BACKEND SYNC
   // ============================================================================
   savePushTokenToBackend: async (pushToken) => {
     try {
@@ -122,22 +114,20 @@ export const useNotificationStore = create((set, get) => ({
       const currentSettings = get();
       const updatedSettings = { ...currentSettings, ...newSettings };
       
-      // Save to storage
       await storage.setItem('notification_settings', updatedSettings);
       set(updatedSettings);
       
-      // Reschedule prayer notifications if timing changed
       if (
         newSettings.reminderMinutesBefore !== undefined ||
-        newSettings.completionMinutesAfter !== undefined
+        newSettings.completionMinutesAfter !== undefined ||
+        newSettings.prayerTimeNotificationsEnabled !== undefined
       ) {
-        // ✅ FIXED: Dynamic import to avoid circular dependency
         try {
           const { usePrayerStore } = await import('./prayerStore');
           const prayerTimes = usePrayerStore.getState().prayerTimes;
           
           if (prayerTimes) {
-            console.log('🔄 Rescheduling prayer notifications with new timings...');
+            console.log('🔄 Rescheduling prayer notifications with new settings...');
             await get().schedulePrayerNotifications(prayerTimes);
           }
         } catch (error) {
@@ -152,22 +142,46 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-togglePrayerReminders: async () => {
-  const newValue = !get().prayerRemindersEnabled;
-  
-  // Update immediately for UI responsiveness
-  set({ prayerRemindersEnabled: newValue });
-  
-  // Save to storage
-  await storage.setItem('notification_settings', {
-    ...get(),
-    prayerRemindersEnabled: newValue
-  });
-  
-  console.log('✅ Prayer reminders toggled:', newValue);
-  
-  return { success: true };
-},
+  // ✅ NEW: Toggle Prayer Time Notifications (Azan)
+  togglePrayerTimeNotifications: async () => {
+    const newValue = !get().prayerTimeNotificationsEnabled;
+    
+    set({ prayerTimeNotificationsEnabled: newValue });
+    
+    await storage.setItem('notification_settings', {
+      ...get(),
+      prayerTimeNotificationsEnabled: newValue
+    });
+    
+    // Reschedule to apply changes
+    try {
+      const { usePrayerStore } = await import('./prayerStore');
+      const prayerTimes = usePrayerStore.getState().prayerTimes;
+      
+      if (prayerTimes) {
+        await get().schedulePrayerNotifications(prayerTimes);
+      }
+    } catch (error) {
+      console.error('Error rescheduling:', error);
+    }
+    
+    console.log('✅ Prayer time notifications (Azan) toggled:', newValue);
+    return { success: true };
+  },
+
+  togglePrayerReminders: async () => {
+    const newValue = !get().prayerRemindersEnabled;
+    
+    set({ prayerRemindersEnabled: newValue });
+    
+    await storage.setItem('notification_settings', {
+      ...get(),
+      prayerRemindersEnabled: newValue
+    });
+    
+    console.log('✅ Prayer reminders toggled:', newValue);
+    return { success: true };
+  },
 
   toggleCompletionReminders: async () => {
     const newValue = !get().completionRemindersEnabled;
@@ -277,26 +291,29 @@ togglePrayerReminders: async () => {
   },
 
   // ============================================================================
-  // SCHEDULE
+  // SCHEDULE (UPDATED)
   // ============================================================================
   schedulePrayerNotifications: async (prayerTimes) => {
     try {
       const { 
+        prayerTimeNotificationsEnabled,
         prayerRemindersEnabled, 
         completionRemindersEnabled,
         reminderMinutesBefore,
         completionMinutesAfter 
       } = get();
       
-      if (!prayerRemindersEnabled && !completionRemindersEnabled) {
-        console.log('Prayer notifications disabled');
+      if (!prayerTimeNotificationsEnabled && !prayerRemindersEnabled && !completionRemindersEnabled) {
+        console.log('All prayer notifications disabled');
         return { success: true, count: 0 };
       }
 
+      // ✅ Pass the prayerTimeNotificationsEnabled flag
       const result = await notificationService.scheduleDailyPrayerNotifications(
         prayerTimes,
         reminderMinutesBefore,
-        completionMinutesAfter
+        completionMinutesAfter,
+        prayerTimeNotificationsEnabled // NEW parameter
       );
       
       return result;
@@ -325,6 +342,10 @@ togglePrayerReminders: async () => {
   },
 }));
 
+// ============================================================================
+// SELECTORS
+// ============================================================================
+export const selectPrayerTimeNotificationsEnabled = (state) => state.prayerTimeNotificationsEnabled; // NEW
 export const selectPrayerRemindersEnabled = (state) => state.prayerRemindersEnabled;
 export const selectCompletionRemindersEnabled = (state) => state.completionRemindersEnabled;
 export const selectDailyVerseEnabled = (state) => state.dailyVerseEnabled;

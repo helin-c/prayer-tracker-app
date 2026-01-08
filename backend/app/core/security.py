@@ -8,7 +8,7 @@ import bcrypt
 import re
 import secrets
 from app.core.config import settings
-from app.core.redis import redis_client  # ✅ ADDED: Redis client
+from app.core.redis import redis_client  #
 import logging
 
 logger = logging.getLogger(__name__)

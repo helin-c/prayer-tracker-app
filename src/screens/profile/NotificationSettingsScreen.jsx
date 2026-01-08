@@ -1,4 +1,5 @@
-// FILE: src/screens/profile/NotificationSettingsScreen.jsx
+// ============================================================================
+// FILE: src/screens/profile/NotificationSettingsScreen.jsx (UPDATED WITH AZAN)
 // ============================================================================
 import React, { useState } from 'react';
 import {
@@ -13,11 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Import ScreenLayout
 import { ScreenLayout } from '../../components/layout/ScreenLayout';
 
 import { 
   useNotificationStore, 
+  selectPrayerTimeNotificationsEnabled, // NEW
   selectPrayerRemindersEnabled,
   selectCompletionRemindersEnabled,
   selectDailyVerseEnabled,
@@ -35,6 +36,10 @@ import {
 
 export const NotificationSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  
+  // ✅ NEW: Prayer Time Notifications (Azan)
+  const prayerTimeNotificationsEnabled = useNotificationStore(selectPrayerTimeNotificationsEnabled);
+  const togglePrayerTimeNotifications = useNotificationStore(state => state.togglePrayerTimeNotifications);
   
   const prayerRemindersEnabled = useNotificationStore(selectPrayerRemindersEnabled);
   const completionRemindersEnabled = useNotificationStore(selectCompletionRemindersEnabled);
@@ -65,7 +70,6 @@ export const NotificationSettingsScreen = ({ navigation }) => {
     setLoading(false);
   };
 
-  // Toggle social notification handler
   const toggleSocialNotification = async (key) => {
     setLoading(true);
     
@@ -103,10 +107,43 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           <View style={{ width: 40 }} />
         </View>
 
-        {/* Prayer Reminders */}
+        {/* ✅ NEW: Prayer Time Notifications (Azan) */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('notifications.prayerTimeNotifications')}</Text>
+          </View>
+          
+          <View style={styles.settingCardWrapper}>
+            <LinearGradient
+              colors={['#E0F5EC', '#E0F5EC']}
+              style={styles.settingCard}
+            >
+              <View style={styles.settingRow}>
+                <View style={styles.settingLeft}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.settingLabel}>
+                      {t('notifications.enablePrayerTimeNotifications')}
+                    </Text>
+                  </View>
+                  <Text style={styles.settingDesc}>
+                    {t('notifications.prayerTimeNotificationsDesc')}
+                  </Text>
+                </View>
+                <Switch
+                  value={prayerTimeNotificationsEnabled}
+                  onValueChange={() => handleToggle(togglePrayerTimeNotifications)}
+                  trackColor={{ false: '#E0E0E0', true: '#5BA895' }}
+                  thumbColor="#FFFFFF"
+                  disabled={loading}
+                />
+              </View>
+            </LinearGradient>
+          </View>
+        </View>
 
+        {/* Prayer Reminders (Before Prayer Time) */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('notifications.prayerReminders')}</Text>
           </View>
           
@@ -308,7 +345,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Jumuah (Friday) Prayer Reminder */}
+        {/* Jumuah Reminder */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('notifications.jumuahReminder')}</Text>
@@ -388,7 +425,7 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Social Notifications Section */}
+        {/* Social Notifications */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('notifications.socialNotifications')}</Text>
@@ -399,7 +436,6 @@ export const NotificationSettingsScreen = ({ navigation }) => {
               colors={['#E0F5EC', '#E0F5EC']}
               style={styles.settingCard}
             >
-              {/* Friend Requests */}
               <View style={styles.settingRow}>
                 <View style={styles.settingLeft}>
                   <Text style={styles.settingLabel}>
@@ -420,7 +456,6 @@ export const NotificationSettingsScreen = ({ navigation }) => {
 
               <View style={styles.settingDivider} />
 
-              {/* Friend Prayers */}
               <View style={styles.settingRow}>
                 <View style={styles.settingLeft}>
                   <Text style={styles.settingLabel}>
@@ -441,7 +476,6 @@ export const NotificationSettingsScreen = ({ navigation }) => {
 
               <View style={styles.settingDivider} />
 
-              {/* Friend Streaks */}
               <View style={styles.settingRow}>
                 <View style={styles.settingLeft}>
                   <Text style={styles.settingLabel}>
@@ -463,14 +497,14 @@ export const NotificationSettingsScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Test Notification Button */}
+        {/* Test Notification */}
         <TouchableOpacity
           style={styles.testButtonWrapper}
           onPress={async () => {
             const { notificationService } = require('../../services/notificationService');
             await notificationService.sendInstantNotification(
               'Test Notification 🔔',
-              'This is a test notification from Salah Tracker!',
+              'This is a test notification from My Salah!',
               { type: 'test' }
             );
           }}
@@ -491,15 +525,9 @@ export const NotificationSettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  scrollView: { 
-    flex: 1 
-  },
-  scrollContent: { 
-    padding: 20, 
-    paddingBottom: 40 
-  },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: 20, paddingBottom: 40 },
   
-  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -530,7 +558,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // Section
   section: {
     marginBottom: 20,
   },
@@ -540,16 +567,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 8,
   },
-  sectionEmoji: {
-    fontSize: 20,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1A1A1A',
   },
   
-  // Setting Card
   settingCardWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
@@ -571,11 +594,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 16,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   settingLabel: {
     fontSize: 15,
     fontWeight: '600',
     color: '#1A1A1A',
-    marginBottom: 4,
   },
   settingDesc: {
     fontSize: 13,
@@ -589,7 +617,6 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   
-  // Sub Settings
   subSetting: {
     marginTop: 16,
     paddingTop: 16,
@@ -603,7 +630,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   
-  // Time Options
   timeOptions: {
     flexDirection: 'row',
     gap: 8,
@@ -624,9 +650,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  timeOptionActive: {
-    // Active state handled by gradient colors
-  },
   timeOptionText: {
     fontSize: 14,
     fontWeight: '600',
@@ -636,7 +659,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   
-  // Test Button
   testButtonWrapper: {
     borderRadius: 12,
     overflow: 'hidden',

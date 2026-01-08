@@ -14,6 +14,7 @@ import {
   RefreshControl,
   Dimensions,
   AppState,
+  Animated, // ✅ Added Animated
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,7 +35,7 @@ import {
   selectTrackerError,
 } from '../../store/prayerTrackerStore';
 import { useTasbihStore } from '../../store/tasbihStore';
-import { useAuthStore, selectUser } from '../../store/authStore'; // ✅ ADDED: Auth Store
+import { useAuthStore, selectUser } from '../../store/authStore';
 
 // COMPONENT IMPORTS
 import { StatsSection } from '../../components/tracker/StatsSection';
@@ -58,6 +59,76 @@ export const PRAYER_ICONS = {
   Asr: { icon: 'partly-sunny-outline', iconSet: 'ion' },
   Maghrib: { icon: 'weather-sunset-down', iconSet: 'mci' },
   Isha: { icon: 'moon-outline', iconSet: 'ion' },
+};
+
+// ✅ Create Animated Component outside render cycle
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+// ✅ NEW: Animated Circular Progress Component
+const CircularProgress = ({ percentage, t, size = 120, strokeWidth = 12 }) => {
+  const animatedValue = useRef(new Animated.Value(percentage)).current;
+  const [displayPercentage, setDisplayPercentage] = useState(Math.round(percentage));
+
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    // Animate from current value to new percentage
+    Animated.timing(animatedValue, {
+      toValue: percentage,
+      duration: 800, // 800ms smooth animation
+      useNativeDriver: false, // Must be false for SVG animations
+    }).start();
+
+    // Animate the text number separately
+    const listener = animatedValue.addListener(({ value }) => {
+      setDisplayPercentage(Math.round(value));
+    });
+
+    return () => {
+      animatedValue.removeListener(listener);
+    };
+  }, [percentage]);
+
+  // Interpolate the animated value to get the strokeDashoffset
+  const strokeDashoffset = animatedValue.interpolate({
+    inputRange: [0, 100],
+    outputRange: [circumference, 0],
+  });
+
+  return (
+    <View style={styles.circularProgress}>
+      <Svg width={size} height={size}>
+        {/* Background Circle */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#E0E0E0"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {/* Animated Progress Circle */}
+        <AnimatedCircle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#5BA895"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          rotation="-90"
+          origin={`${size / 2}, ${size / 2}`}
+        />
+      </Svg>
+      <View style={styles.circularProgressText}>
+        <Text style={styles.percentageText}>{displayPercentage}%</Text>
+        <Text style={styles.percentageLabel}>{t('prayerTracker.complete')}</Text>
+      </View>
+    </View>
+  );
 };
 
 const TrackerSkeleton = () => {
@@ -97,7 +168,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   const isLoading = usePrayerTrackerStore(selectTrackerIsLoading);
   const error = usePrayerTrackerStore(selectTrackerError);
 
-  // ✅ Auth & Cache Logic
+  // Auth & Cache Logic
   const currentUser = useAuthStore(selectUser);
   const currentUserId = currentUser?.id;
   
@@ -105,7 +176,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   const fetchDayPrayers = usePrayerTrackerStore((state) => state.fetchDayPrayers);
   const fetchWeekPrayers = usePrayerTrackerStore((state) => state.fetchWeekPrayers);
   const trackPrayer = usePrayerTrackerStore((state) => state.trackPrayer);
-  const clearAllCache = usePrayerTrackerStore((state) => state.clearAllCache); // ✅ ADDED: Cache clear
+  const clearAllCache = usePrayerTrackerStore((state) => state.clearAllCache);
   const loadSessions = useTasbihStore((state) => state.loadSessions);
 
   // Local State
@@ -120,57 +191,43 @@ export const PrayerTrackerScreen = ({ navigation }) => {
 
   // Refs for logic
   const lastProcessedDate = useRef(new Date().toDateString());
-  const lastUserId = useRef(currentUserId); // ✅ ADDED: Track user ID
+  const lastUserId = useRef(currentUserId);
   const appState = useRef(AppState.currentState);
   const scrollViewRef = useRef(null);
   const hasScrolledInitially = useRef(false);
 
-  // 1. ✅ UPDATED: Trigger Data Load & Handle Account Switch
+  // Trigger Data Load & Handle Account Switch
   useFocusEffect(
     useCallback(() => {
       const userChanged = currentUserId !== lastUserId.current;
 
       if (userChanged) {
         console.log(`🔄 Account switched (User ${lastUserId.current} -> ${currentUserId}). Clearing cache...`);
-        
-        // Clear all cached data
         clearAllCache();
-        
-        // Reset loading state to show skeleton
         setInitialLoading(true);
         setStatsRefreshKey(prev => prev + 1);
-        
-        // Update ref
         lastUserId.current = currentUserId;
       }
 
-      // Load fresh data
-      // !userChanged passed as isFocusEvent:
-      // If user changed (false), we want full loading (not optimistic).
-      // If user same (true), we want optimistic loading.
       loadData(selectedDate, !userChanged); 
       loadSessions();
       checkDayChange();
 
       return () => {};
-    }, [selectedDate, currentUserId]) // ✅ Added currentUserId dependency
+    }, [selectedDate, currentUserId])
   );
 
-  // 2. Initial Setup (One-time)
+  // Initial Setup
   useEffect(() => {
     generateWeekDates();
-    
-    // Interval to check for midnight (00:00) while app is open
     const minuteInterval = setInterval(checkDayChange, 60000);
-
-    // AppState Listener (Background -> Foreground)
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
       ) {
-        checkDayChange(); // Check date immediately upon waking app
-        loadData(selectedDate, true); // Refresh data silently
+        checkDayChange();
+        loadData(selectedDate, true);
       }
       appState.current = nextAppState;
     });
@@ -181,7 +238,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     };
   }, []);
 
-  // 3. Scroll Logic
+  // Scroll Logic
   useEffect(() => {
     if (weekDates.length > 0 && !hasScrolledInitially.current) {
       setTimeout(() => {
@@ -191,7 +248,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     }
   }, [weekDates]);
 
-  // ✅ Auto-detect Day Change Logic
+  // Auto-detect Day Change
   const checkDayChange = useCallback(() => {
     const today = new Date();
     const todayStr = today.toDateString();
@@ -206,12 +263,10 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     }
   }, []);
 
-  // ✅ Data Loading Logic
+  // Data Loading Logic
   const loadData = async (dateOverride = null, isFocusEvent = false) => {
     const targetDate = dateOverride || selectedDate;
     
-    // Only show full skeleton if we have absolutely no data OR if we forced it via isFocusEvent=false
-    // If isFocusEvent is true (tab switch same user), we act optimistically
     if (!dayPrayers && !isFocusEvent) setInitialLoading(true);
 
     try {
@@ -226,8 +281,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         fetchDayPrayers(dateStr),
         fetchWeekPrayers(weekStartStr),
       ]);
-      
-      // Force stats to re-render to catch up with new data
       setStatsRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error('Error loading data:', err);
@@ -247,10 +300,9 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     scrollViewRef.current.scrollTo({ x: finalScrollX, animated: animated });
   };
 
-  // ✅ UPDATED: onRefresh clears cache now
   const onRefresh = async () => {
     setRefreshing(true);
-    clearAllCache(); // Clear cache on pull-to-refresh
+    clearAllCache();
     await loadData(selectedDate);
     setStatsRefreshKey(prev => prev + 1);
     setRefreshing(false);
@@ -272,7 +324,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     setWeekDates(week);
   };
 
-  // Helper Functions
   const formatDate = (date) => date.toISOString().split('T')[0];
   const formatDisplayDate = (date) => {
     const months = [
@@ -294,7 +345,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
   const getPrayerName = (prayerName) => t(`prayerTracker.prayers.${prayerName.toLowerCase()}`);
   const getCompletionPercentage = () => dayPrayers?.completion_percentage || 0;
 
-  // Interaction Handlers
   const handlePrayerPress = (prayer) => {
     if (isFutureDate(selectedDate)) {
       Alert.alert(t('common.notice'), t('prayerTracker.futureDateLocked'));
@@ -320,41 +370,14 @@ export const PrayerTrackerScreen = ({ navigation }) => {
         on_time: onTime,
       });
       setModalVisible(false);
-      
-      // Delay fetch slightly to allow DB update to propagate
       setTimeout(() => {
-        loadData(selectedDate, true); // Silent refresh
+        loadData(selectedDate, true);
       }, 200);
     } catch (err) {
       Alert.alert(t('tasbih.alerts.error'), 'Failed to track prayer. Please try again.');
     } finally {
       setProcessingAction(null);
     }
-  };
-
-  // --- Sub-components ---
-  const CircularProgress = ({ percentage, size = 120, strokeWidth = 12 }) => {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const progress = (percentage / 100) * circumference;
-    return (
-      <View style={styles.circularProgress}>
-        <Svg width={size} height={size}>
-          <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#E0E0E0" strokeWidth={strokeWidth} fill="none" />
-          <Circle
-            cx={size / 2} cy={size / 2} r={radius}
-            stroke="#5BA895" strokeWidth={strokeWidth}
-            fill="none" strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
-            strokeLinecap="round" rotation="-90" origin={`${size / 2}, ${size / 2}`}
-          />
-        </Svg>
-        <View style={styles.circularProgressText}>
-          <Text style={styles.percentageText}>{Math.round(percentage)}%</Text>
-          <Text style={styles.percentageLabel}>{t('prayerTracker.complete')}</Text>
-        </View>
-      </View>
-    );
   };
 
   const WeekDayCircle = ({ date, percentage }) => {
@@ -386,7 +409,7 @@ export const PrayerTrackerScreen = ({ navigation }) => {
             return;
           }
           setSelectedDate(date);
-          loadData(date, true); // Optimistic load
+          loadData(date, true);
         }}
         activeOpacity={0.7}
       >
@@ -419,7 +442,6 @@ export const PrayerTrackerScreen = ({ navigation }) => {
     );
   };
 
-  // --- Main Render ---
   const shouldShowSkeleton = initialLoading || (isLoading && !dayPrayers);
 
   if (shouldShowSkeleton) {
@@ -503,7 +525,8 @@ export const PrayerTrackerScreen = ({ navigation }) => {
                 </Text>
                 <Text style={styles.todayDate}>{formatDisplayDate(selectedDate)}</Text>
               </View>
-              <CircularProgress percentage={getCompletionPercentage()} />
+              {/* ✅ UPDATED: Passing 't' prop for translation */}
+              <CircularProgress percentage={getCompletionPercentage()} t={t} />
             </View>
           </LinearGradient>
         </View>

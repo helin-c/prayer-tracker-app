@@ -1,5 +1,5 @@
 # ============================================================================
-# FILE: backend/app/core/config.py (PRODUCTION-READY & SECURE)
+# FILE: backend/app/core/config.py (PRODUCTION-READY & SECURE + EMAIL)
 # ============================================================================
 from pydantic_settings import BaseSettings
 from typing import Optional, List
@@ -84,6 +84,45 @@ class Settings(BaseSettings):
     TOKEN_BLACKLIST_ENABLED: bool = True
     
     # ========================================================================
+    # EMAIL CONFIGURATION (NEW)
+    # ========================================================================
+    EMAIL_ENABLED: bool = False  # Default to False for development
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = "noreply@prayertracker.com"
+    EMAIL_FROM_NAME: str = "Prayer Tracker"
+    
+    # Email validation
+    def validate_email_settings(self) -> tuple[bool, Optional[str]]:
+        """
+        Validate email configuration.
+        Returns (is_valid, error_message)
+        """
+        if not self.EMAIL_ENABLED:
+            return True, None  # Email is optional if disabled
+            
+        errors = []
+        
+        if not self.SMTP_HOST:
+            errors.append("SMTP_HOST is required when EMAIL_ENABLED=true")
+        
+        if not self.SMTP_USER:
+            errors.append("SMTP_USER is required when EMAIL_ENABLED=true")
+            
+        if not self.SMTP_PASSWORD:
+            errors.append("SMTP_PASSWORD is required when EMAIL_ENABLED=true")
+            
+        if not self.EMAIL_FROM:
+            errors.append("EMAIL_FROM is required when EMAIL_ENABLED=true")
+        
+        if errors:
+            return False, "; ".join(errors)
+            
+        return True, None
+    
+    # ========================================================================
     # PRAYER API SETTINGS
     # ========================================================================
     PRAYER_API_BASE_URL: str = "http://api.aladhan.com/v1"
@@ -116,11 +155,12 @@ class Settings(BaseSettings):
         Returns False if critical security issues are found.
         """
         errors = []
+        warnings = []
         
         # 1. Debug Mode Check
         if self.DEBUG is True:
             if not self.DATABASE_URL.startswith("sqlite"):
-                 logger.warning("⚠️  DEBUG is True but using a production-like database.")
+                warnings.append("DEBUG is True but using a production-like database.")
 
         # 2. CORS Check (Double check)
         if not self.DEBUG and self.BACKEND_CORS_ORIGINS == "*":
@@ -134,7 +174,25 @@ class Settings(BaseSettings):
         if not self.DEBUG and not self.REDIS_URL:
             errors.append("REDIS_URL is missing. Token blacklisting (logout) will not work in production.")
         
-        # Log all errors found
+        # 5. Email Configuration (NEW)
+        if self.EMAIL_ENABLED:
+            email_valid, email_error = self.validate_email_settings()
+            if not email_valid:
+                if not self.DEBUG:
+                    errors.append(f"Email configuration error: {email_error}")
+                else:
+                    warnings.append(f"Email configuration issue: {email_error}")
+        else:
+            if not self.DEBUG:
+                warnings.append("EMAIL_ENABLED=false in production. Password reset emails will not be sent.")
+        
+        # Log warnings
+        if warnings:
+            logger.warning("⚠️  PRODUCTION CONFIGURATION WARNINGS:")
+            for warn in warnings:
+                logger.warning(f"   - {warn}")
+        
+        # Log errors and fail if any exist
         if errors:
             logger.error("❌ PRODUCTION CONFIGURATION ERRORS:")
             for err in errors:
@@ -155,3 +213,12 @@ settings = Settings()
 # Run basic validation on import
 if not settings.SECRET_KEY:
     raise ValueError("SECRET_KEY is required in .env file")
+
+# Log email configuration status
+if settings.EMAIL_ENABLED:
+    logger.info("📧 Email service enabled")
+    email_valid, email_error = settings.validate_email_settings()
+    if not email_valid:
+        logger.error(f"❌ Email configuration error: {email_error}")
+else:
+    logger.info("📧 Email service disabled (tokens will be logged to console)")
